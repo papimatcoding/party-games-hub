@@ -1,0 +1,33 @@
+/* ¡PATINAZO! — cold-glass ice arena, accessible desktop/mobile. */
+.ice-screen{padding:32px 0 85px}
+.ice-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:25px}
+.ice-brand{display:flex;gap:14px;align-items:center}
+.ice-brand-mark{background:linear-gradient(150deg,#69def2,#368abe);padding:12px;border-radius:16px;font-size:26px}
+.ice-brand h2{font:900 clamp(33px,4vw,49px)/1 'Outfit',sans-serif;letter-spacing:-1.8px;margin:2px 0}
+.ice-back{border:1px solid #477d91;border-radius:12px;background:#233c56;color:#fff;padding:12px 15px;font-size:13px;font-weight:800}
+.ice-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:17px}
+.ice-tags span{background:#153750;border:1px solid #3c7085;border-radius:40px;padding:9px 12px;font-weight:800;color:#c9f4ff;font-size:11px}
+.ice-tags #ice-phase{color:#ffe39d}
+.ice-columns{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(265px,.62fr);align-items:start;gap:17px}
+.ice-arena-panel{border:1px solid #345a75;padding:14px;background:#131f36;border-radius:22px}
+.ice-canvas-wrap{position:relative;border-radius:17px;overflow:hidden;max-width:770px;margin:auto}
+#ice-canvas{display:block;width:100%;aspect-ratio:1;touch-action:none;cursor:crosshair;outline:0}
+#ice-canvas:focus-visible{outline:4px solid #aef1fd;outline-offset:-6px}
+.ice-timer{position:absolute;top:15px;right:15px;min-width:73px;text-align:center;pointer-events:none;border:1px solid #c6f2ff66;border-radius:12px;background:#0c2c42cf;color:#e4feff;padding:11px;font:900 26px 'Outfit'}
+.ice-control{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 5px 1px}
+.ice-control p{color:#d2eaf4;font-size:12px;line-height:1.6;margin:0;max-width:400px}
+.ice-control .button{white-space:nowrap}
+.ice-aside{border:1px solid #365b71;border-radius:22px;padding:23px;background:#1d304a}
+.ice-aside h3{font:900 23px 'Outfit';margin:0 0 5px}
+.ice-muted{font-size:12px;line-height:1.65;color:#b5d8e3}
+.ice-roster{display:flex;flex-direction:column;gap:8px;margin:20px 0}
+.ice-player{display:flex;align-items:center;gap:9px;border:1px solid #456b81;background:#294357;border-radius:10px;padding:11px;font-size:12px}
+.ice-player.ice-dead{opacity:.5}
+.ice-player-dot{font-size:17px}
+.ice-player-name{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:800}
+.ice-player-status{font-weight:900;color:#cbf4ff}
+.ice-rules{background:#1a4355;border:1px solid #4c849a;border-radius:13px;padding:15px;margin-top:20px}
+.ice-rules b{color:#aff4ff}
+.ice-return{margin-top:17px;width:100%}
+@media(max-width:940px){.ice-columns{grid-template-columns:1fr}.ice-aside{order:2}}
+@media(max-width:620px){.ice-screen{padding-top:20px}.ice-top{align-items:flex-start}.ice-brand h2{font-size:34px}.ice-brand-mark{font-size:19px;padding:11px}.ice-back{font-size:11px}.ice-arena-panel{padding:6px;border-radius:14px}.ice-control{flex-direction:column;align-items:stretch}.ice-control .button{width:100%}.ice-aside{padding:17px}.ice-tags{gap:5px}.ice-tags span{font-size:10px;padding:6px 9px}}
