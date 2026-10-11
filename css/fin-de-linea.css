@@ -1,0 +1,58 @@
+/* ¡FIN DE LÍNEA! — tactical rail combat responsive for mobile and desktop */
+.rail-screen{padding:22px 0 70px}
+.rail-top{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.rail-head{display:flex;align-items:center;gap:13px}
+.rail-mark{font-size:32px;background:linear-gradient(130deg,#ba7e39,#603d57);
+ border-radius:16px;padding:10px}
+.rail-head h2{font:900 clamp(29px,4vw,48px)/1 'Outfit',sans-serif;margin:5px 0}
+.rail-leave{background:#312b49;color:#fff1d5;border:1px solid #706184;
+ border-radius:11px;padding:13px;font-size:12px;font-weight:800}
+.rail-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.rail-tags>span{border:1px solid #74638c;background:#302b49;color:#ecdcff;
+ font-size:11px;padding:8px 12px;font-weight:900;border-radius:21px}
+.rail-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.65fr);gap:18px}
+.rail-main{min-width:0}
+.rail-arena{background:#171e37;border:1px solid #6e638d;border-radius:18px;overflow:hidden;padding:8px}
+#rail-canvas{display:block;width:100%;height:auto;aspect-ratio:5/4;
+ background:#181b38;border-radius:10px;touch-action:none}
+.rail-controls{border:1px solid #665982;border-radius:16px;background:#2c2544;padding:16px;margin-top:12px}
+.rail-controls-title{font:900 18px 'Outfit',sans-serif;margin:0 0 5px}
+.rail-controls p{font-size:11px;color:#d2c5e1;margin:0 0 13px;line-height:1.6}
+.rail-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 1.25fr;gap:8px}
+.rail-pad button{min-height:66px;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:3px;border:1px solid #6f6595;border-radius:12px;
+ background:#3e345c;color:#fff;font:900 12px 'Outfit',sans-serif;
+ cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.rail-pad button strong{font-size:23px;line-height:1}
+.rail-pad button.rail-active{border-color:#fbd57f;background:#76563c;
+ box-shadow:inset 0 0 0 1px #fbd57f5c}
+.rail-pad #rail-fire{background:linear-gradient(125deg,#f5a944,#de524d);
+ border-color:#ffc779;color:#23152e;font-size:15px;letter-spacing:.01em}
+.rail-pad button:disabled{opacity:.53;cursor:not-allowed}
+.rail-controls-note{font-size:11px;line-height:1.65;color:#d8c6d6;margin-top:11px}
+.rail-side{border:1px solid #6e6188;background:#29243f;border-radius:19px;
+ padding:23px}
+.rail-side h3{font:900 21px 'Outfit',sans-serif;margin:0 0 7px}
+.rail-side>p{font-size:12px;line-height:1.75;color:#dccbdb;margin:0 0 16px}
+.rail-roster{display:flex;flex-direction:column;gap:7px;margin:12px 0 22px}
+.rail-player{display:flex;align-items:center;gap:9px;background:#3c3254;padding:11px 10px;
+ border:1px solid #645677;border-radius:10px;font-size:11px}
+.rail-player strong{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail-player>span:last-child{white-space:nowrap;color:#f8dfab}
+.rail-player.rail-out{opacity:.4}
+.rail-dot{font-size:15px}
+.rail-rules{border:1px solid #8e5e67;border-radius:12px;background:#472f41;
+ padding:14px;margin-top:12px}
+.rail-rules strong{color:#ffe2ad;font-size:13px}
+.rail-rules p{color:#f1d5dd;font-size:12px;line-height:1.65;margin:9px 0}
+.rail-rules ul{padding-left:17px;color:#dfcfde;font-size:11px;line-height:1.7}
+#rail-message{font-weight:700;color:#ffecbd}
+#rail-reset{width:100%;margin-top:14px}
+@media(max-width:930px){.rail-grid{grid-template-columns:1fr}.rail-side{padding:18px}}
+@media(max-width:560px){.rail-top{margin-top:4px}.rail-mark{font-size:24px}
+ .rail-head h2{font-size:28px}.rail-leave{font-size:10px;padding:9px}
+ .rail-screen{padding-top:12px}.rail-arena{padding:4px}
+ .rail-controls{padding:11px}.rail-pad{grid-template-columns:repeat(3,1fr)}
+ .rail-pad button{min-height:64px}.rail-pad #rail-fire{grid-column:1/-1;min-height:71px;font-size:17px}
+ .rail-pad button strong{font-size:27px}
+}
