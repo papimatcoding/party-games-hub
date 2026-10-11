@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./css/lasers.css">
   <link rel="stylesheet" href="./css/no-repitas.css">
   <link rel="stylesheet" href="./css/patinazo.css">
+  <link rel="stylesheet" href="./css/pongagono.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
@@ -20,7 +21,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.5</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.6</span></div>
     </header>
 
     <main>
@@ -56,9 +57,9 @@
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#bdeff5,#4f99be 60%,#1f3a65)"><span style="font-size:92px;filter:drop-shadow(0 6px 17px #0b4e7d)">🧊</span></div><div class="game-info"><strong>¡PATINAZO!</strong><span>❄ Dirección secreta · choques sobre hielo</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#fbcd88,#dd719f 55%,#54296c)"><span style="font:900 96px 'Outfit',sans-serif;color:#fff4de;text-shadow:8px 9px #45204d">?!</span></div><div class="game-info"><strong>¡NO REPITAS!</strong><span>🧠 Respuestas secretas · 2–12 jugadores</span></div></article>
-          <article class="game-card"><div class="game-art" style="background:#32294e"><span style="font-size:69px;color:#9e8ebf">?</span></div><div class="game-info"><strong>Tu próximo minijuego</strong><span>👀 Lo decidirás tú</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#8f7ec4,#402b72 64%,#1c1635)"><span style="font-size:90px;filter:drop-shadow(0 5px 13px #301c67)">🏓</span></div><div class="game-info"><strong>PONGÁGONO</strong><span>⚡ Pong poligonal · 2–12 jugadores</span></div></article>
         </div>
-        <p class="catalog-note">Tres minijuegos elegidos: Lásers, ¡NO REPITAS! y ¡PATINAZO!</p>
+        <p class="catalog-note">Cuatro minijuegos: Lásers, ¡NO REPITAS!, ¡PATINAZO! y PONGÁGONO</p>
       </section>
 
       <section id="lobby-screen" class="lobby" hidden>
@@ -81,7 +82,7 @@
                   <option value="">🎲 Aleatorio (sorpresa)</option>
                 </select>
                 <p id="nr-topic-help">Por defecto, el tema se anuncia al iniciar. El anfitrión puede elegir uno válido para el grupo.</p>
-              </div><p class="muted">Lásers, ¡NO REPITAS! y ¡PATINAZO! son jugables. Los siguientes minijuegos los decides tú.</p></section>
+              </div><p class="muted">Lásers, ¡NO REPITAS!, ¡PATINAZO! y PONGÁGONO son jugables. El próximo lo decides tú.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -206,6 +207,52 @@
               <p class="ice-muted">El ring y las esquinas se mantienen durante toda la partida. Si nadie gana en 10 rondas, hay empate.</p>
             </div>
             <button id="ice-reset" class="button button-dark ice-return" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="pong-screen" class="pong-screen" hidden>
+        <div class="pong-head">
+          <div class="pong-brand">
+            <span class="pong-brand-mark">🏓</span>
+            <div><div class="overline">CUARTO MINIJUEGO</div><h2>PONGÁGONO</h2></div>
+          </div>
+          <button id="pong-exit" class="pong-back">← Salir de la sala</button>
+        </div>
+        <div class="pong-badges">
+          <span id="pong-phase">SAQUE</span><span id="pong-shape">RING CUADRADO</span>
+          <span id="pong-alive">0 vivos</span><span id="pong-speed">0.66×</span>
+          <span id="pong-bounces">0 rebotes</span><span>SALA <b id="pong-code">------</b></span>
+        </div>
+        <div class="pong-columns">
+          <div class="pong-court-wrap">
+            <div class="pong-canvas-stage">
+              <canvas id="pong-canvas" width="700" height="700" tabindex="0"
+                aria-label="Pong poligonal. Defiende tu lado con movimiento horizontal o con las teclas A y D."></canvas>
+              <span id="pong-clock" class="pong-countdown">SAQUE EN 3s</span>
+            </div>
+            <div class="pong-controls">
+              <div class="pong-controls-title">
+                <strong>↔ Tu pala</strong>
+                <span>A / D · ← / → · arrastrar</span>
+              </div>
+              <input id="pong-slider" type="range" min="0" max="100" value="50" step="1"
+                aria-label="Posición horizontal de tu pala">
+              <div class="pong-slider-ends"><span>← IZQUIERDA</span><span>DERECHA →</span></div>
+            </div>
+            <p id="pong-message" class="pong-message" role="status">No dejes que la pelota atraviese tu lado.</p>
+          </div>
+          <aside class="pong-aside">
+            <h3>🏓 Contendientes</h3>
+            <p class="pong-muted">Tu pala siempre aparece abajo. Cada participante ve el ring desde su propio lado.</p>
+            <div id="pong-roster" class="pong-roster"></div>
+            <div class="pong-help">
+              <h4>Cómo jugar</h4>
+              <p>Solo puedes mover tu pala horizontalmente. El punto de impacto cambia el ángulo del rebote.</p>
+              <p>El ring es cuadrado con hasta 4 jugadores. Desde 5, tiene tantos lados como jugadores.</p>
+              <p>Cuando un jugador falla, su lado se convierte en una pared permanente. Los lados sin jugador también son paredes.</p>
+              <p>La pala y el hueco se ajustan al tamaño de la arena. La pelota acelera con los rebotes, pero <strong>recupera su velocidad inicial cada vez que se elimina a alguien.</strong></p>
+            </div>
+            <button id="pong-reset" class="button button-dark pong-reset" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
