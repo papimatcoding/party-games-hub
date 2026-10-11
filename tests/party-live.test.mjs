@@ -62,7 +62,7 @@ test("The browser presents all five handoffs, medals, standings and final ceremo
   assert.match(html,new RegExp('id="'+selector+'"'));
  for(const name of ["syncParty","renderPartyPresentation","party_state","start_party","party_exit"])
   assert.ok(app.includes(name),"missing "+name);
- assert.match(app,/partyData\.phase/);
+ assert.match(app,/partyData\?\.phase/);
  assert.match(app,/d\.phase==="intermission"/);
  assert.match(app,/¡EMPATE EN LA FIESTA!/);
  assert.match(css,/party-active #laser-reset/);
