@@ -35,6 +35,7 @@ export class PatinazoGame{
    this.canvas=$("ice-canvas");this.ctx=this.canvas.getContext("2d");
    this.live=false;this.id=null;this.data=null;this.timer=null;this.frame=null;
    this.busy=false;this.inFlight=false;this.angle=null;this.dragging=false;this.lastRound=null;
+   this.serverOffset=0;this.hasServerClock=false;
    this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
    this.canvas.addEventListener("pointermove",e=>this.point(e,false));
    this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -63,11 +64,12 @@ export class PatinazoGame{
  exit(){
    this.live=false;clearInterval(this.timer);cancelAnimationFrame(this.frame);
    this.timer=null;this.frame=null;this.id=null;this.data=null;this.angle=null;
-   this.dragging=false;this.lastRound=null;
+   this.dragging=false;this.lastRound=null;this.serverOffset=0;this.hasServerClock=false;
    $("ice-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
- get canAim(){return this.data?.phase==="planning"&&this.self?.alive&&Date.now()<Date.parse(this.data.deadline);}
+ get canAim(){return this.data?.phase==="planning"&&this.self?.alive&&this.serverNow()<Date.parse(this.data.deadline);}
+ serverNow(){return Date.now()+this.serverOffset;}
  coords(e){
    const r=this.canvas.getBoundingClientRect();
    return{x:((e.clientX-r.left)/r.width*720-CX)/SCALE,
@@ -116,9 +118,14 @@ export class PatinazoGame{
    if(!this.live||this.inFlight)return;
    this.inFlight=true;const id=this.id;
    try{
+     const sentAt=Date.now();
      const d=await this.rpc("ice_state",{p_room_id:id});
+     const doneAt=Date.now();
      if(!this.live||id!==this.id)return;
      if(!d){this.notify("No hay partida activa.");return;}
+     const offset=Date.parse(d.server_time)-(sentAt+doneAt)/2;
+     this.serverOffset=this.hasServerClock?this.serverOffset*.78+offset*.22:offset;
+     this.hasServerClock=true;
      if(d.round!==this.lastRound){this.lastRound=d.round;this.angle=null;}
      if(this.angle===null&&d.my_direction!==null&&d.my_direction!==undefined&&d.phase==="planning"){
        this.angle=Number(d.my_direction);
@@ -131,8 +138,8 @@ export class PatinazoGame{
    const d=this.data;
    if(!d){$("ice-clock").textContent="--";return;}
    $("ice-clock").textContent=d.phase==="finished"?"★":
-     String(Math.max(0,Math.ceil((Date.parse(d.deadline)-Date.now())/1000)))+"s";
-   if(d.phase==="planning"&&Date.now()>=Date.parse(d.deadline))$("ice-confirm").disabled=true;
+     String(Math.max(0,Math.ceil((Date.parse(d.deadline)-this.serverNow())/1000)))+"s";
+   if(d.phase==="planning"&&this.serverNow()>=Date.parse(d.deadline))$("ice-confirm").disabled=true;
  }
  hud(){
    const d=this.data;if(!d)return;
@@ -234,7 +241,7 @@ export class PatinazoGame{
    }else{
      const frames=d.replay||[];
      if(!frames.length)return;
-     let t=Math.max(0,(Date.now()-Date.parse(d.revealed_at))/1000);
+     let t=Math.max(0,(this.serverNow()-Date.parse(d.revealed_at))/1000);
      if(!Number.isFinite(t))t=0;
      const index=Math.min(frames.length-1,Math.floor(t/.08));
      const left=frames[index],right=frames[Math.min(index+1,frames.length-1)];
