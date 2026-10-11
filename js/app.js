@@ -11,6 +11,61 @@ const state = { client: null, user: null, roomId: null, room: null, members: [],
 let toastTimeout;
 let lasers = null;
 let noRepitas = null;
+let nrTopicsCache = { signature: null, items: [], loading: false };
+function renderNrTopicSettings() {
+  const box = $("nr-topic-settings");
+  if (!box || !state.room) return;
+  const room = state.room;
+  const enabled = room.mode === "freeplay" && room.game_id === "no_repitas" && room.status === "lobby";
+  box.hidden = !enabled;
+  if (!enabled) return;
+  const signature = state.roomId + ":" + state.members.length;
+  const select = $("nr-topic-select");
+  const renderOptions = () => {
+    if (box.hidden || !state.room || state.roomId + ":" + state.members.length !== signature) return;
+    const selected = state.room.nr_topic_id || "";
+    select.replaceChildren();
+    const random = element("option", "", "🎲 Aleatorio (sorpresa)");
+    random.value = "";
+    select.appendChild(random);
+    for (const item of nrTopicsCache.items) {
+      const option = element("option", "", item.title + " (" + item.answer_count + ")");
+      option.value = item.id;
+      select.appendChild(option);
+    }
+    if (selected && !nrTopicsCache.items.some(t => t.id === selected)) {
+      const invalid = element("option", "", "⚠ Tema ya no apto para este grupo");
+      invalid.value = selected;
+      invalid.disabled = true;
+      select.appendChild(invalid);
+    }
+    select.value = selected;
+    select.disabled = room.host_user_id !== state.user.id || nrTopicsCache.loading;
+    const chosen = nrTopicsCache.items.find(t => t.id === selected);
+    $("nr-topic-help").textContent = chosen
+      ? chosen.hint
+      : selected ? "El grupo ha cambiado. Elige un tema válido."
+      : "🎲 Se anunciará una categoría sorpresa al comenzar la partida.";
+  };
+  if (nrTopicsCache.signature !== signature) {
+    nrTopicsCache.signature = signature;
+    nrTopicsCache.items = [];
+    nrTopicsCache.loading = true;
+    void rpc("nr_list_topics", { p_room_id: state.roomId })
+      .then((topics) => {
+        if (nrTopicsCache.signature !== signature) return;
+        nrTopicsCache.items = Array.isArray(topics) ? topics : [];
+      })
+      .catch(error => notify("No se pudieron cargar los temas: " + friendlyError(error)))
+      .finally(() => {
+        if (nrTopicsCache.signature !== signature) return;
+        nrTopicsCache.loading = false;
+        renderOptions();
+      });
+  }
+  renderOptions();
+}
+
 
 function notify(message) {
   const el = $("toast");
@@ -105,6 +160,7 @@ function showHome(message) {
   state.room = null;
   state.members = [];
   state.messages = [];
+  nrTopicsCache = { signature: null, items: [], loading: false };
   $("lobby-screen").hidden = true;
   $("home-screen").hidden = false;
   $("catalog").hidden = false;
@@ -274,6 +330,7 @@ function renderRoom() {
   renderPlayers();
   renderModes();
   renderGames();
+  renderNrTopicSettings();
   renderChat();
   if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "lasers") {
     $("lobby-screen").hidden = true;
@@ -319,6 +376,13 @@ async function joinRoom() {
 }
 function registerEvents() {
   $("create-btn").addEventListener("click", () => void action(createRoom, $("create-btn")));
+  $("nr-topic-select").addEventListener("change", () => void action(async () => {
+    await rpc("nr_set_topic", {
+      p_room_id: state.roomId,
+      p_topic_id: $("nr-topic-select").value || null
+    });
+    await syncRoom();
+  }, $("nr-topic-select")));
   $("join-btn").addEventListener("click", () => void action(joinRoom, $("join-btn")));
   $("join-code").addEventListener("input", () => { $("join-code").value = $("join-code").value.toUpperCase().replace(/[^0-9A-F]/g, ""); });
   $("join-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("join-btn").click(); });
