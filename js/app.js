@@ -269,6 +269,10 @@ function renderGameGate() {
       &&["intermission","finished"].includes(partyData.phase))){
     $("game-ready-overlay").hidden=true;return;
   }
+  if(d?.game_id===r.game_id&&d.active===false){
+    // A legacy match already underway before deployment has no ready gate.
+    $("game-ready-overlay").hidden=true;return;
+  }
   const known=d?.game_id===r.game_id&&d.active;
   const when=known&&d.live_at?Date.parse(d.live_at):null;
   const remain=when===null?null:Math.max(0,Math.ceil((when-Date.now())/1000));
