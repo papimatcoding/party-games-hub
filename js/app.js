@@ -34,6 +34,9 @@ const errors = {
 };
 function friendlyError(error) {
   const msg = error?.message || String(error);
+  if (error?.code === "anonymous_provider_disabled" || /anonymous sign.ins are disabled/i.test(msg)) {
+    return "Activa Authentication → Providers → Anonymous Sign-Ins en el proyecto Supabase de Party Hub.";
+  }
   const found = Object.keys(errors).find((key) => msg.includes(key));
   return found ? errors[found] : msg;
 }
