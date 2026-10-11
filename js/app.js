@@ -302,6 +302,10 @@ function renderGameGate() {
 async function syncGameGate() {
   const room=state.room,roomId=state.roomId;
   if(!room||!roomId||room.status!=="playing"||versionBlocked||gateBusy)return;
+  // After the agreed start, the game engines own their state. No need for
+  // another 1.25 RPCs/second/player for the gate during the entire match.
+  if(gameGateData?.active&&gameGateData.game_id===room.game_id&&
+    gameGateData.live_at&&Date.now()>Date.parse(gameGateData.live_at)+4000)return;
   gateBusy=true;
   try{
     const data=await rpc("game_gate_state",{p_room_id:roomId});
