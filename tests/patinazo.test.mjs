@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {arenaSides,arenaBase,iceVertices,cornerPosition,ICE_POWER} from "../js/patinazo.js";
+import {arenaSides,arenaBase,iceVertices,cornerPosition,currentIcePosition,ICE_POWER} from "../js/patinazo.js";
 const src=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
 test("2–4 players always have four square corners",()=>{
@@ -58,4 +58,34 @@ test("Collisions, falls and match results are decided only by server",()=>{
   assert.match(api,/private\.ice_tick\(p_room_id\)/);
   assert.match(src("js/app.js"),/start_patinazo/);
   assert.match(src("index.html"),/id="ice-canvas"/);
+});
+
+
+test("A second-round player is positioned and aimed from the last recorded location",()=>{
+  const player={corner:0,x:-0.21,y:0.35,alive:true};
+  assert.deepEqual(currentIcePosition(player),{x:-0.21,y:0.35});
+  assert.notDeepEqual(currentIcePosition(player),cornerPosition(4,player.corner));
+  const browser=src("js/patinazo.js");
+  assert.match(browser,/const p=this\.coords\(e\),home=currentIcePosition\(this\.self\)/);
+  assert.match(browser,/this\.person\(currentIcePosition\(p\),col\(p\.user_id\)/);
+  assert.match(browser,/this\.arrow\(currentIcePosition\(this\.self\),this\.angle/);
+  assert.equal((browser.match(/cornerPosition\(/g)||[]).length,1,
+    "Only the exported initial spawn helper may use cornerPosition");
+});
+
+test("Server stores survivors' final coordinates and reuses them for the next shot",()=>{
+  const schema=src("supabase/51_ice_persistent_positions.sql");
+  const runtime=src("supabase/52_ice_persistent_physics_and_state.sql");
+  assert.match(schema,/add column pos_x double precision/);
+  assert.match(schema,/add column pos_y double precision/);
+  assert.match(schema,/create trigger ice_spawn_position_on_join/);
+  assert.match(schema,/before insert on private\.ice_players/);
+  assert.match(runtime,/array_agg\(p\.pos_x order by p\.corner_index\)/);
+  assert.match(runtime,/array_agg\(p\.pos_y order by p\.corner_index\)/);
+  assert.match(runtime,/px:=array_append\(px,initial_x\[i\]\)/);
+  assert.match(runtime,/py:=array_append\(py,initial_y\[i\]\)/);
+  assert.match(runtime,/set pos_x=px\[i\],pos_y=py\[i\]/);
+  assert.match(runtime,/'x',p\.pos_x,'y',p\.pos_y/);
+  assert.doesNotMatch(runtime,/px:=array_append\(px,0\.66\*cos\(/);
+  assert.match(src("supabase/46_party_game_launch.sql"),/insert into private\.ice_players/);
 });
