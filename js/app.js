@@ -1,13 +1,16 @@
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
 import { LaserGame } from "./lasers.js";
+import { NoRepitasGame } from "./no-repitas.js";
 
 const $ = (id) => document.getElementById(id);
 const GAMES = [
-  { id: "lasers", emoji: "⚡", name: "Lásers" }
+  { id: "lasers", emoji: "⚡", name: "Lásers" },
+  { id: "no_repitas", emoji: "🧠", name: "¡NO REPITAS!" }
 ];
 const state = { client: null, user: null, roomId: null, room: null, members: [], messages: [], channel: null, poll: null, busy: false, syncing: false };
 let toastTimeout;
 let lasers = null;
+let noRepitas = null;
 
 function notify(message) {
   const el = $("toast");
@@ -36,7 +39,11 @@ const errors = {
   ELIMINATED: "Ya has sido eliminado.",
   PARTY_COMING_SOON: "El Modo Party todavía no está disponible.",
   USE_LASER_START: "Esta sala tiene que iniciar Lásers.",
-  WRONG_GAME: "Selecciona Lásers en Juego libre."
+  WRONG_GAME: "Elige un minijuego disponible en Juego libre.",
+  WRITING_CLOSED: "El tiempo de esta ronda ya ha terminado.",
+  ANSWER_INVALID_LENGTH: "Escribe una respuesta de entre 1 y 65 caracteres.",
+  GAME_NOT_AVAILABLE: "Ese minijuego todavía no está disponible.",
+  NO_SUITABLE_TOPIC: "No hay suficientes temas para ese tamaño de grupo."
 };
 function friendlyError(error) {
   const msg = error?.message || String(error);
@@ -89,6 +96,7 @@ function setRoute(code) {
 }
 function showHome(message) {
   lasers?.exit();
+  noRepitas?.exit();
   clearInterval(state.poll);
   state.poll = null;
   if (state.channel && state.client) state.client.removeChannel(state.channel);
@@ -258,9 +266,10 @@ function renderRoom() {
   $("ready-btn").textContent = self?.is_ready ? "✓ Estoy preparado" : "Estoy listo ✓";
   $("ready-btn").disabled = room.status !== "lobby";
   $("start-btn").hidden = !isHost || room.status !== "lobby";
-  $("start-btn").disabled = room.mode !== "freeplay" || room.game_id !== "lasers" ||
+  $("start-btn").disabled = room.mode !== "freeplay" || !["lasers","no_repitas"].includes(room.game_id) ||
     state.members.length < 2 || state.members.some((m) => !m.is_ready);
-  $("start-btn").textContent = room.mode==="party" ? "Modo Party próximamente" : "⚡ Jugar Lásers";
+  $("start-btn").textContent = room.mode==="party" ? "Modo Party próximamente" :
+    room.game_id==="no_repitas" ? "🧠 Jugar ¡NO REPITAS!" : "⚡ Jugar Lásers";
   $("reset-btn").hidden = !isHost || room.status !== "playing";
   renderPlayers();
   renderModes();
@@ -268,9 +277,15 @@ function renderRoom() {
   renderChat();
   if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "lasers") {
     $("lobby-screen").hidden = true;
+    noRepitas?.exit();
     lasers?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
+  } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "no_repitas") {
+    $("lobby-screen").hidden = true;
+    lasers?.exit();
+    noRepitas?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
   } else {
     lasers?.exit();
+    noRepitas?.exit();
     $("lobby-screen").hidden = false;
   }
 }
@@ -313,8 +328,9 @@ function registerEvents() {
     await syncRoom();
   }, $("ready-btn")));
   $("start-btn").addEventListener("click", () => void action(async () => {
-    if (state.room.mode!=="freeplay"||state.room.game_id!=="lasers") throw new Error("PARTY_COMING_SOON");
-    await rpc("start_lasers", { p_room_id: state.roomId });
+    if (state.room.mode!=="freeplay") throw new Error("PARTY_COMING_SOON");
+    if (!["lasers","no_repitas"].includes(state.room.game_id)) throw new Error("GAME_NOT_AVAILABLE");
+    await rpc(state.room.game_id==="no_repitas" ? "start_no_repitas" : "start_lasers", { p_room_id: state.roomId });
     await syncRoom();
   }, $("start-btn")));
   $("reset-btn").addEventListener("click", () => void action(async () => {
@@ -343,6 +359,11 @@ function registerEvents() {
   });
 }
 async function init() {
+  noRepitas = new NoRepitasGame({
+    rpc,notify,
+    leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de ¡NO REPITAS!.");}),
+    reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
+  });
   lasers = new LaserGame({
     rpc,notify,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de Lásers.");}),
