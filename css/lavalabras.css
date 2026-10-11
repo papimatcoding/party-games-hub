@@ -1,0 +1,49 @@
+/* LAVALABRAS — glowing molten lava, strong readable towers. */
+.lava-screen{padding:28px 0 80px}
+.lava-top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+.lava-brand{display:flex;align-items:center;gap:13px}
+.lava-brand-mark{background:linear-gradient(140deg,#fd6c35,#b92255);border-radius:16px;padding:12px;font-size:29px}
+.lava-brand h2{font:900 clamp(31px,4vw,49px)/1 'Outfit',sans-serif;letter-spacing:-1.5px;margin:2px 0}
+.lava-back{background:#31283e;border:1px solid #72546b;color:#fff;border-radius:12px;padding:12px 15px;font-size:13px;font-weight:800}
+.lava-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:17px}
+.lava-badges span{border-radius:30px;padding:8px 11px;color:#ffdbc7;font-weight:900;font-size:11px;border:1px solid #7c4b56;background:#34253c}
+.lava-badges #lava-phase{color:#ffc67a}
+.lava-columns{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,.7fr);gap:18px;align-items:start}
+.lava-main{min-width:0}
+.lava-topic-banner{background:linear-gradient(110deg,#632835,#352745);border:1px solid #bd6159;border-radius:17px;padding:18px 22px;margin-bottom:13px}
+.lava-topic-banner small{letter-spacing:.13em;font-size:10px;color:#ffbb96;font-weight:900}
+.lava-topic-banner h3{font:900 clamp(25px,3vw,37px) 'Outfit';margin:6px 0}
+.lava-topic-banner p{font-size:12px;color:#f3c4b3;line-height:1.6;margin:0}
+.lava-arena{border-radius:18px;border:1px solid #754154;background:#1a172d;padding:11px;margin-bottom:13px}
+.lava-canvas-wrap{position:relative}
+#lava-canvas{display:block;width:100%;aspect-ratio:7 / 5;border-radius:12px;background:#15162e}
+.lava-clock{position:absolute;right:13px;top:13px;border-radius:11px;background:#401d2ce5;border:1px solid #a95e50;padding:10px;color:#ffde99;font:900 22px 'Outfit'}
+.lava-form-panel{background:#30253e;border:1px solid #71485b;border-radius:17px;padding:18px}
+.lava-form-panel h3{font:900 20px 'Outfit';margin:0 0 10px}
+.lava-answer-row{display:flex;gap:8px}
+.lava-answer-row input{min-width:0;flex:1;border:1px solid #805b70;border-radius:10px;padding:13px;background:#1f1b33;color:#fff;font-size:13px}
+.lava-answer-row .button{font-size:12px}
+.lava-answer-row input:focus{outline:2px solid #ffb077}
+.lava-input-sub{display:flex;justify-content:space-between;gap:12px;color:#c8a5ba;font-size:11px;margin:9px 0}
+.lava-message{font-size:13px;color:#efd5c9;line-height:1.6;margin:12px 0 0}
+.lava-side{background:#291f38;border:1px solid #654357;border-radius:19px;padding:22px}
+.lava-side h3{font:900 23px 'Outfit';margin:0 0 8px}
+.lava-muted{color:#cdabbd;font-size:12px;line-height:1.7}
+.lava-roster{display:flex;flex-direction:column;gap:8px;margin:17px 0}
+.lava-roster-player{display:flex;align-items:center;gap:9px;background:#3a2c47;border:1px solid #644355;border-radius:10px;padding:10px;font-size:12px}
+.lava-roster-player strong{flex:1;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.lava-roster-player span:last-child{color:#ffe8ae;font-weight:800}
+.lava-roster-player.lava-lost{opacity:.5}
+.lava-player-dot{width:12px;height:12px;display:inline-block;border-radius:50%;flex-shrink:0}
+.lava-rules{background:#462833;border-radius:12px;border:1px solid #874b52;padding:14px}
+.lava-rules strong{color:#ffc38a}
+.lava-rules p{color:#edc5be;font-size:12px;line-height:1.7}
+.lava-results{border:1px solid #89515c;background:#332436;padding:16px;margin-top:14px;border-radius:15px}
+.lava-results h3{font:900 21px 'Outfit';margin:0 0 10px}
+.lava-results-list{display:flex;flex-direction:column;gap:7px}
+.lava-result{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:8px;background:#4a3043;border-radius:9px;padding:10px 11px;font-size:11px}
+.lava-result span:last-child{font-weight:900;color:#ffe1a0}
+.lava-result-dead{opacity:.67}
+.lava-reset{margin-top:14px;width:100%}
+@media(max-width:950px){.lava-columns{grid-template-columns:1fr}.lava-side{order:2}}
+@media(max-width:620px){.lava-brand h2{font-size:32px}.lava-brand-mark{font-size:20px;padding:10px}.lava-back{font-size:11px}.lava-screen{padding-top:18px}.lava-arena{padding:5px}.lava-answer-row{flex-direction:column}.lava-answer-row .button{width:100%}.lava-result{grid-template-columns:1fr 1fr}.lava-result span:last-child{grid-column:1/-1}.lava-side{padding:16px}}
