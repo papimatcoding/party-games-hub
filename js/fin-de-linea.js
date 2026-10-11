@@ -1,5 +1,5 @@
 // ¡FIN DE LÍNEA! — PC + touch client. No hit detection or movement authority here.
-import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.11.0";
+import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.12.0";
 const $=id=>document.getElementById(id);
 const COLOR=["#ffcc76","#80e9f5","#f3a0cc","#b2a0ff","#afec90","#fa8e81",
  "#fee993","#83b7ff","#a9f4c3","#dea5fb","#f6ae81","#a3f1ef"];
