@@ -1,0 +1,49 @@
+.nr-screen{padding:34px 0 85px}
+.nr-top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+.nr-brand{display:flex;align-items:center;gap:14px}
+.nr-brand-mark{font-size:29px;background:#ee8f7d;color:#211a32;padding:12px;border-radius:15px;font-weight:900}
+.nr-brand h2{font:900 clamp(34px,4vw,49px)/1 'Outfit',sans-serif;margin:4px 0;letter-spacing:-2px}
+.nr-back{background:#3c3158;border:1px solid #62567d;border-radius:13px;padding:13px;color:#fff;font-weight:800}
+.nr-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:19px}
+.nr-badges span{background:#342c51;border:1px solid #504369;border-radius:40px;padding:9px 13px;font-size:11px;font-weight:800;color:#d5c8e5}
+.nr-badges #nr-round{color:#ffd993;border-color:#877055}
+.nr-columns{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(270px,.7fr);gap:19px;align-items:start}
+.nr-primary{display:flex;flex-direction:column;gap:17px;min-width:0}
+.nr-hero{background:radial-gradient(circle at 80% 12%,#844f76aa,transparent 55%),linear-gradient(140deg,#49365c,#272344);padding:35px;border:1px solid #796083;border-radius:24px;position:relative;overflow:hidden}
+.nr-hero::after{content:"?";position:absolute;font:900 220px 'Outfit';color:#ffffff09;right:-9px;bottom:-83px;pointer-events:none}
+.nr-eyebrow{font-weight:900;font-size:10px;color:#ffdd9e;letter-spacing:2px}
+.nr-topic{font:900 clamp(30px,4.6vw,54px)/1.08 'Outfit',sans-serif;letter-spacing:-1.6px;margin:15px 0;max-width:600px;position:relative}
+.nr-hint{font-size:13px;color:#d9c7e3;margin:0;line-height:1.55;position:relative}
+.nr-write-panel,.nr-reveal-panel,.nr-used-panel,.nr-side{background:#29223f;border:1px solid #524566;border-radius:22px;padding:27px}
+.nr-write-label{display:block;color:#cfc1d9;font-size:11px;font-weight:900;letter-spacing:1px;margin-bottom:12px}
+.nr-answer-row{display:flex;gap:11px}
+#nr-answer{flex:1;min-width:0;border:1px solid #786588;border-radius:13px;background:#191628;color:#fff;padding:15px;font-size:17px;font-weight:700}
+#nr-answer:focus{outline:2px solid #f4c385}
+#nr-send{white-space:nowrap}
+.nr-message{margin:15px 0 0;font-size:13px;line-height:1.6;color:#cec2df}
+.nr-clock{min-width:70px;text-align:center;background:#ffdb92;color:#392640;font:900 31px 'Outfit';padding:11px 15px;border-radius:14px}
+.nr-write-top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:23px}
+.nr-write-top h3,.nr-side h3,.nr-reveal-panel h3{font:900 23px 'Outfit';margin:0}
+.nr-side h3{margin-bottom:6px}
+.nr-muted{font-size:12px;color:#baafce;line-height:1.6}
+.nr-roster{display:flex;flex-direction:column;gap:8px;margin:18px 0 22px}
+.nr-player{display:flex;gap:9px;align-items:center;background:#392f51;border-radius:10px;padding:12px 10px;font-size:12px}
+.nr-player.dead{opacity:.42}
+.nr-player-dot{color:#ffda98}
+.nr-player-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800}
+.nr-player-status{font-size:9px;color:#bce8ba;font-weight:900;white-space:nowrap}
+.nr-used-panel{background:#312947;margin-top:15px;padding:19px}
+.nr-used-panel h4{font:800 15px 'Outfit';margin:0}
+.nr-blacklist{display:flex;flex-wrap:wrap;gap:7px;max-height:240px;overflow-y:auto;margin-top:14px}
+.nr-used-answer{padding:7px 10px;color:#e2cce6;background:#4b3758;border:1px solid #7c577d;border-radius:50px;font-size:11px}
+.nr-result-list{display:flex;flex-direction:column;gap:9px;margin-top:17px}
+.nr-result{background:#372d4e;border-left:4px solid #f5a7b9;border-radius:10px;padding:12px}
+.nr-result.nr-ok{border-left-color:#9eedab}
+.nr-result-title{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:13px}
+.nr-result-title strong{white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.nr-result-title span{color:#fff0cf;font-weight:800;text-align:right;overflow-wrap:anywhere}
+.nr-result-verdict{display:block;font-size:11px;color:#ffaabb;margin-top:6px}
+.nr-result.nr-ok .nr-result-verdict{color:#afe8af}
+.nr-return{width:100%;margin-top:12px}
+@media(max-width:940px){.nr-columns{grid-template-columns:1fr}.nr-side{order:2}}
+@media(max-width:600px){.nr-screen{padding:22px 0 45px}.nr-brand h2{font-size:35px}.nr-back{font-size:11px}.nr-hero{padding:24px}.nr-write-panel,.nr-reveal-panel,.nr-side{padding:19px}.nr-answer-row{flex-direction:column}.nr-answer-row .button{width:100%}.nr-topic{font-size:35px}.nr-write-top h3{font-size:21px}}
