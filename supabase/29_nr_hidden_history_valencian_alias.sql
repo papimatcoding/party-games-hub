@@ -4,9 +4,7 @@ insert into private.nr_aliases(topic_id,alias_key,entry_id)
 select 'autonomias_es',private.nr_normalize(alias.name),e.id
 from (values
   ('País Valencià'),
-  ('País Valenciano'),
-  ('Pais Valencia'),
-  ('País Valencià / Comunitat Valenciana')
+  ('País Valenciano')
 ) as alias(name)
 join private.nr_entries e
   on e.topic_id='autonomias_es'
