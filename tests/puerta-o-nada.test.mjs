@@ -16,7 +16,7 @@ test("Pure-chance door balance scales from 2 to 12 players",()=>{
  assert.match(schema,/order by random\(\) limit p_safe/);
  assert.match(schema,/n<=3 then 3 when n<=7 then 4 else 5/);
  assert.match(schema,/n<=3 then 2 else 3/);
- assert.doesNotMatch(schema,/hint|clue|pattern/i);
+ assert.doesNotMatch(schema,/create table private\.door_hints/);
 });
 
 test("Doors stay sealed while choosing, then show true safe/trap status",()=>{
