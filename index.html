@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./css/pongagono.css?v=0.9.1">
   <link rel="stylesheet" href="./css/lavalabras.css?v=0.9.1">
   <link rel="stylesheet" href="./css/party.css?v=0.9.1">
+  <link rel="stylesheet" href="./css/fin-de-linea.css?v=0.9.1">
   <script type="module" src="./js/app.js?v=0.9.1"></script>
 </head>
 <body>
@@ -60,9 +61,10 @@
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#fbcd88,#dd719f 55%,#54296c)"><span style="font:900 96px 'Outfit',sans-serif;color:#fff4de;text-shadow:8px 9px #45204d">?!</span></div><div class="game-info"><strong>¡NO REPITAS!</strong><span>🧠 Respuestas secretas · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcf74,#dd663d 52%,#70233b)"><span style="font-size:90px;filter:drop-shadow(0 5px 16px #e84349)">🌋</span></div><div class="game-info"><strong>LAVALABRAS</strong><span>🔥 Palabras largas · torres contra la lava</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcb7b,#a76140 60%,#3e264e)"><span style="font-size:88px;filter:drop-shadow(0 5px 18px #ffbc78)">🚂</span></div><div class="game-info"><strong>¡FIN DE LÍNEA!</strong><span>🎯 Cañón frontal · diana trasera · vías y desvíos</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#8f7ec4,#402b72 64%,#1c1635)"><span style="font-size:90px;filter:drop-shadow(0 5px 13px #301c67)">🏓</span></div><div class="game-info"><strong>PONGÁGONO</strong><span>⚡ Pong poligonal · 2–12 jugadores</span></div></article>
         </div>
-        <p class="catalog-note">Cinco minijuegos · Modo Fiesta con podios y preparación</p>
+        <p class="catalog-note">Seis minijuegos · Modo Fiesta con cinco pruebas y podios</p>
       </section>
 
       <section id="party-live-screen" class="party-live-screen" hidden>
@@ -125,7 +127,7 @@
                   <option value="">🎲 Aleatorio (sorpresa)</option>
                 </select>
                 <p id="nr-topic-help">Por defecto, el tema se anuncia al iniciar. El anfitrión puede elegir uno válido para el grupo.</p>
-              </div><p class="muted">Cinco minijuegos disponibles en Juego libre. Modo Fiesta: cinco pruebas con podio y listo antes de continuar.</p></section>
+              </div><p class="muted">Seis minijuegos en Juego libre. Modo Fiesta: cinco diferentes por circuito, con podios y confirmación antes de continuar.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -359,6 +361,58 @@
               <p>Gana el último en pie. Si todos caen a la vez o no hay un único superviviente tras 12 rondas, hay empate.</p>
             </div>
             <button id="lava-reset" class="button button-dark lava-reset" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="rail-screen" class="rail-screen" hidden>
+        <div class="rail-top">
+          <div class="rail-head">
+            <span class="rail-mark">🚂</span>
+            <div><div class="overline">SEXTO MINIJUEGO</div><h2>¡FIN DE LÍNEA!</h2></div>
+          </div>
+          <button id="rail-leave" class="rail-leave" type="button">← Salir de la sala</button>
+        </div>
+        <div class="rail-tags">
+          <span id="rail-phase">¡PERSECUCIÓN!</span>
+          <span id="rail-clock">135s</span>
+          <span id="rail-live">0 / 0 vagones</span>
+          <span id="rail-hits">0 aciertos</span>
+          <span>SALA <b id="rail-code">------</b></span>
+        </div>
+        <div class="rail-grid">
+          <div class="rail-main">
+            <div class="rail-arena">
+              <canvas id="rail-canvas" width="900" height="720"
+                aria-label="Circuito rectangular de vías horizontales y verticales, con bifurcaciones. Los vagones llevan el cañón delante y la diana detrás."></canvas>
+            </div>
+            <div class="rail-controls">
+              <h3 class="rail-controls-title">🛤️ Elige la próxima bifurcación</h3>
+              <p>El vagón avanza automáticamente. Tu elección se ejecuta en el siguiente cruce.</p>
+              <div class="rail-pad">
+                <button id="rail-left" type="button" aria-label="Girar a la izquierda"><strong>↰</strong> Izquierda</button>
+                <button id="rail-straight" type="button" aria-label="Seguir recto" class="rail-active"><strong>↑</strong> Recto</button>
+                <button id="rail-right" type="button" aria-label="Girar a la derecha"><strong>↱</strong> Derecha</button>
+                <button id="rail-fire" type="button" aria-label="Disparar a la diana trasera">💥 DISPARAR</button>
+              </div>
+              <div class="rail-controls-note">PC: A/D o ←/→ para desviar · W/S o ↑/↓ para recto · Espacio para disparar. Móvil: toca los botones.</div>
+            </div>
+          </div>
+          <aside class="rail-side">
+            <h3>🚂 Vagones en pista</h3>
+            <p>Solo los impactos directos en la <b>diana trasera rosa</b> hacen daño. El resto de impactos se bloquean.</p>
+            <div class="rail-roster" id="rail-players"></div>
+            <div class="rail-rules">
+              <strong>Cómo se juega</strong>
+              <p id="rail-message">Busca la retaguardia de los otros vagones para alcanzar su diana.</p>
+              <ul>
+                <li>Los vagones siempre circulan por vías horizontales y verticales.</li>
+                <li>Los proyectiles vuelan rectos, sin doblar las curvas.</li>
+                <li>Solo el contacto trasero cuenta. Dos aciertos te eliminan.</li>
+                <li>Disparo con 1,1 s de recarga. Duración máxima: 135 segundos.</li>
+                <li>Gana el último vagón. Si acaba el tiempo, cuentan los aciertos y la vida restante.</li>
+              </ul>
+            </div>
+            <button class="button button-dark" id="rail-reset" type="button" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
