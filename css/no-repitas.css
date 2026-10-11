@@ -47,3 +47,9 @@
 .nr-return{width:100%;margin-top:12px}
 @media(max-width:940px){.nr-columns{grid-template-columns:1fr}.nr-side{order:2}}
 @media(max-width:600px){.nr-screen{padding:22px 0 45px}.nr-brand h2{font-size:35px}.nr-back{font-size:11px}.nr-hero{padding:24px}.nr-write-panel,.nr-reveal-panel,.nr-side{padding:19px}.nr-answer-row{flex-direction:column}.nr-answer-row .button{width:100%}.nr-topic{font-size:35px}.nr-write-top h3{font-size:21px}}
+/* Host topic picker belongs to the shared lobby, not to the game itself. */
+.nr-topic-settings{margin-top:18px;padding:16px;border:1px solid #625179;border-radius:13px;background:#312848}
+.nr-topic-settings label{display:block;font-weight:900;letter-spacing:.08em;font-size:11px;color:#ffe0a6;margin-bottom:10px}
+.nr-topic-settings select{width:100%;padding:11px 10px;background:#211931;border:1px solid #6c5b82;border-radius:10px;color:#fff;font-weight:700;font-size:12px;min-width:0}
+.nr-topic-settings select:focus{outline:2px solid #ffe0a6}
+.nr-topic-settings p{font-size:11px;color:#bdb1ce;line-height:1.6;margin:9px 0 0}
