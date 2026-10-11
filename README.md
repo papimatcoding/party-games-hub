@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.8
+# PARTY HUB 🎉 — Alpha 0.8.1
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de 5 minijuegos con medallas).
 
@@ -47,6 +47,7 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - Dirección libre 360°, **sin selector de fuerza**. Impulso para todos: 0,96 unidades/s, frenado 0,88/s, choque con restitución 0,86 y pequeño extra 0,12 al impactar.
 - Generación y cálculo en Supabase; el navegador no puede decidir su resultado. Se guardan 49 fotogramas por ronda y se reproducen en todos los dispositivos.
 - Cada patinador comienza al 66% del radio hacia una esquina (no literalmente sobre el borde, para que un mínimo contacto no lo elimine de inmediato).
+- **Las esquinas se usan exclusivamente en la primera ronda.** Tras resolver cada desplazamiento, el servidor conserva las coordenadas exactas de los supervivientes. La siguiente ronda empieza desde esas mismas posiciones, sin teletransporte al punto inicial; se aplica un nuevo impulso de fuerza fija sin conservar la velocidad anterior. Se aplica igualmente en Juego libre y Modo Fiesta.
 - El diseño precisa pruebas reales con 2–12 usuarios y ajustes de fuerza, porque los resultados de la simulación no equivalen a equilibrio percibido.
 
 ## Balance y límites de PONGÁGONO (alpha)
