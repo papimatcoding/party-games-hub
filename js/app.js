@@ -436,7 +436,12 @@ function showHome(message) {
 }
 function watchRoom(id) {
   if (state.channel) state.client.removeChannel(state.channel);
-  const refresh = () => { void syncRoom(); };
+  const refresh = () => {
+    void syncRoom();
+    // Door phase changes update public.rooms; don't wait for the 750ms
+    // safety poll when all picks are resolved and the reveal is ready.
+    if(state.room?.game_id==="puerta_o_nada")void puertaONada?.refresh();
+  };
   state.channel = state.client.channel("party-room-" + id)
     .on("postgres_changes", { event: "*", schema: "public", table: "rooms", filter: "id=eq." + id }, refresh)
     .on("postgres_changes", { event: "*", schema: "public", table: "room_members", filter: "room_id=eq." + id }, refresh)
