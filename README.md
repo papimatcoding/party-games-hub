@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.9.0
+# PARTY HUB 🎉 — Alpha 0.9.1
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de 5 minijuegos con medallas).
 
@@ -71,8 +71,8 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - El diseño de datos contempla formatos de 10, 15 o 20 juegos, **aún bloqueados** hasta disponer de más minijuegos diferentes. Juego libre permanece independiente.
 - **Comprobación:** se ha ejecutado un circuito completo de cinco juegos mediante las API reales de cada juego en transacciones SQL, además de pruebas de empate, doble consulta, host-only, cancelación y medallas. Falta validar la sensación de juego y transiciones con 2+ navegadores/dispositivos reales.
 
-## Mejoras de juego en la Alpha 0.9.0
-- **Versiones:** los clientes verifican el protocolo 0.9.0 con el manifiesto de despliegue y Supabase. El servidor exige un registro compatible antes de marcar «Listo» o iniciar una sala. Al cambiar el protocolo deben actualizarse juntos js/release.js, release.json y la configuración privada. Se verifica compatibilidad del protocolo, no integridad criptográfica de los archivos.
+## Mejoras de juego en la Alpha 0.9.1
+- **Versiones:** los clientes verifican el protocolo 0.9.1 con el manifiesto de despliegue y Supabase. El servidor exige un registro compatible antes de marcar «Listo» o iniciar una sala. Al cambiar el protocolo deben actualizarse juntos js/release.js, release.json y la configuración privada. Se verifica compatibilidad del protocolo, no integridad criptográfica de los archivos.
 - **Preparación:** cada juego espera explícitamente «Todos listos» antes de iniciar una cuenta atrás sincronizada de tres segundos. El servidor pausa simulaciones y rechaza jugadas anticipadas.
 - **Pongágono:** mantiene instantáneas oficiales a unos 250 ms por RPC; ahora extrapola visualmente rebotes contra paredes y usa tiempo corregido del servidor. Sigue siendo una primera mejora: a latencias altas o con rebotes de pala pueden aparecer correcciones de posición.
 - **Patinazo:** cronómetro y repetición adaptados al desfase de reloj observado con Supabase, sin cambiar el resultado autoritativo de las trayectorias.
