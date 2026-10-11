@@ -41,7 +41,7 @@ export class PongagonoGame {
   Object.assign(this,{rpc,notify,leave,reset});
   this.canvas=$("pong-canvas");this.ctx=this.canvas.getContext("2d");
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
-  this.loading=false;this.sending=false;this.lastSend=0;this.lastRender=0;
+  this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
   this.target=.5;this.visualU=null;this.dragging=false;this.holdLeft=false;this.holdRight=false;
   this.receivedAt=0;this.clockOffset=0;this.lastEliminations=null;
   this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
@@ -80,7 +80,7 @@ export class PongagonoGame {
   this.live=false;clearInterval(this.tickHandle);cancelAnimationFrame(this.frame);
   this.tickHandle=null;this.frame=null;this.roomId=null;this.data=null;
   this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.target=.5;this.visualU=null;this.lastEliminations=null;
+  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;
   $("pong-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
@@ -115,6 +115,7 @@ export class PongagonoGame {
  }
  setTarget(value){
   this.target=clamp(value,0,1);
+  this.pending=true;
   const slider=$("pong-slider");
   if(Math.abs(Number(slider.value)-this.target*100)>.6)slider.value=String(Math.round(this.target*100));
   this.send();
@@ -127,8 +128,9 @@ export class PongagonoGame {
    const span=e.halfside*(1-this.data.paddle_ratio);
    this.target=clamp(this.target+direction*1.04*dt/(2*span),0,1);
    $("pong-slider").value=String(Math.round(this.target*100));
-   this.send();
+   this.pending=true;
   }
+  if(this.pending)this.send();
   if(this.visualU===null)this.visualU=Number(this.self.u);
   const e=pongEdge(this.data.sides,this.self.side);
   const maxRate=1.04/(2*e.halfside*(1-this.data.paddle_ratio));
@@ -137,7 +139,7 @@ export class PongagonoGame {
  async send(){
   const now=Date.now();
   if(!this.canMove||this.sending||now-this.lastSend<125)return;
-  this.sending=true;this.lastSend=now;const id=this.roomId;
+  this.sending=true;this.pending=false;this.lastSend=now;const id=this.roomId;
   try{
    await this.rpc("pongagono_move",{p_room_id:id,p_position:Number(this.target.toFixed(4))});
   }catch(e){
