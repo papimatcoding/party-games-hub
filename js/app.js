@@ -684,6 +684,10 @@ function registerEvents() {
     await rpc("party_next_ready",{p_room_id:state.roomId,p_ready:true});
     await syncParty();
   },$("party-next-ready")));
+  $("game-ready-leave").addEventListener("click",()=>void action(async()=>{
+    await rpc("leave_room",{p_room_id:state.roomId});
+    showHome("Has salido de la sala.");
+  },$("game-ready-leave")));
   $("game-ready-confirm").addEventListener("click",()=>void action(async()=>{
     await validateRelease();
     await rpc("game_gate_ready",{p_room_id:state.roomId,p_ready:true});
