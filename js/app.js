@@ -323,4 +323,22 @@ async function init() {
     $("join-btn").disabled = true;
   }
 }
+// The previous Pack Opener was a PWA. Unregister its root-scoped worker so
+// legacy cached files cannot unexpectedly replace the new Party Hub.
+async function cleanLegacyServiceWorker() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const scope = new URL("./", window.location.href).href;
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.filter((item) => item.scope === scope).map((item) => item.unregister()));
+    }
+    if ("caches" in window) {
+      const names = await caches.keys();
+      await Promise.all(names.filter((name) => name.startsWith("packverse27-")).map((name) => caches.delete(name)));
+    }
+  } catch (error) {
+    console.warn("Legacy cache cleanup skipped", error);
+  }
+}
+void cleanLegacyServiceWorker();
 void init();
