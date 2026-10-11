@@ -9,6 +9,7 @@
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/lasers.css">
+  <link rel="stylesheet" href="./css/no-repitas.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
@@ -18,7 +19,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.2</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.3</span></div>
     </header>
 
     <main>
@@ -52,9 +53,10 @@
         <div class="section-heading"><div><span class="overline">EL ARCADE</span><h2>ELIGE TU PRÓXIMO CAOS<span class="punct">.</span></h2></div><span class="coming-label">PRÓXIMAMENTE</span></div>
         <div class="game-grid">
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#fbcd88,#dd719f 55%,#54296c)"><span style="font:900 96px 'Outfit',sans-serif;color:#fff4de;text-shadow:8px 9px #45204d">?!</span></div><div class="game-info"><strong>¡NO REPITAS!</strong><span>🧠 Respuestas secretas · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:#32294e"><span style="font-size:69px;color:#9e8ebf">?</span></div><div class="game-info"><strong>Tu próximo minijuego</strong><span>👀 Lo decidirás tú</span></div></article>
         </div>
-        <p class="catalog-note">Primer minijuego: Lásers. El resto de juegos los decides tú.</p>
+        <p class="catalog-note">Dos minijuegos elegidos y en desarrollo: Lásers y ¡NO REPITAS!</p>
       </section>
 
       <section id="lobby-screen" class="lobby" hidden>
@@ -70,7 +72,7 @@
           </section>
           <div class="lobby-sidebar">
             <section class="panel mode-panel"><div class="panel-heading"><div><h2>🎲 ¿Cómo jugamos?</h2><p>Dos maneras de liarla con amigos.</p></div></div><div id="mode-options" class="mode-options"></div></section>
-            <section class="panel game-choice"><div class="panel-heading"><div><h2>🕹️ Votación de juego</h2><p>El anfitrión escoge, por ahora.</p></div></div><div id="game-options" class="game-options"></div><p class="muted">Lásers ya tiene motor de rondas. Los demás minijuegos no se añadirán sin decidirlos antes.</p></section>
+            <section class="panel game-choice"><div class="panel-heading"><div><h2>🕹️ Votación de juego</h2><p>El anfitrión escoge, por ahora.</p></div></div><div id="game-options" class="game-options"></div><p class="muted">Lásers y ¡NO REPITAS! son jugables. Los próximos minijuegos los decides tú.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -111,6 +113,57 @@
               <p><strong>Colapso:</strong> el hexágono pierde capas cada dos rondas.</p>
             </div>
             <button id="laser-reset" class="button button-dark laser-host-button" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="nr-screen" class="nr-screen" hidden>
+        <div class="nr-top">
+          <div class="nr-brand"><span class="nr-brand-mark">?!</span><div><div class="overline">SEGUNDO MINIJUEGO</div><h2>¡NO REPITAS!</h2></div></div>
+          <button id="nr-exit" class="nr-back">← Salir de la sala</button>
+        </div>
+        <div class="nr-badges">
+          <span id="nr-round">RONDA 1 / 12</span>
+          <span id="nr-phase">RESPUESTAS SECRETAS</span>
+          <span id="nr-count">0 vivos</span>
+          <span>SALA <b id="nr-code"></b></span>
+        </div>
+        <div class="nr-columns">
+          <div class="nr-primary">
+            <div class="nr-hero">
+              <div class="nr-eyebrow">EL TEMA DE ESTA PARTIDA</div>
+              <h3 id="nr-topic" class="nr-topic">Descubriendo tema...</h3>
+              <p id="nr-hint" class="nr-hint">Responde sin repetir.</p>
+            </div>
+            <div class="nr-write-panel">
+              <div class="nr-write-top">
+                <h3>Tu respuesta secreta</h3>
+                <div id="nr-clock" class="nr-clock">25s</div>
+              </div>
+              <form id="nr-answer-form" autocomplete="off">
+                <label for="nr-answer" class="nr-write-label">NADIE PUEDE VER LO QUE ESCRIBES</label>
+                <div class="nr-answer-row">
+                  <input id="nr-answer" name="nr-answer" maxlength="65" autocapitalize="sentences" autocomplete="off" spellcheck="false" placeholder="Escribe algo original..." aria-label="Tu respuesta secreta">
+                  <button id="nr-send" type="submit" class="button button-primary">Enviar respuesta →</button>
+                </div>
+              </form>
+              <p id="nr-message" class="nr-message" role="status">Piensa algo que nadie haya elegido.</p>
+            </div>
+            <div class="nr-reveal-panel" id="nr-results" hidden>
+              <h3>💥 Revelación de respuestas</h3>
+              <div id="nr-result-list" class="nr-result-list"></div>
+            </div>
+          </div>
+          <aside class="nr-side">
+            <h3>👥 Supervivientes</h3>
+            <p class="nr-muted">Las respuestas solo aparecen al resolver la ronda.</p>
+            <div id="nr-roster" class="nr-roster"></div>
+            <div class="nr-used-panel">
+              <h4>🚫 Lista negra</h4>
+              <p class="nr-muted" id="nr-used">0 respuestas reveladas</p>
+              <div id="nr-blacklist" class="nr-blacklist"></div>
+            </div>
+            <p class="nr-muted">Todo lo escrito se prohíbe tras revelarse, sea válido, inválido o repetido. Los nombres equivalentes cuentan como la misma respuesta.</p>
+            <button id="nr-reset" class="button button-dark nr-return" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
