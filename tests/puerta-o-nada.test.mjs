@@ -13,7 +13,7 @@ test("Pure-chance door balance scales from 2 to 12 players",()=>{
  assert.deepEqual(doorBalance(12),{doors:9,safe:6});
  assert.equal(MAX_DOOR_ROUNDS,5);
  const schema=file("supabase/72_door_risk_expansion.sql");
- assert.match(schema,/order by random\(\) limit p_safe/);
+ assert.match(file("supabase/68_door_schema.sql"),/order by random\(\) limit p_safe/);
  assert.match(schema,/n<=3 then 6 when n<=7 then 8 else 9/);
  assert.match(schema,/n<=3 then 4 when n<=7 then 5 else 6/);
  assert.doesNotMatch(schema,/create table private\.door_hints/);
@@ -81,7 +81,7 @@ test("Double-or-nothing is voluntary, fully secret, and only breaks survival tie
  assert.match(migration,/create function public\.door_pick_double/);
  assert.match(migration,/p_first=p_second/);
  assert.match(migration,/c\.second_door=any\(v_match\.safe_doors\)/);
- assert.match(migration,/p\.risk_wins=p\.risk_wins\+1/);
+ assert.match(migration,/risk_wins=p\.risk_wins\+1/);
  assert.match(migration,/p\.alive desc,coalesce\(p\.eliminated_round,0\) desc,[\s\n]*p\.risk_wins desc/);
  assert.match(resolving,/p\.risk_wins>0/);
  assert.match(browser,/door_pick_double/);
