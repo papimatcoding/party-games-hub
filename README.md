@@ -17,6 +17,7 @@ No reutilices la base de datos de Troll Golf.
    - supabase/04_chat.sql
    - supabase/05_permissions.sql
    - supabase/06_realtime.sql
+   - supabase/07_modes.sql
 4. En js/config.js escribe la URL del proyecto y su clave **publishable** (sb_publishable_...). Estas dos son públicas y aptas para navegador; NO pongas service_role, sb_secret_, contraseñas ni tokens privados.
 5. GitHub Pages: https://papimatcoding.github.io/party-games-hub/
 6. Prueba dos navegadores/sesiones distintas: uno crea sala, otro entra, ambos se preparan, chat y cambio de anfitrión.
@@ -38,3 +39,6 @@ Las escrituras directas desde el cliente están prohibidas: el servidor valida m
 Los juegos son tarjetas placeholder; pulsar 'Iniciar sesión' solo cambia el estado compartido a playing. Los códigos son invitaciones, no contraseñas: quien conozca el código puede entrar mientras haya plazas y el estado sea lobby. Los invitados no recuperan su identidad si borran el almacenamiento local. Antes de un lanzamiento público necesitaríamos CAPTCHA, control de creación masiva de cuentas y salas, limpieza de salas abandonadas, moderación, tests E2E multiusuario y lógica de juego autoritativa.
 
 Los SQL están diseñados para **una base de datos vacía**; no ejecutarlos de nuevo a ciegas.
+
+## Visión de producto
+Dos formas de entrar al arcade: **Juego libre** (minijuegos independientes) y **Modo Party** (un circuito original de minijuegos, retos y clasificaciones). El tipo de sesión ya se almacena en la base de datos y puede elegirse en el lobby; el circuito, puntuaciones y los minijuegos están por implementar. Véase docs/party-vision.md.
