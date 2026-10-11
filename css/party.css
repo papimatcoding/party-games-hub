@@ -75,3 +75,5 @@ margin:11px 0;color:#fff2d0}
 .game-ready-card .button{min-height:52px;width:100%;font-size:15px}
 .game-ready-card .game-ready-tip{font-size:12px;color:#d0b7d7;margin-top:14px}
 .version-overlay{z-index:200}
+
+.game-ready-card .game-ready-exit{margin-top:12px;background:transparent;border:1px solid #856680;color:#dbc5dd;font-size:12px;min-height:42px}
