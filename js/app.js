@@ -579,6 +579,7 @@ function renderChat() {
 }
 function renderRoom() {
   const room = state.room;
+  if(room.status==="lobby")gameGateData=null;
   const isHost = room.host_user_id === state.user.id;
   const self = state.members.find((m) => m.user_id === state.user.id);
   $("room-code").textContent = room.code;
