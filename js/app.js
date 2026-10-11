@@ -2,18 +2,21 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
 import { LaserGame } from "./lasers.js";
 import { NoRepitasGame } from "./no-repitas.js";
 import { PatinazoGame } from "./patinazo.js";
+import { PongagonoGame } from "./pongagono.js";
 
 const $ = (id) => document.getElementById(id);
 const GAMES = [
   { id: "lasers", emoji: "⚡", name: "Lásers" },
   { id: "no_repitas", emoji: "🧠", name: "¡NO REPITAS!" },
-  { id: "patinazo", emoji: "🧊", name: "¡PATINAZO!" }
+  { id: "patinazo", emoji: "🧊", name: "¡PATINAZO!" },
+  { id: "pongagono", emoji: "🏓", name: "PONGÁGONO" }
 ];
 const state = { client: null, user: null, roomId: null, room: null, members: [], messages: [], channel: null, poll: null, busy: false, syncing: false };
 let toastTimeout;
 let lasers = null;
 let noRepitas = null;
 let patinazo = null;
+let pongagono = null;
 let nrTopicsCache = { signature: null, items: [], loading: false };
 function renderNrTopicSettings() {
   const box = $("nr-topic-settings");
@@ -156,6 +159,7 @@ function showHome(message) {
   lasers?.exit();
   noRepitas?.exit();
   patinazo?.exit();
+  pongagono?.exit();
   clearInterval(state.poll);
   state.poll = null;
   if (state.channel && state.client) state.client.removeChannel(state.channel);
@@ -326,10 +330,10 @@ function renderRoom() {
   $("ready-btn").textContent = self?.is_ready ? "✓ Estoy preparado" : "Estoy listo ✓";
   $("ready-btn").disabled = room.status !== "lobby";
   $("start-btn").hidden = !isHost || room.status !== "lobby";
-  $("start-btn").disabled = room.mode !== "freeplay" || !["lasers","no_repitas","patinazo"].includes(room.game_id) ||
+  $("start-btn").disabled = room.mode !== "freeplay" || !["lasers","no_repitas","patinazo","pongagono"].includes(room.game_id) ||
     state.members.length < 2 || state.members.some((m) => !m.is_ready);
   $("start-btn").textContent = room.mode==="party" ? "Modo Party próximamente" :
-    room.game_id==="no_repitas" ? "🧠 Jugar ¡NO REPITAS!" : room.game_id==="patinazo" ? "🧊 Jugar ¡PATINAZO!" : "⚡ Jugar Lásers";
+    room.game_id==="no_repitas" ? "🧠 Jugar ¡NO REPITAS!" : room.game_id==="patinazo" ? "🧊 Jugar ¡PATINAZO!" : room.game_id==="pongagono" ? "🏓 Jugar PONGÁGONO" : "⚡ Jugar Lásers";
   $("reset-btn").hidden = !isHost || room.status !== "playing";
   renderPlayers();
   renderModes();
@@ -340,21 +344,31 @@ function renderRoom() {
     $("lobby-screen").hidden = true;
     noRepitas?.exit();
     patinazo?.exit();
+    pongagono?.exit();
     lasers?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
   } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "no_repitas") {
     $("lobby-screen").hidden = true;
     lasers?.exit();
     patinazo?.exit();
+    pongagono?.exit();
     noRepitas?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
   } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "patinazo") {
     $("lobby-screen").hidden = true;
     lasers?.exit();
     noRepitas?.exit();
+    pongagono?.exit();
     patinazo?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
+  } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "pongagono") {
+    $("lobby-screen").hidden = true;
+    lasers?.exit();
+    noRepitas?.exit();
+    patinazo?.exit();
+    pongagono?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
   } else {
     lasers?.exit();
     noRepitas?.exit();
     patinazo?.exit();
+    pongagono?.exit();
     $("lobby-screen").hidden = false;
   }
 }
@@ -405,8 +419,8 @@ function registerEvents() {
   }, $("ready-btn")));
   $("start-btn").addEventListener("click", () => void action(async () => {
     if (state.room.mode!=="freeplay") throw new Error("PARTY_COMING_SOON");
-    if (!["lasers","no_repitas","patinazo"].includes(state.room.game_id)) throw new Error("GAME_NOT_AVAILABLE");
-    await rpc(state.room.game_id==="no_repitas" ? "start_no_repitas" : state.room.game_id==="patinazo" ? "start_patinazo" : "start_lasers", { p_room_id: state.roomId });
+    if (!["lasers","no_repitas","patinazo","pongagono"].includes(state.room.game_id)) throw new Error("GAME_NOT_AVAILABLE");
+    await rpc(state.room.game_id==="no_repitas" ? "start_no_repitas" : state.room.game_id==="patinazo" ? "start_patinazo" : state.room.game_id==="pongagono" ? "start_pongagono" : "start_lasers", { p_room_id: state.roomId });
     await syncRoom();
   }, $("start-btn")));
   $("reset-btn").addEventListener("click", () => void action(async () => {
@@ -435,6 +449,11 @@ function registerEvents() {
   });
 }
 async function init() {
+  pongagono = new PongagonoGame({
+    rpc,notify,
+    leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de PONGÁGONO.");}),
+    reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
+  });
   patinazo = new PatinazoGame({
     rpc,notify,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de ¡PATINAZO!.");}),
