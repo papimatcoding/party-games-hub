@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/lasers.css">
   <link rel="stylesheet" href="./css/no-repitas.css">
+  <link rel="stylesheet" href="./css/patinazo.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
@@ -19,7 +20,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.4.1</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.5</span></div>
     </header>
 
     <main>
@@ -52,11 +53,12 @@
       <section id="catalog" class="catalog">
         <div class="section-heading"><div><span class="overline">EL ARCADE</span><h2>ELIGE TU PRÓXIMO CAOS<span class="punct">.</span></h2></div><span class="coming-label">PRÓXIMAMENTE</span></div>
         <div class="game-grid">
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#bdeff5,#4f99be 60%,#1f3a65)"><span style="font-size:92px;filter:drop-shadow(0 6px 17px #0b4e7d)">🧊</span></div><div class="game-info"><strong>¡PATINAZO!</strong><span>❄ Dirección secreta · choques sobre hielo</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#fbcd88,#dd719f 55%,#54296c)"><span style="font:900 96px 'Outfit',sans-serif;color:#fff4de;text-shadow:8px 9px #45204d">?!</span></div><div class="game-info"><strong>¡NO REPITAS!</strong><span>🧠 Respuestas secretas · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:#32294e"><span style="font-size:69px;color:#9e8ebf">?</span></div><div class="game-info"><strong>Tu próximo minijuego</strong><span>👀 Lo decidirás tú</span></div></article>
         </div>
-        <p class="catalog-note">Dos minijuegos elegidos y en desarrollo: Lásers y ¡NO REPITAS!</p>
+        <p class="catalog-note">Tres minijuegos elegidos: Lásers, ¡NO REPITAS! y ¡PATINAZO!</p>
       </section>
 
       <section id="lobby-screen" class="lobby" hidden>
@@ -79,7 +81,7 @@
                   <option value="">🎲 Aleatorio (sorpresa)</option>
                 </select>
                 <p id="nr-topic-help">Por defecto, el tema se anuncia al iniciar. El anfitrión puede elegir uno válido para el grupo.</p>
-              </div><p class="muted">Lásers y ¡NO REPITAS! son jugables. Los próximos minijuegos los decides tú.</p></section>
+              </div><p class="muted">Lásers, ¡NO REPITAS! y ¡PATINAZO! son jugables. Los siguientes minijuegos los decides tú.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -167,6 +169,43 @@
 
             <p class="nr-muted">Recuerda las respuestas de las rondas anteriores: todas quedan prohibidas, incluso las inválidas. El juego no muestra el historial.</p>
             <button id="nr-reset" class="button button-dark nr-return" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="ice-screen" class="ice-screen" hidden>
+        <div class="ice-top">
+          <div class="ice-brand"><span class="ice-brand-mark">🧊</span><div><div class="overline">TERCER MINIJUEGO</div><h2>¡PATINAZO!</h2></div></div>
+          <button id="ice-exit" class="ice-back">← Salir de la sala</button>
+        </div>
+        <div class="ice-tags">
+          <span id="ice-round">RONDA 1 / 10</span>
+          <span id="ice-phase">DIRECCIÓN SECRETA</span>
+          <span id="ice-count">0 jugadores</span>
+          <span id="ice-sides">CUADRADO</span>
+          <span>SALA <b id="ice-code"></b></span>
+        </div>
+        <div class="ice-columns">
+          <div class="ice-arena-panel">
+            <div class="ice-canvas-wrap">
+              <canvas id="ice-canvas" width="720" height="720" tabindex="0" aria-label="Ring de hielo: pulsa o arrastra para apuntar. Las flechas del teclado también sirven."></canvas>
+              <span id="ice-clock" class="ice-timer">18s</span>
+            </div>
+            <div class="ice-control">
+              <p id="ice-message" role="status">Apunta tu deslizamiento sin que el resto conozca tu dirección.</p>
+              <button id="ice-confirm" class="button button-primary" disabled>❄ Confirmar dirección</button>
+            </div>
+          </div>
+          <aside class="ice-aside">
+            <h3>🏂 Patinadores</h3>
+            <p class="ice-muted">Las posiciones de salida son visibles; las direcciones se mantienen ocultas hasta el choque.</p>
+            <div id="ice-roster" class="ice-roster"></div>
+            <div class="ice-rules">
+              <b>❄️ Reglas del hielo</b>
+              <p class="ice-muted">Selecciona únicamente una dirección. El impulso es exactamente igual para todos. Tras 18 segundos, todos se deslizan a la vez.</p>
+              <p class="ice-muted">Los choques transfieren impulso. Cruzar el borde significa caer. Hasta 4 jugadores el ring es cuadrado; desde 5 tiene tantos lados como jugadores.</p>
+              <p class="ice-muted">El ring y las esquinas se mantienen durante toda la partida. Si nadie gana en 10 rondas, hay empate.</p>
+            </div>
+            <button id="ice-reset" class="button button-dark ice-return" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
