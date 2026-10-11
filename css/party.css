@@ -24,7 +24,7 @@
 .party-hud-cancel{background:#3b2b3a;border:1px solid #a5797a;border-radius:8px;padding:9px 12px;
  color:#ffcfbf;font-size:11px;font-weight:800}
 .party-active #laser-reset,.party-active #nr-reset,.party-active #ice-reset,
-.party-active #pong-reset,.party-active #lava-reset{display:none!important}
+.party-active #pong-reset,.party-active #lava-reset,.party-active #rail-reset{display:none!important}
 .party-live-screen{padding:31px 0 68px}
 .party-live-top{text-align:center;background:radial-gradient(ellipse at top,#62475a,#291f42 80%);
  border:1px solid #765875;border-radius:23px;padding:32px 20px;margin-bottom:18px}
