@@ -1,0 +1,15 @@
+/* Party Mode preparation — modular five-game circuit and medal standings */
+.party-preview{border-color:#8d7043;background:linear-gradient(160deg,#30253e,#342739)}
+.party-preview h2{color:#ffe9ba}
+.party-formats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+.party-formats>*{border:1px solid #65546b;color:#b3a9bc;padding:10px 5px;text-align:center;font-weight:800;font-size:11px;border-radius:9px}
+.party-formats strong{color:#ffe8ac;background:#695139;border-color:#ba8c49}
+.party-desc{font-size:11px;color:#e0cbcd;line-height:1.8}
+.party-list,.party-score-list{display:flex;flex-direction:column;gap:7px;margin:13px 0}
+.party-list-row,.party-score-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#392a45;border:1px solid #5c4a64;border-radius:10px;font-size:11px}
+.party-list-row .party-num{color:#ffcf7e;font-weight:900;min-width:16px}
+.party-list-row strong,.party-score-row strong{flex:1}
+.party-score-row .party-medals{font-weight:800;color:#ffe1ad;white-space:nowrap}
+.party-score-row .party-points{font-weight:900;color:#ffe1ad}
+#party-shuffle{width:100%;margin-top:6px;font-size:12px}
+.party-limited{color:#d9bfb7;font-size:11px;line-height:1.7;margin:12px 0 0}
