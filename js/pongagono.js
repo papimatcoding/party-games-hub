@@ -1,6 +1,7 @@
 // PONGÁGONO: responsive Pong on a regular polygon.
 // The database alone decides paddle catches, wall collisions, acceleration and KOs.
 // This canvas only presents the latest authoritative state with short prediction.
+import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.11.0";
 const $=id=>document.getElementById(id);
 const TAU=2*Math.PI,CENTER=350,SCALE=288;
 const COLORS=["#ffc56c","#ff8fad","#8ce8df","#b29aff","#b8eb81","#86bcff",
@@ -33,23 +34,35 @@ export function pongPaddleEnds(sides,side,u,ratio=pongPaddleRatio(sides)){
 }
 
 // Visual prediction only: actual eliminations, bounce speeds and scoring are server owned.
+const NORMAL_CACHE=new Map();
+function polygonNormals(sides){
+ if(!NORMAL_CACHE.has(sides)){
+  NORMAL_CACHE.set(sides,Array.from({length:sides},(_,i)=>pongEdge(sides,i).normal));
+ }
+ return NORMAL_CACHE.get(sides);
+}
+// Analytic continuous-time polygon reflection: no 120-step physics loop per frame.
 export function predictPongBall(ball,sides,seconds){
- let x=Number(ball.x),y=Number(ball.y);
- let vx=Number(ball.vx),vy=Number(ball.vy);
- const duration=clamp(seconds,0,.65),steps=Math.ceil(duration*120);
- const dt=steps?duration/steps:0;
- const aperture=Math.cos(Math.PI/sides)-Number(ball.r);
- for(let i=0;i<steps;i++){
-   x+=vx*dt;y+=vy*dt;
-   for(let k=0;k<sides;k++){
-     const n=pongEdge(sides,k).normal;
-     const over=x*n.x+y*n.y-aperture;
-     if(over>0){
-       x-=n.x*(over+.00001);y-=n.y*(over+.00001);
-       const out=vx*n.x+vy*n.y;
-       if(out>0){vx-=2*out*n.x;vy-=2*out*n.y;}
-     }
-   }
+ let x=Number(ball.x),y=Number(ball.y),vx=Number(ball.vx),vy=Number(ball.vy);
+ const norms=polygonNormals(sides),aperture=Math.cos(Math.PI/sides)-Number(ball.r);
+ let remaining=clamp(seconds,0,.85);
+ for(let collision=0;collision<8&&remaining>1e-6;collision++){
+  let minT=remaining+.001,hit=null;
+  for(const n of norms){
+   const out=vx*n.x+vy*n.y;
+   if(out<=1e-8)continue;
+   const dist=aperture-x*n.x-y*n.y;
+   const time=Math.max(0,dist)/out;
+   if(time<minT){minT=time;hit=n;}
+  }
+  if(!hit||minT>remaining){
+   x+=vx*remaining;y+=vy*remaining;remaining=0;break;
+  }
+  x+=vx*minT;y+=vy*minT;remaining-=minT;
+  const out=vx*hit.x+vy*hit.y;
+  vx-=2*out*hit.x;vy-=2*out*hit.y;
+  x-=hit.x*.00001;y-=hit.y*.00001;
+  remaining=Math.max(0,remaining-.000001);
  }
  return {x,y};
 }
@@ -66,7 +79,7 @@ export class PongagonoGame {
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
   this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
   this.target=.5;this.visualU=null;this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.lastEliminations=null;
+  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.lastClockText="";this.lastEliminations=null;
   this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
   this.canvas.addEventListener("pointermove",e=>this.point(e,false));
   this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -87,8 +100,12 @@ export class PongagonoGame {
   this.roomId=roomId;this.userId=userId;this.code=code;this.hostId=hostId;
   this.live=true;$("pong-screen").hidden=false;
   void this.refresh();
-  // 4 authoritative snapshots/sec + local prediction between packets.
-  this.tickHandle=setInterval(()=>void this.refresh(),250);
+  // Adaptive server snapshots; screen painting is native-refresh-rate RAF.
+  this.poller=makeAdaptivePoller(()=>this.refresh(),{
+    active:()=>this.live,visible:()=>!document.hidden,
+    fast:190,slow:600,hidden:1700
+  });
+  this.poller.start();
   this.lastRender=performance.now();
   const render=timestamp=>{
    if(!this.live)return;
@@ -100,10 +117,10 @@ export class PongagonoGame {
   this.frame=requestAnimationFrame(render);
  }
  exit(){
-  this.live=false;clearInterval(this.tickHandle);cancelAnimationFrame(this.frame);
+  this.live=false;clearInterval(this.tickHandle);this.poller?.stop();this.poller=null;cancelAnimationFrame(this.frame);
   this.tickHandle=null;this.frame=null;this.roomId=null;this.data=null;
   this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;
+  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.lastClockText="";
   $("pong-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
@@ -181,9 +198,9 @@ export class PongagonoGame {
    const completedAt=Date.now();
    if(!this.live||id!==this.roomId)return;
    if(!data)return;
-   const offset=Date.parse(data.server_time)-(sentAt+completedAt)/2;
-   this.clockOffset=this.hasClock?this.clockOffset*.78+offset*.22:offset;
-   this.hasClock=true;
+   this.net.sample(data.server_time,sentAt,completedAt);
+   this.clockOffset=this.net.offset;
+   this.hasClock=this.net.valid;
    this.receivedAt=performance.now();
    if(!this.data){
     const me=data.players?.find(p=>p.user_id===this.userId);
@@ -293,7 +310,7 @@ export class PongagonoGame {
   }
   // Sync the ball with server time; keep rendering between RPC snapshots.
   const b=d.ball;
-  const age=clamp((Date.now()+this.clockOffset-Date.parse(d.server_time))/1000,0,.65);
+  const age=this.net.age(d.server_time,.85);
   const pos=d.phase==="live"?predictPongBall(b,sides,age):{x:Number(b.x),y:Number(b.y)};
   const {x,y}=pos;
   c.beginPath();c.arc(x,y,Number(b.r)*2.25,0,TAU);
