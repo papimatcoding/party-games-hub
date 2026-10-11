@@ -1,8 +1,9 @@
-# PARTY HUB 🎉 — Alpha 0.6
+# PARTY HUB 🎉 — Alpha 0.7
 
 Arcade multijugador original para navegador con salas compartidas y dos modos: **Juego libre** y **Modo Party** (este último aún en diseño).
 
 ## Juegos disponibles
+- **🌋 LAVALABRAS** — categorías nuevas cada ronda, 24 segundos para escribir en secreto una respuesta del tema. El servidor compara con el catálogo curado de ¡NO REPITAS! y sus variantes. Cada letra de la respuesta válida añade un bloque a tu torre acumulada (espacios, números y puntuación no suman; cuenta la palabra realmente escrita). La lava sube 6 bloques en la primera ronda, 8 en la segunda, 10 en la tercera y así sucesivamente. Quien tenga la torre a la misma altura o por debajo de la lava queda eliminado. La última persona en pie gana, con máximo 12 rondas y empate si no queda un superviviente único. Se permiten respuestas iguales entre jugadores.
 - **🏓 PONGÁGONO** — Pong en un polígono de 4 a 12 lados. La pala de cada jugador se mueve únicamente a lo largo de su propio lado; cada navegador rota la arena para mostrar su pala abajo. Una pelota común rebota en palas y paredes. Fallar significa eliminación: ese borde se vuelve pared sólida, sin cambiar la geometría. Los lados nunca ocupados también son paredes. La pelota acelera +0,030 unidades/s por rebote (tope 1,38) y **reinicia a 0,66** inmediatamente después de cada eliminación, con 1,6 s antes del siguiente saque. Los tamaños de pala se adaptan al número de jugadores.
 - **⚡ Lásers** — movimiento libre en un hexágono, apuntado a 360°, preparación oculta, disparos simultáneos y reducción de anillos.
 - **🧊 ¡PATINAZO!** — todos comienzan en esquinas distintas, sorteadas una vez por partida. Para 2–4 jugadores el ring es cuadrado; para 5–12 tiene el mismo número de lados que jugadores. Cada ronda se apunta solo una dirección secreta y el servidor aplica un impulso idéntico (0,96 unidades/s), fricción de hielo, choques elásticos con empuje y caídas fuera del borde. Se muestra una repetición simultánea de cada ronda. 18 segundos de preparación + 6 segundos de repetición, máximo 10 rondas; empate si todos caen o nadie gana al límite.
@@ -18,7 +19,7 @@ Arcade multijugador original para navegador con salas compartidas y dos modos: *
 
 ## Primeras partidas
 1. Abre la web desde dos navegadores o dispositivos distintos. Crea una sala, únete con el código y marca ambos jugadores como preparados.
-2. En Juego libre el anfitrión puede escoger Lásers, ¡NO REPITAS!, ¡PATINAZO! o PONGÁGONO e iniciar la sesión.
+2. En Juego libre el anfitrión puede escoger Lásers, ¡NO REPITAS!, ¡PATINAZO!, PONGÁGONO o LAVALABRAS e iniciar la sesión.
 3. En ¡NO REPITAS!, hay 25 segundos para escribir y 7 de revelación. Quien no responde también queda eliminado. Gana el último superviviente, o hay empate si sobreviven varios al límite o todos mueren a la vez.
 4. Prueba con Messi frente a Leo Messi, con una respuesta inválida y con otra reutilizada en una segunda ronda.
 
@@ -56,3 +57,9 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - Puedes mover tu pala arrastrando sobre el canvas, usando la barra táctil o con A/D y ←/→. Cada jugador siempre ve su propia pala abajo. La posición que manda se valida y limita en Supabase.
 - El servidor realiza simulación en intervalos aproximados de 12 ms; los clientes consultan un estado oficial aproximadamente cuatro veces por segundo y extrapolan visualmente los instantes intermedios. La apariencia puede corregirse si hay latencia; las eliminaciones y velocidades proceden de PostgreSQL.
 - Requiere prueba manual en dos o más dispositivos y afinación de sensibilidad, latencia y dificultad antes de considerarlo listo para público general. No hay protección anticheat integral ni emparejamiento público.
+
+## Modo Fiesta — cimientos listos, circuito automático pendiente
+- La opción «Modo Fiesta» configura un **circuito aleatorio de 5 juegos**, uno de cada título actualmente disponible. El anfitrión puede consultar y mezclar ese orden desde el lobby; los invitados ven la misma secuencia.
+- Formatos posteriores de **10, 15 y 20 juegos** están previstos en el modelo de datos, pero aparecen bloqueados hasta disponer de tantos minijuegos distintos.
+- La clasificación tiene un almacén privado de medallas por jugador y por minijuego. **🥇 oro = 3 puntos, 🥈 plata = 2 y 🥉 bronce = 1**. Para desempatar se comparan primero las medallas de oro, después las de plata y finalmente las de bronce.
+- **Importante:** en esta alpha el circuito y el marcador se pueden **preparar y consultar**, pero **no se pueden disputar aún automáticamente las cinco pruebas ni adjudicar sus medallas**. Falta conectar los resultados autoritativos de los cinco minijuegos al marcador, el avance entre partidas y la pantalla de ganador del circuito. No debe habilitarse «Iniciar Modo Fiesta» antes de implementar y probar esos pasos.
