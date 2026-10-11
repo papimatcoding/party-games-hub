@@ -31,46 +31,6 @@ begin
 end;
 $fn$;
 
-create function public.party_state(p_room_id uuid)
-returns jsonb language plpgsql security definer set search_path=''
-as $fn$
-declare v_session private.party_sessions%rowtype;
-begin
- if auth.uid() is null or not private.is_room_member(p_room_id) then
-   raise exception 'NOT_A_MEMBER';end if;
- select * into v_session from private.party_sessions where room_id=p_room_id;
- return jsonb_build_object(
-  'enabled',v_session.id is not null,
-  'length',coalesce(v_session.set_size,5),
-  'status',coalesce(v_session.status,'not_prepared'),
-  'current_slot',coalesce(v_session.current_slot,1),
-  'future_formats',jsonb_build_array(10,15,20),
-  'scores',coalesce((
-   select jsonb_agg(jsonb_build_object(
-      'user_id',p.user_id,'name',p.display_name,
-      'gold',s.g,'silver',s.s,'bronze',s.b,
-      'score',private.party_medal_score(s.g,s.s,s.b)
-   ) order by private.party_medal_score(s.g,s.s,s.b) desc,s.g desc,s.s desc,s.b desc,p.display_name)
-   from public.room_members p
-   cross join lateral (
-     select count(*) filter(where rank=1) as g,
-            count(*) filter(where rank=2) as s,
-            count(*) filter(where rank=3) as b
-     from private.party_medals a
-     where a.session_id=v_session.id and a.user_id=p.user_id
-   ) s
-   where p.room_id=p_room_id
-  ),'[]'::jsonb),
-  'schedule',coalesce((
-   select jsonb_agg(jsonb_build_object(
-    'slot',s.slot,'game',s.game_id,'completed',s.completed_at is not null
-   ) order by s.slot)
-   from private.party_slots s where s.session_id=v_session.id
-  ),'[]'::jsonb)
- );
-end;
-$fn$;
-
 revoke all on function public.party_prepare(uuid) from public,anon;
 grant execute on function public.party_prepare(uuid) to authenticated;
 
