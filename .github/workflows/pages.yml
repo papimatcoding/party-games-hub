@@ -28,6 +28,7 @@ jobs:
           node --check js/no-repitas.js
           node --check js/patinazo.js
           node --check js/pongagono.js
+          node --check js/lavalabras.js
           node --check scripts/preview-wikidata-barca.mjs
           node --check js/config.js
       - uses: actions/configure-pages@v5
