@@ -1,12 +1,12 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js?v=0.9.1";
-import { LaserGame } from "./lasers.js?v=0.9.1";
-import { NoRepitasGame } from "./no-repitas.js?v=0.9.1";
-import { PatinazoGame } from "./patinazo.js?v=0.9.1";
-import { PongagonoGame } from "./pongagono.js?v=0.9.1";
-import { LavalabrasGame } from "./lavalabras.js?v=0.9.1";
-import { FinDeLineaGame } from "./fin-de-linea.js?v=0.9.1";
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js?v=0.10.0";
+import { LaserGame } from "./lasers.js?v=0.10.0";
+import { NoRepitasGame } from "./no-repitas.js?v=0.10.0";
+import { PatinazoGame } from "./patinazo.js?v=0.10.0";
+import { PongagonoGame } from "./pongagono.js?v=0.10.0";
+import { LavalabrasGame } from "./lavalabras.js?v=0.10.0";
+import { FinDeLineaGame } from "./fin-de-linea.js?v=0.10.0";
 
-import { APP_BUILD } from "./release.js?v=0.9.1";
+import { APP_BUILD } from "./release.js?v=0.10.0";
 const $ = (id) => document.getElementById(id);
 const GAMES = [
   { id: "lasers", emoji: "⚡", name: "Lásers" },
