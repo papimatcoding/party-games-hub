@@ -8,6 +8,7 @@
   <title>PARTY HUB — Juega con tus amigos</title>
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/lasers.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
@@ -17,7 +18,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.1</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.2</span></div>
     </header>
 
     <main>
@@ -50,12 +51,10 @@
       <section id="catalog" class="catalog">
         <div class="section-heading"><div><span class="overline">EL ARCADE</span><h2>ELIGE TU PRÓXIMO CAOS<span class="punct">.</span></h2></div><span class="coming-label">PRÓXIMAMENTE</span></div>
         <div class="game-grid">
-          <article class="game-card"><div class="game-art pool-art"><span class="pool-eight">8</span><span class="pool-stick"></span></div><div class="game-info"><strong>Pool With Your Friends</strong><span>🎱 Competición · 2–4 jugadores</span></div></article>
-          <article class="game-card"><div class="game-art bomb-art"><span>💣</span></div><div class="game-info"><strong>Pass The Bomb</strong><span>💥 Caos · 2–12 jugadores</span></div></article>
-          <article class="game-card"><div class="game-art draw-art"><span>✏️</span></div><div class="game-info"><strong>Draw & Disaster</strong><span>🎨 Creatividad · 3–12 jugadores</span></div></article>
-          <article class="game-card"><div class="game-art trivia-art"><span>?</span></div><div class="game-info"><strong>Who Knows Who?</strong><span>❓ Trivia · 2–12 jugadores</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:#32294e"><span style="font-size:69px;color:#9e8ebf">?</span></div><div class="game-info"><strong>Tu próximo minijuego</strong><span>👀 Lo decidirás tú</span></div></article>
         </div>
-        <p class="catalog-note">Primero construimos las salas. Los minijuegos llegan después.</p>
+        <p class="catalog-note">Primer minijuego: Lásers. El resto de juegos los decides tú.</p>
       </section>
 
       <section id="lobby-screen" class="lobby" hidden>
@@ -71,11 +70,49 @@
           </section>
           <div class="lobby-sidebar">
             <section class="panel mode-panel"><div class="panel-heading"><div><h2>🎲 ¿Cómo jugamos?</h2><p>Dos maneras de liarla con amigos.</p></div></div><div id="mode-options" class="mode-options"></div></section>
-            <section class="panel game-choice"><div class="panel-heading"><div><h2>🕹️ Votación de juego</h2><p>El anfitrión escoge, por ahora.</p></div></div><div id="game-options" class="game-options"></div><p class="muted">Los minijuegos aún están en desarrollo. Puedes probar el flujo social y el inicio de sesión de juego.</p></section>
+            <section class="panel game-choice"><div class="panel-heading"><div><h2>🕹️ Votación de juego</h2><p>El anfitrión escoge, por ahora.</p></div></div><div id="game-options" class="game-options"></div><p class="muted">Lásers ya tiene motor de rondas. Los demás minijuegos no se añadirán sin decidirlos antes.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
         <button id="leave-btn" class="leave-button">← Abandonar sala</button>
+      </section>
+      <section id="laser-screen" class="laser-screen" hidden>
+        <div class="laser-top">
+          <div class="laser-brand"><span class="laser-brand-icon">⚡</span><div><div class="overline">PRIMER MINIJUEGO</div><h2>LÁSERS</h2></div></div>
+          <button id="laser-exit" class="laser-back">← Salir de la sala</button>
+        </div>
+        <div class="laser-status">
+          <span id="laser-round">RONDA 1 / 9</span>
+          <span id="laser-phase">PREPARACIÓN</span>
+          <span id="laser-alive">0 vivos</span>
+          <span>SALA <b id="laser-code"></b></span>
+        </div>
+        <div class="laser-grid">
+          <div class="laser-arena-wrap">
+            <div class="laser-arena-stage">
+              <canvas id="laser-canvas" width="700" height="700" aria-label="Plataforma hexagonal: pulsa para colocarte y arrastra para apuntar en 360 grados"></canvas>
+              <div id="laser-clock" class="laser-countdown">25s</div>
+            </div>
+            <div class="laser-bottom-panel">
+              <p id="laser-message" aria-live="polite">Colócate y apunta sin que tus rivales te vean.</p>
+              <button id="laser-submit" class="button button-primary" disabled>⚡ Confirmar disparo</button>
+            </div>
+          </div>
+          <aside class="laser-aside">
+            <h3>👥 Supervivientes</h3>
+            <small>Todos disparan a la vez al terminar la fase secreta.</small>
+            <div id="laser-players" class="laser-members" aria-live="polite"></div>
+            <hr>
+            <h3>Cómo se juega</h3>
+            <div class="laser-help">Pulsas en una posición libre del hexágono, mantienes pulsado y arrastras hacia donde quieres disparar. Confirma tu disparo antes de que termine la cuenta atrás.</div>
+            <div class="laser-legend">
+              <p><strong>Invisible:</strong> nadie ve tu posición antes del disparo.</p>
+              <p><strong>Simultáneo:</strong> puedes eliminar incluso si mueres esa ronda.</p>
+              <p><strong>Colapso:</strong> el hexágono pierde capas cada dos rondas.</p>
+            </div>
+            <button id="laser-reset" class="button button-dark laser-host-button" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
       </section>
     </main>
     <footer><span>PARTY HUB © 2026 · HECHO PARA PICARSE ENTRE AMIGOS</span><span>Un arcade pequeño, grandes desgracias.</span></footer>
