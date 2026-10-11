@@ -137,16 +137,6 @@ export class NoRepitasGame{
      }
      entries.append(card);
    }
-   const used=$("nr-used"),history=$("nr-blacklist");
-   history.replaceChildren();
-   const all=d.blacklist||[];
-   used.textContent=all.length+" respuestas reveladas";
-   if(!all.length)history.append(node("p","nr-muted","Las respuestas reveladas aparecerán aquí."));
-   else for(const item of all){
-     const badge=node("span","nr-used-answer",item.answer);
-     badge.title="Ronda "+item.round;
-     history.append(badge);
-   }
    $("nr-reset").hidden=d.phase!=="finished"||this.hostId!==this.userId;
    this.clock();
  }
