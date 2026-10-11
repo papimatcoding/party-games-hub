@@ -31,6 +31,29 @@ export function pongPaddleEnds(sides,side,u,ratio=pongPaddleRatio(sides)){
  const make=t=>({x:cx+edge.tangent.x*t,y:cy+edge.tangent.y*t});
  return {a:make(offset-halfPaddle),b:make(offset+halfPaddle)};
 }
+
+// Visual prediction only: actual eliminations, bounce speeds and scoring are server owned.
+export function predictPongBall(ball,sides,seconds){
+ let x=Number(ball.x),y=Number(ball.y);
+ let vx=Number(ball.vx),vy=Number(ball.vy);
+ const duration=clamp(seconds,0,.65),steps=Math.ceil(duration*120);
+ const dt=steps?duration/steps:0;
+ const aperture=Math.cos(Math.PI/sides)-Number(ball.r);
+ for(let i=0;i<steps;i++){
+   x+=vx*dt;y+=vy*dt;
+   for(let k=0;k<sides;k++){
+     const n=pongEdge(sides,k).normal;
+     const over=x*n.x+y*n.y-aperture;
+     if(over>0){
+       x-=n.x*(over+.00001);y-=n.y*(over+.00001);
+       const out=vx*n.x+vy*n.y;
+       if(out>0){vx-=2*out*n.x;vy-=2*out*n.y;}
+     }
+   }
+ }
+ return {x,y};
+}
+
 function el(tag,cls,content){
  const x=document.createElement(tag);if(cls)x.className=cls;
  if(content!==undefined)x.textContent=String(content);
@@ -43,7 +66,7 @@ export class PongagonoGame {
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
   this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
   this.target=.5;this.visualU=null;this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.receivedAt=0;this.clockOffset=0;this.lastEliminations=null;
+  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.lastEliminations=null;
   this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
   this.canvas.addEventListener("pointermove",e=>this.point(e,false));
   this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -153,10 +176,14 @@ export class PongagonoGame {
   if(!this.live||this.loading)return;
   this.loading=true;const id=this.roomId;
   try{
+   const sentAt=Date.now();
    const data=await this.rpc("pongagono_state",{p_room_id:id});
+   const completedAt=Date.now();
    if(!this.live||id!==this.roomId)return;
    if(!data)return;
-   this.clockOffset=Date.parse(data.server_time)-Date.now();
+   const offset=Date.parse(data.server_time)-(sentAt+completedAt)/2;
+   this.clockOffset=this.hasClock?this.clockOffset*.78+offset*.22:offset;
+   this.hasClock=true;
    this.receivedAt=performance.now();
    if(!this.data){
     const me=data.players?.find(p=>p.user_id===this.userId);
@@ -264,20 +291,11 @@ export class PongagonoGame {
    c.fillText(side===mySide?"TÚ":p.name.slice(0,11),0,0);
    c.restore();
   }
-  // Render limited ball prediction for smoother movement between server samples.
+  // Sync the ball with server time; keep rendering between RPC snapshots.
   const b=d.ball;
-  let x=Number(b.x),y=Number(b.y);
-  if(d.phase==="live"){
-   const ahead=clamp((now-this.receivedAt)/1000,0,.22);
-   x+=Number(b.vx)*ahead;y+=Number(b.vy)*ahead;
-   // Local prediction is visual only; prevent travelling outside the walls.
-   const aperture=Math.cos(Math.PI/sides)-Number(b.r);
-   for(let k=0;k<sides;k++){
-    const n=pongEdge(sides,k).normal;
-    const over=x*n.x+y*n.y-aperture;
-    if(over>0){x-=over*n.x;y-=over*n.y;}
-   }
-  }
+  const age=clamp((Date.now()+this.clockOffset-Date.parse(d.server_time))/1000,0,.65);
+  const pos=d.phase==="live"?predictPongBall(b,sides,age):{x:Number(b.x),y:Number(b.y)};
+  const {x,y}=pos;
   c.beginPath();c.arc(x,y,Number(b.r)*2.25,0,TAU);
   c.fillStyle="#e5f8ff37";c.fill();
   c.beginPath();c.arc(x,y,Number(b.r),0,TAU);
