@@ -1,0 +1,26 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const file = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
+test("Live frontend is Party Hub", () => {
+  assert.match(file("index.html"), /PARTY HUB/);
+  assert.doesNotMatch(file("js/app.js"), /futbin|sbc|packVerse|card_data/i);
+});
+test("Browser config is limited to publishable values", () => {
+  assert.match(file("js/config.js"), /SUPABASE_PUBLISHABLE_KEY/);
+  assert.doesNotMatch(file("js/config.js"), /sb_secret_[A-Za-z0-9]{8}/);
+});
+test("Every social mutation uses a server RPC", () => {
+  const app = file("js/app.js");
+  const allSql = ["02_room_membership.sql","03_room_controls.sql","04_chat.sql"].map((n)=>file("supabase/"+n)).join("\n");
+  for (const fn of ["create_room","join_room","leave_room","set_room_ready","set_room_game","start_room","reset_room","kick_room_member","send_room_message"]) {
+    assert.ok(app.includes(fn), "frontend uses "+fn);
+    assert.ok(allSql.includes("function public."+fn), "server defines "+fn);
+  }
+});
+test("All exposed tables have RLS enabled", () => {
+  const sql=file("supabase/01_schema.sql");
+  for(const t of ["rooms","room_members","room_messages"]){
+    assert.ok(sql.includes("alter table public."+t+" enable row level security"));
+  }
+});

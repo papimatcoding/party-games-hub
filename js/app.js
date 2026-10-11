@@ -1,55 +1,326 @@
-(function(){
-'use strict';
-const {PLAYERS,PACKS,SQUAD_SLOTS}=window.PACKVERSE_DATA,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],nf=new Intl.NumberFormat('es-ES');
-const KEY='packverse27_v3',DEF={coins:125000,xp:0,packsOpened:0,collection:{},bestPull:null,watchlist:[],squad:{},quizStreak:0,quizBest:0,quizCorrect:0,photos:{},lastFreePack:null,packTokens:{},draft:null,draftCompletions:0,draftBest:0,sbcCompletions:{},objectivesClaimed:{}};
-const SBCS=[{id:'starter',name:'Warm-up Upgrade',desc:'Un SBC barato para empezar a mover el club.',count:5,min:78,hi:0,hiOvr:0,reward:'80x5',label:'80+ x5'},{id:'meta',name:'Starter Meta Upgrade',desc:'Necesita media y dos cartas 84+.',count:7,min:82,hi:2,hiOvr:84,reward:'84x3',label:'84+ x3'},{id:'walkout',name:'Walkout Hunt',desc:'Sacrificio serio. La recompensa también.',count:11,min:84,hi:3,hiOvr:86,reward:'elite',label:'Elite 85+ x10'}];
-const FLAGS={'Francia':'🇫🇷','Noruega':'🇳🇴','Bélgica':'🇧🇪','Inglaterra':'🏴','Italia':'🇮🇹','Eslovenia':'🇸🇮','España':'🇪🇸','Portugal':'🇵🇹','Jamaica':'🇯🇲','Brasil':'🇧🇷','Argentina':'🇦🇷','Georgia':'🇬🇪','Ecuador':'🇪🇨','Países Bajos':'🇳🇱','Marruecos':'🇲🇦','Japón':'🇯🇵','Alemania':'🇩🇪','Zambia':'🇿🇲','Malaui':'🇲🇼','Suecia':'🇸🇪','Estados Unidos':'🇺🇸','Croacia':'🇭🇷','Hungría':'🇭🇺','Turquía':'🇹🇷','Colombia':'🇨🇴','Rumanía':'🇷🇴','Gambia':'🇬🇲','Escocia':'🏴'};
-let st=load(),filters={q:'',min:0,sort:'ovr'},pickSlot=null,quiz=null,draftSlot=null,opening=false,skip=false,sbcPending=null;
-function load(){try{return Object.assign(structuredClone(DEF),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch{return structuredClone(DEF)}}
-function save(){localStorage.setItem(KEY,JSON.stringify(st));sync()}
-const pBy=id=>PLAYERS.find(p=>p.id===id),today=()=>new Date().toISOString().slice(0,10),flag=n=>FLAGS[n]||'🌐',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),ini=n=>n.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase(),club=c=>String(c||'FC').split(/\s+/).map(x=>x[0]).join('').slice(0,3).toUpperCase(),sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function fmt(n){return n>=1e6?(n/1e6).toFixed(n>=2e6?1:2)+'M':n>=1000?Math.round(n/1000)+'K':nf.format(n)}
-function owned(){return Object.entries(st.collection).map(([id,count])=>({p:pBy(id),count})).filter(x=>x.p&&x.count>0)}
-function best(){return st.bestPull?pBy(st.bestPull):null}function val(){return owned().reduce((s,x)=>s+x.p.price*x.count,0)}
-function toast(m){let t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1600)}
-function beep(f=520,d=.08){try{let C=window.AudioContext||window.webkitAudioContext,c=beep.c||(beep.c=new C),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.value=.018;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.stop(c.currentTime+d)}catch{}}
-function nav(s){$$('.screen').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));$$('.nav-item').forEach(x=>x.classList.toggle('active',(s==='home'||s==='packs'||s==='club'||s==='squad'||s==='hub')?x.dataset.nav===s:x.dataset.nav==='hub'));let names={home:'Inicio',packs:'Pack Store',club:'Mi club',squad:'Mi XI',hub:'Más',market:'Market Lab',academy:'Academy',draft:'Draft Lab',sbc:'SBC Lab'};$('#screenSubtitle').textContent=names[s]||'PackVerse';({packs:renderPacks,club:renderClub,squad:renderSquad,market:renderMarket,academy:()=>{if(!quiz)newQuiz()},draft:renderDraft,sbc:renderSbc,hub:renderProfile}[s]||(()=>{}))()}
-const OBJS=[['packs5','Abre 5 packs',()=>st.packsOpened,5,2500],['club15','Colecciona 15 cartas',()=>owned().length,15,3000],['squad11','Completa tu XI',()=>Object.keys(st.squad).length,11,5000],['quiz5','Racha de 5 en Academy',()=>st.quizBest,5,1500],['draft1','Completa un Draft',()=>st.draftCompletions,1,5000]];
-function renderObj(){$('#objectiveList').innerHTML=OBJS.map(([id,n,f,g,r])=>{let v=f(),done=st.objectivesClaimed[id],ready=!done&&v>=g;return `<div class="objective ${ready?'claimable':''}"><div class="objective-top"><span>${n}</span><span>${Math.min(v,g)}/${g}</span><span>${done?'✓':ready?`<b class="claim-badge">+${nf.format(r)}</b>`:`+${nf.format(r)}`}</span></div><div class="progress"><i style="width:${Math.min(100,v/g*100)}%"></i></div></div>`}).join('')}
-function claim(){let total=0;OBJS.forEach(([id,,f,g,r])=>{if(!st.objectivesClaimed[id]&&f()>=g){st.objectivesClaimed[id]=1;total+=r;st.xp+=100}});if(total){st.coins+=total;save();toast(`+${nf.format(total)} coins`)}else toast('Nada listo para cobrar')}
-function sync(){let lvl=Math.floor(st.xp/1000)+1,x=st.xp%1000,b=best();$('#coinsLabel').textContent=nf.format(st.coins);$('#levelLabel').textContent=lvl;$('#xpLevelText').textContent='Nivel '+lvl;$('#xpText').textContent=`${nf.format(x)} / 1.000 XP`;$('#xpBar').style.width=x/10+'%';$('#homePacks').textContent=st.packsOpened;$('#homeCards').textContent=owned().length;$('#homeValue').textContent=fmt(val());$('#heroBestRating').textContent=b?b.ovr:'—';renderObj();renderTokens();renderProfile()}
-function renderProfile(){let e=$('#profileStats');if(!e)return;let a=[['Nivel',Math.floor(st.xp/1000)+1],['Mejor pull',best()?`${best().ovr} ${best().name}`:'—'],['Mejor racha',st.quizBest],['Drafts',st.draftCompletions],['SBC',Object.values(st.sbcCompletions).reduce((a,b)=>a+b,0)],['Club',owned().length+' únicas']];e.innerHTML=a.map(x=>`<div class="profile-stat"><span>${x[0]}</span><b>${esc(x[1])}</b></div>`).join('')}
-function renderTokens(){let e=$('#packTokensBar');if(!e)return;let a=Object.entries(st.packTokens).filter(x=>x[1]>0);e.innerHTML=a.length?a.map(([id,n])=>`<span class="token-pill">${esc(PACKS.find(p=>p.id===id)?.name||id)} <b>x${n}</b></span>`).join(''):'<span class="token-pill">SBC packs <b>0</b></span>'}
-function renderPacks(){$('#packShelf').innerHTML=PACKS.map((p,i)=>{let tok=st.packTokens[p.id]||0,used=p.id==='lab'&&st.lastFreePack===today(),price=tok?`TOKEN x${tok}`:p.cost?nf.format(p.cost)+' coins':used?'ABIERTO HOY':'GRATIS';return `<article class="pack-card ${p.featured?'featured':''}"><div><span class="eyebrow">${p.tag}</span><h3>${esc(p.name)}</h3><p>${esc(p.subtitle)}</p><div class="pack-meta"><span class="pack-pill">${p.count} ITEMS</span><span class="pack-pill">${p.min}+</span>${p.metaBias?'<span class="pack-pill">META BIAS</span>':''}</div><div class="pack-buy"><span class="price-tag">${price}</span><button class="pack-open-btn" data-pack="${p.id}" ${used&&!tok?'disabled':''}>${used&&!tok?'MAÑANA':'ABRIR'}</button></div></div><div class="pack-art"><div><b>${i?'27':'PV'}</b><small>${p.tag}</small></div></div></article>`}).join('');$$('[data-pack]').forEach(b=>b.onclick=()=>openPack(b.dataset.pack));renderTokens()}
-function choose(pack){let r=Math.random(),keys=Object.keys(pack.odds).map(Number).sort((a,b)=>b-a),min=pack.min;for(let k of keys)if(r<=pack.odds[k]){min=k;break}let next=keys.filter(k=>k>min).sort((a,b)=>a-b)[0],pool=PLAYERS.filter(p=>p.ovr>=min&&(!next||p.ovr<next));if(!pool.length)pool=PLAYERS.filter(p=>p.ovr>=pack.min);if(pack.metaBias){let w=pool.map(p=>Math.pow(Math.max(1,p.meta-60),1.7)),z=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<pool.length;i++){z-=w[i];if(z<=0)return pool[i]}}return pool[Math.floor(Math.random()*pool.length)]}
-function makePack(p){let a=[];for(let i=0;i<p.count;i++){let x=choose(p),n=0;while(a.some(y=>y.id===x.id)&&n++<15)x=choose(p);a.push(x)}return a.sort((a,b)=>b.ovr-a.ovr||b.meta-a.meta)}
-async function openPack(id){let p=PACKS.find(x=>x.id===id);if(!p||opening)return;let tok=st.packTokens[id]||0;if(!tok&&id==='lab'&&st.lastFreePack===today())return toast('El Daily vuelve mañana');if(!tok&&st.coins<p.cost)return toast('No tienes coins suficientes');if(tok)st.packTokens[id]--;else st.coins-=p.cost;if(!tok&&id==='lab')st.lastFreePack=today();let pulls=makePack(p);pulls.forEach(x=>{st.collection[x.id]=(st.collection[x.id]||0)+1;let b=best();if(!b||x.ovr>b.ovr||(x.ovr===b.ovr&&x.meta>b.meta))st.bestPull=x.id});st.packsOpened++;st.xp+=50+Math.max(0,pulls[0].ovr-84)*10;save();opening=true;skip=false;$('#packOpening').classList.remove('hidden');$('#packResults').classList.add('hidden');$('#revealStage').classList.remove('hidden');await reveal(pulls[0]);if(opening)showResults(p,pulls)}
-async function reveal(p){let e=$('#revealStage'),pause=n=>sleep(skip?50:n);e.innerHTML='<div class="reveal-core"><div class="reveal-number">27</div><div class="reveal-sub">PACKVERSE REVEAL</div></div>';beep(180);await pause(420);e.innerHTML=`<div class="reveal-core"><div class="reveal-number">${p.ovr}</div><div class="reveal-label">${p.pos}</div><div class="reveal-sub">OVERALL</div></div>`;beep(p.ovr>=88?520:350);await pause(520);if(p.ovr>=83){e.innerHTML=`<div class="reveal-core"><div class="reveal-flag">${flag(p.nation)}</div><div class="reveal-label">${esc(p.nation)}</div></div>`;await pause(420)}if(p.ovr>=86){e.innerHTML=`<div class="reveal-core"><div class="reveal-club">${club(p.club)}</div><div class="reveal-label">${esc(p.club)}</div><div class="reveal-sub">${p.ovr>=88?'WALKOUT':'RARE GOLD'}</div></div>`;await pause(500)}let photo=await photoFor(p,p.ovr>=84);e.innerHTML=`<div class="reveal-card-wrap">${bigCard(p,photo)}</div>`;beep(p.ovr>=88?880:700,.14);try{navigator.vibrate?.(p.ovr>=88?[50,30,70]:35)}catch{}await pause(650)}
-function closeOpening(){opening=false;$('#packOpening').classList.add('hidden')}
-function showResults(pack,pulls){opening=false;$('#revealStage').classList.add('hidden');let e=$('#packResults');e.innerHTML=`<div class="results-head"><div><span class="eyebrow">${esc(pack.name)}</span><h2>Contenido</h2></div><span class="mini-chip">${pulls.length} ITEMS</span></div><div class="results-grid">${pulls.map(x=>mini(x,st.collection[x.id])).join('')}</div><div class="results-actions"><button class="ghost-btn" id="donePack">AL CLUB</button><button class="primary-btn" id="againPack">OTRO PACK</button></div>`;e.classList.remove('hidden');$('#donePack').onclick=()=>{closeOpening();nav('club')};$('#againPack').onclick=()=>{closeOpening();nav('packs');setTimeout(()=>openPack(pack.id),80)};hydrate(e,8)}
-const stats=p=>[['RIT',p.pac],['TIR',p.sho],['PAS',p.pas],['REG',p.dri],['DEF',p.def],['FÍS',p.phy]];
-function bigCard(p,photo){let im=photo?`<img src="${esc(photo)}" alt="${esc(p.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="card-fallback" style="display:none">${ini(p.name)}</div>`:`<div class="card-fallback">${ini(p.name)}</div>`;return `<article class="player-card ${p.tier} ${p.ovr>=82?'rare':''}"><div class="card-top"><div><div class="card-rating">${p.ovr}</div><div class="card-pos">${p.pos}</div></div><div class="card-meta">META ${p.meta}</div></div><div class="card-ident"><span class="card-flag">${flag(p.nation)}</span><span class="club-dot">${club(p.club)}</span></div><div class="card-photo">${im}</div><div class="card-name">${esc(p.name)}</div><div class="card-stats">${stats(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join('')}</div><div class="card-foot"><span class="card-tag">${esc(p.nation)}</span>${p.pac>=92?'<span class="card-tag">RÁPIDO</span>':''}${p.meta>=86?'<span class="card-tag">META</span>':''}</div></article>`}
-function mini(p,c=1,button=true){let ph=st.photos[p.id],tag=button?'button':'div',data=button?` data-player="${p.id}"`:'';return `<${tag} class="mini-card ${p.tier}"${data}>${c>1?`<span class="dupe-badge">x${c}</span>`:''}<div class="mini-top"><div class="mini-rating">${p.ovr}</div><div class="mini-pos">${p.pos} · ${flag(p.nation)}</div></div>${ph?`<img class="player-photo" src="${esc(ph)}" alt="">`:`<div class="photo-fallback" data-photo-for="${p.id}">${ini(p.name)}</div>`}<div class="mini-name">${esc(p.name)}</div><div class="mini-stats">${stats(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join('')}</div><span class="meta-chip">M${p.meta}</span></${tag}>`}
-async function photoFor(p,net=true){if(st.photos[p.id])return st.photos[p.id];if(!net)return null;try{let c=new AbortController,t=setTimeout(()=>c.abort(),3500),r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=${encodeURIComponent(p.name.replace(/\./g,''))}`,{signal:c.signal});clearTimeout(t);if(!r.ok)return null;let j=await r.json(),x=(j.player||[]).find(x=>String(x.strSport).toLowerCase()==='soccer')||(j.player||[])[0],u=x&&(x.strCutout||x.strRender||x.strThumb);if(u){st.photos[p.id]=u;localStorage.setItem(KEY,JSON.stringify(st));return u}}catch{}return null}
-async function hydrate(root=document,n=5){for(let el of [...root.querySelectorAll('[data-photo-for]')].slice(0,n)){let p=pBy(el.dataset.photoFor),u=p&&await photoFor(p);if(u&&el.isConnected){let im=document.createElement('img');im.className='player-photo';im.src=u;im.alt='';el.replaceWith(im);await sleep(80)}}}
-function renderClub(){let q=filters.q.toLowerCase(),all=owned(),a=all.filter(x=>x.p.ovr>=filters.min&&x.p.name.toLowerCase().includes(q));a.sort((a,b)=>filters.sort==='name'?a.p.name.localeCompare(b.p.name):b.p[filters.sort]-a.p[filters.sort]);$('#clubGrid').innerHTML=a.length?a.map(x=>mini(x.p,x.count)).join(''):'<div class="club-empty">Tu club está vacío.<br><br>Abre el Daily Lab Pack gratis.</div>';$$('#clubGrid [data-player]').forEach(b=>b.onclick=()=>playerSheet(pBy(b.dataset.player)));hydrate($('#clubGrid'),7);let total=all.reduce((s,x)=>s+x.count,0);$('#clubUnique').textContent=all.length;$('#clubDupes').textContent=Math.max(0,total-all.length);$('#clubRatingAvg').textContent=all.length?Math.round(all.reduce((s,x)=>s+x.p.ovr,0)/all.length):'—'}
-async function playerSheet(p){if(!p)return;$('#playerSheet').classList.remove('hidden');let ph=await photoFor(p),c=st.collection[p.id]||0;$('#playerSheetContent').innerHTML=`<div class="player-sheet-grid"><div>${bigCard(p,ph)}</div><div class="detail-name"><span class="eyebrow">${esc(p.club)}</span><h2>${esc(p.name)}</h2><p>${flag(p.nation)} ${esc(p.nation)} · ${p.pos} · ${c?`x${c} en tu club`:'No está en tu club'}</p><div class="detail-price">~${fmt(p.price)} coins</div><p>Buy target <b>${fmt(p.target)}</b> · META ${p.meta}</p></div></div><div class="detail-grid">${stats(p).map(x=>`<div class="detail-stat"><b>${x[1]}</b><span>${x[0]}</span></div>`).join('')}</div>`}
-function slotHtml(slot,map,click='data-slot'){let p=pBy(map?.[slot.id]);return `<button class="squad-slot" ${click}="${slot.id}" style="left:${slot.x}%;top:${slot.y}%">${p?`<span class="slot-card"><strong>${p.ovr}</strong>${st.photos[p.id]?`<img src="${esc(st.photos[p.id])}" alt="">`:`<span class="slot-fallback">${ini(p.name)}</span>`}<small>${esc(p.name)}</small></span>`:`<span class="slot-empty">${slot.label}</span>`}</button>`}
-function renderSquad(){$('#pitch').innerHTML=SQUAD_SLOTS.map(s=>slotHtml(s,st.squad)).join('');$$('#pitch [data-slot]').forEach(b=>b.onclick=()=>openPicker(b.dataset.slot));let ps=Object.values(st.squad).map(pBy).filter(Boolean);$('#squadRating').textContent=ps.length?Math.round(ps.reduce((s,p)=>s+p.ovr,0)/ps.length):0;$('#squadMeta').textContent=ps.length?Math.round(ps.reduce((s,p)=>s+p.meta,0)/ps.length):0}
-function openPicker(id){pickSlot=SQUAD_SLOTS.find(s=>s.id===id);$('#pickerTitle').textContent=pickSlot.label;$('#pickerSearch').value='';$('#pickerSheet').classList.remove('hidden');renderPicker()}
-function renderPicker(){if(!pickSlot)return;let q=$('#pickerSearch').value.toLowerCase(),a=owned().map(x=>x.p).filter(p=>pickSlot.accept.includes(p.pos)&&p.name.toLowerCase().includes(q)).sort((a,b)=>b.meta-a.meta);$('#pickerList').innerHTML=a.length?a.map(p=>`<button class="picker-row" data-pick="${p.id}"><span class="picker-avatar">${p.ovr}</span><span><strong>${esc(p.name)}</strong><small>${flag(p.nation)} ${p.pos} · META ${p.meta}</small></span><span class="picker-add">+</span></button>`).join(''):'<div class="club-empty">No tienes jugadores compatibles.</div>';$$('[data-pick]').forEach(b=>b.onclick=()=>{st.squad[pickSlot.id]=b.dataset.pick;save();$('#pickerSheet').classList.add('hidden');renderSquad()})}
-function autoXI(){let used=new Set,ids=new Set(Object.keys(st.collection));st.squad={};SQUAD_SLOTS.forEach(s=>{let a=PLAYERS.filter(p=>ids.has(p.id)&&s.accept.includes(p.pos)&&!used.has(p.id)).sort((a,b)=>b.meta-a.meta||b.ovr-a.ovr);if(a[0]){st.squad[s.id]=a[0].id;used.add(a[0].id)}});save();renderSquad();toast('Mejor XI disponible montado')}
-function renderMarket(){let q=$('#marketSearch').value.toLowerCase(),sort=$('#marketSort').value,a=PLAYERS.filter(p=>p.name.toLowerCase().includes(q)).sort((a,b)=>sort==='target'?b.target-a.target:b[sort]-a[sort]);$('#marketList').innerHTML=a.map(p=>`<div class="market-row" data-mp="${p.id}"><div class="market-ovr"><strong>${p.ovr}</strong><small>${p.pos}</small></div><div class="market-main"><strong>${esc(p.name)}</strong><small>${flag(p.nation)} META ${p.meta} · buy ${fmt(p.target)} · ${esc(p.club)}</small></div><div class="market-price"><strong>~${fmt(p.price)}</strong><small>simulado</small><button class="watch-btn ${st.watchlist.includes(p.id)?'active':''}" data-watch="${p.id}">★</button></div></div>`).join('');$$('[data-watch]').forEach(b=>b.onclick=e=>{e.stopPropagation();st.watchlist=st.watchlist.includes(b.dataset.watch)?st.watchlist.filter(x=>x!==b.dataset.watch):[...st.watchlist,b.dataset.watch];save();renderMarket()});$$('[data-mp]').forEach(r=>r.onclick=()=>playerSheet(pBy(r.dataset.mp)));$('#marketWatchCount').textContent=st.watchlist.length}
-function newQuiz(){quiz=PLAYERS[Math.floor(Math.random()*PLAYERS.length)];$('#quizStage').innerHTML=`<div class="quiz-card"><div><div class="quiz-q">?</div><h3>${esc(quiz.name)}</h3><p>${flag(quiz.nation)} ${quiz.pos} · ${esc(quiz.club)}</p></div></div>`;let o=new Set([quiz.ovr]);while(o.size<4)o.add(Math.max(69,Math.min(92,quiz.ovr+(Math.floor(Math.random()*7)-3||1))));$('#quizAnswers').innerHTML=[...o].sort(()=>Math.random()-.5).map(v=>`<button class="quiz-answer" data-a="${v}">${v}</button>`).join('');$$('[data-a]').forEach(b=>b.onclick=async()=>{let good=+b.dataset.a===quiz.ovr;$$('[data-a]').forEach(x=>{x.disabled=true;if(+x.dataset.a===quiz.ovr)x.classList.add('correct')});if(!good)b.classList.add('wrong');st.quizStreak=good?st.quizStreak+1:0;st.quizBest=Math.max(st.quizBest,st.quizStreak);if(good){st.quizCorrect++;st.xp+=20;st.coins+=75;if(st.quizStreak%5===0)st.coins+=500}save();$('#quizStreak').textContent=st.quizStreak;$('#quizStage').innerHTML=`<div class="quiz-reveal">${bigCard(quiz,await photoFor(quiz))}</div>`;$('#quizNextBtn').classList.remove('hidden')});$('#quizNextBtn').classList.add('hidden');$('#quizStreak').textContent=st.quizStreak}
-function freshDraft(){if(st.coins<15000)return toast('Necesitas 15.000 coins');st.coins-=15000;st.draft={slots:{},completed:false};st.xp+=50;save();renderDraft();nextDraft()}
-function renderDraft(){let d=st.draft;$('#draftPitch').innerHTML=SQUAD_SLOTS.map(s=>slotHtml(s,d?.slots,'data-dslot')).join('');$$('[data-dslot]').forEach(b=>b.onclick=()=>{if(d&&!d.completed&&!d.slots[b.dataset.dslot])draftPick(b.dataset.dslot)});let ps=d?Object.values(d.slots).map(pBy).filter(Boolean):[],r=ps.length?Math.round(ps.reduce((s,p)=>s+p.ovr,0)/ps.length):0;$('#draftRating').textContent=r;if(!d){$('#draftInfo').textContent='Elige entre 5 jugadores por posición. No consume tu club.';$('#draftFooter').innerHTML='<button class="primary-btn" style="grid-column:1/-1" id="newD">NUEVO DRAFT · 15K</button>';$('#newD').onclick=freshDraft}else if(d.completed){$('#draftInfo').innerHTML=`Draft completado · <b>${r} GRL</b> · +1 Premium Pack`;$('#draftFooter').innerHTML='<button class="ghost-btn" id="dpacks">VER PACKS</button><button class="primary-btn" id="newD">NUEVO · 15K</button>';$('#dpacks').onclick=()=>nav('packs');$('#newD').onclick=()=>{st.draft=null;save();freshDraft()}}else{$('#draftInfo').textContent=`${ps.length}/11 elegidos`;$('#draftFooter').innerHTML='<button class="ghost-btn" id="dropD">ABANDONAR</button><button class="primary-btn" id="nextD">SIGUIENTE PICK</button>';$('#dropD').onclick=()=>{st.draft=null;save();renderDraft()};$('#nextD').onclick=nextDraft}}
-function nextDraft(){let s=SQUAD_SLOTS.find(x=>!st.draft?.slots[x.id]);if(s)draftPick(s.id)}
-function draftPick(id){draftSlot=SQUAD_SLOTS.find(s=>s.id===id);let chosen=new Set(Object.values(st.draft.slots)),pool=PLAYERS.filter(p=>draftSlot.accept.includes(p.pos)&&!chosen.has(p.id)),opts=[];while(opts.length<5&&pool.length){let i=Math.floor(Math.random()*pool.length);opts.push(pool.splice(i,1)[0])}opts.sort((a,b)=>b.ovr-a.ovr);$('#draftPickTitle').textContent=`${draftSlot.label} · elige 1 de 5`;$('#draftChoices').innerHTML=opts.map(p=>`<button class="draft-choice" data-dp="${p.id}">${mini(p,1,false)}</button>`).join('');$('#draftSheet').classList.remove('hidden');$$('[data-dp]').forEach(b=>b.onclick=()=>{st.draft.slots[draftSlot.id]=b.dataset.dp;st.xp+=25;$('#draftSheet').classList.add('hidden');if(Object.keys(st.draft.slots).length===11){st.draft.completed=true;st.draftCompletions++;let ps=Object.values(st.draft.slots).map(pBy),r=Math.round(ps.reduce((s,p)=>s+p.ovr,0)/11);st.draftBest=Math.max(st.draftBest,r);st.packTokens.premium=(st.packTokens.premium||0)+1;st.xp+=250;toast('Draft completo · Premium Pack')}save();renderDraft();if(!st.draft.completed)setTimeout(nextDraft,160)})}
-function inventory(){let a=[];for(let [id,c] of Object.entries(st.collection)){let p=pBy(id);for(let i=0;p&&i<c;i++)a.push({id,p})}return a}
-function solve(ch){let inv=inventory();if(inv.length<ch.count)return null;let sel=[];for(let x of inv.filter(x=>x.p.ovr>=ch.hiOvr).sort((a,b)=>a.p.price-b.p.price).slice(0,ch.hi))sel.push(x);let pool=inv.slice();for(let x of sel)pool.splice(pool.indexOf(x),1);pool.sort((a,b)=>a.p.price-b.p.price||a.p.ovr-b.p.ovr);while(sel.length<ch.count&&pool.length)sel.push(pool.shift());if(sel.length<ch.count)return null;let avg=()=>sel.reduce((s,x)=>s+x.p.ovr,0)/sel.length;if(avg()<ch.min){let out=inv.filter(x=>!sel.includes(x)).sort((a,b)=>b.p.ovr-a.p.ovr);while(avg()<ch.min&&out.length){let i=sel.map(x=>x.p.ovr).indexOf(Math.min(...sel.map(x=>x.p.ovr))),up=out.shift();if(up.p.ovr<=sel[i].p.ovr)break;sel[i]=up}}return avg()>=ch.min&&sel.filter(x=>x.p.ovr>=ch.hiOvr).length>=ch.hi?sel:null}
-function renderSbc(){$('#sbcList').innerHTML=SBCS.map(ch=>{let sol=solve(ch);return `<article class="sbc-card"><div class="sbc-head"><div><h3>${ch.name}</h3><p>${ch.desc}</p></div><span class="sbc-reward">${ch.label}</span></div><div class="sbc-reqs"><span class="req-pill">${ch.count} jugadores</span><span class="req-pill">GRL ${ch.min}+</span>${ch.hi?`<span class="req-pill">${ch.hi} × ${ch.hiOvr}+</span>`:''}</div><div class="sbc-progress"><div class="progress"><i style="width:${sol?100:18}%"></i></div><small>${sol?'LISTO':'FALTAN CARTAS'}</small></div><div class="sbc-actions"><button class="ghost-btn" data-prev="${ch.id}" ${sol?'':'disabled'}>VER SOLUCIÓN</button><button class="primary-btn" data-submit="${ch.id}" ${sol?'':'disabled'}>ENTREGAR</button></div></article>`}).join('');$$('[data-prev]').forEach(b=>b.onclick=()=>sbcPreview(b.dataset.prev,false));$$('[data-submit]').forEach(b=>b.onclick=()=>sbcPreview(b.dataset.submit,true))}
-function sbcPreview(id,submit){let ch=SBCS.find(x=>x.id===id),sol=solve(ch);if(!sol)return;sbcPending={ch,sol};let avg=(sol.reduce((s,x)=>s+x.p.ovr,0)/sol.length).toFixed(1);$('#confirmContent').innerHTML=`<span class="eyebrow">${submit?'ENTREGAR SBC':'SOLUCIÓN'}</span><h2>${ch.name}</h2><p style="font-size:7px;color:#8d9c92;line-height:1.5;margin:7px 0">${sol.map(x=>`${x.p.ovr} ${esc(x.p.name)}`).join(' · ')}</p><div class="sbc-reqs"><span class="req-pill">GRL ${avg}</span><span class="req-pill">→ ${ch.label}</span></div><button class="${submit?'primary':'ghost'}-btn" id="sbcGo">${submit?'CONFIRMAR ENTREGA':'CERRAR'}</button>`;$('#confirmSheet').classList.remove('hidden');$('#sbcGo').onclick=submit?submitSbc:()=>$('#confirmSheet').classList.add('hidden')}
-function submitSbc(){let {ch,sol}=sbcPending;sol.forEach(x=>{st.collection[x.id]--;if(st.collection[x.id]<=0){delete st.collection[x.id];for(let s in st.squad)if(st.squad[s]===x.id)delete st.squad[s]}});st.packTokens[ch.reward]=(st.packTokens[ch.reward]||0)+1;st.sbcCompletions[ch.id]=(st.sbcCompletions[ch.id]||0)+1;st.xp+=150;save();$('#confirmSheet').classList.add('hidden');renderSbc();renderClub();renderSquad();toast(`+1 ${ch.label}`)}
-function bind(){$$('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));$('#clubSearch').oninput=e=>{filters.q=e.target.value;renderClub()};$('#clubFilterBtn').onclick=()=>$('#filterSheet').classList.remove('hidden');$('#applyFilterBtn').onclick=()=>{filters.min=+$('#filterOvr').value;filters.sort=$('#filterSort').value;$('#filterSheet').classList.add('hidden');renderClub()};$('#filterCloseBtn').onclick=()=>$('#filterSheet').classList.add('hidden');$('#sheetCloseBtn').onclick=()=>$('#playerSheet').classList.add('hidden');$('#pickerCloseBtn').onclick=()=>$('#pickerSheet').classList.add('hidden');$('#pickerSearch').oninput=renderPicker;$('#marketSearch').oninput=renderMarket;$('#marketSort').onchange=renderMarket;$('#autoSquadBtn').onclick=autoXI;$('#clearSquadBtn').onclick=()=>{st.squad={};save();renderSquad()};$('#quizNextBtn').onclick=newQuiz;$('#openingCloseBtn').onclick=closeOpening;$('#packOpening').onclick=e=>{if(opening&&e.target.id!=='openingCloseBtn')skip=true};$('#oddsInfoBtn').onclick=()=>toast('Odds y precios son simulados');$('#claimAllBtn').onclick=claim;$('#draftSheetCloseBtn').onclick=()=>$('#draftSheet').classList.add('hidden');$('#confirmCloseBtn').onclick=()=>$('#confirmSheet').classList.add('hidden');$$('.sheet-backdrop').forEach(x=>x.onclick=e=>{if(e.target===x)x.classList.add('hidden')})}
-function init(){renderPacks();renderClub();renderSquad();renderMarket();renderDraft();renderSbc();sync();bind();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{})}init();
-})();
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
+
+const $ = (id) => document.getElementById(id);
+const GAMES = [
+  { id: "pool", emoji: "🎱", name: "Pool" },
+  { id: "bomb", emoji: "💣", name: "Bomb" },
+  { id: "draw", emoji: "🎨", name: "Draw" },
+  { id: "trivia", emoji: "❓", name: "Trivia" }
+];
+const state = { client: null, user: null, roomId: null, room: null, members: [], messages: [], channel: null, poll: null, busy: false, syncing: false };
+let toastTimeout;
+
+function notify(message) {
+  const el = $("toast");
+  el.textContent = message;
+  el.hidden = false;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => { el.hidden = true; }, 5000);
+}
+const errors = {
+  AUTH_REQUIRED: "Necesitas una sesión de invitado.",
+  NAME_INVALID: "Escribe un apodo de 2 a 20 caracteres.",
+  CODE_INVALID: "El código debe tener seis letras o números.",
+  ROOM_NOT_FOUND: "No encontramos esa sala. Revisa el código.",
+  ROOM_FULL: "La sala está completa.",
+  ROOM_ALREADY_STARTED: "Esa sala ya ha comenzado.",
+  NOT_A_MEMBER: "Ya no formas parte de esta sala.",
+  ROOM_NOT_IN_LOBBY: "La sala ya ha empezado.",
+  HOST_ONLY: "Esto solo puede hacerlo el anfitrión.",
+  NEED_TWO_PLAYERS: "Hace falta al menos otro jugador.",
+  NOT_ALL_READY: "Todos los jugadores deben estar preparados.",
+  SLOW_DOWN: "¡Un mensaje por segundo, máquina!",
+  MESSAGE_INVALID: "El mensaje debe tener entre 1 y 240 caracteres."
+};
+function friendlyError(error) {
+  const msg = error?.message || String(error);
+  const found = Object.keys(errors).find((key) => msg.includes(key));
+  return found ? errors[found] : msg;
+}
+async function action(fn, button) {
+  if (state.busy) return;
+  state.busy = true;
+  if (button) button.disabled = true;
+  try { await fn(); }
+  catch (error) { console.error(error); notify(friendlyError(error)); }
+  finally { state.busy = false; if (button) button.disabled = false; }
+}
+function requireName() {
+  const name = $("player-name").value.trim();
+  if (name.length < 2 || name.length > 20) throw new Error("NAME_INVALID");
+  try { localStorage.setItem("partyhub_name", name); } catch {}
+  return name;
+}
+function requireClient() {
+  if (!state.client) throw new Error("La base de datos todavía no está conectada.");
+  return state.client;
+}
+async function ensureGuest() {
+  const sb = requireClient();
+  const { data: existing, error: existingError } = await sb.auth.getUser();
+  if (existingError && existingError.status !== 401 && existingError.status !== 403) {
+    console.warn("Existing session invalid:", existingError.message);
+  }
+  if (existing?.user) { state.user = existing.user; return existing.user; }
+  const { data, error } = await sb.auth.signInAnonymously();
+  if (error) throw error;
+  state.user = data.user;
+  return data.user;
+}
+async function rpc(name, params) {
+  const { data, error } = await requireClient().rpc(name, params);
+  if (error) throw error;
+  return data;
+}
+function setRoute(code) {
+  const url = new URL(window.location.href);
+  if (code) url.searchParams.set("room", code);
+  else url.searchParams.delete("room");
+  history.replaceState(null, "", url.pathname + url.search + url.hash);
+}
+function showHome(message) {
+  clearInterval(state.poll);
+  state.poll = null;
+  if (state.channel && state.client) state.client.removeChannel(state.channel);
+  state.channel = null;
+  state.roomId = null;
+  state.room = null;
+  state.members = [];
+  state.messages = [];
+  $("lobby-screen").hidden = true;
+  $("home-screen").hidden = false;
+  $("catalog").hidden = false;
+  setRoute(null);
+  if (message) notify(message);
+}
+function watchRoom(id) {
+  if (state.channel) state.client.removeChannel(state.channel);
+  const refresh = () => { void syncRoom(); };
+  state.channel = state.client.channel("party-room-" + id)
+    .on("postgres_changes", { event: "*", schema: "public", table: "rooms", filter: "id=eq." + id }, refresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "room_members", filter: "room_id=eq." + id }, refresh)
+    .on("postgres_changes", { event: "*", schema: "public", table: "room_messages", filter: "room_id=eq." + id }, refresh)
+    .subscribe((status) => {
+      $("connection-label").textContent = status === "SUBSCRIBED" ? "Sala sincronizada" : "Reconectando...";
+    });
+  clearInterval(state.poll);
+  // Polling is a safety net for missed DELETE events and reconnects.
+  state.poll = setInterval(refresh, 8000);
+}
+async function enterRoom(id) {
+  state.roomId = id;
+  $("home-screen").hidden = true;
+  $("catalog").hidden = true;
+  $("lobby-screen").hidden = false;
+  watchRoom(id);
+  await syncRoom();
+}
+async function syncRoom() {
+  const id = state.roomId;
+  if (!id || state.syncing || !state.client) return;
+  state.syncing = true;
+  try {
+    const sb = state.client;
+    const [roomResult, memberResult, messageResult] = await Promise.all([
+      sb.from("rooms").select("*").eq("id", id).single(),
+      sb.from("room_members").select("user_id,display_name,is_ready,joined_at").eq("room_id", id).order("joined_at"),
+      sb.from("room_messages").select("id,author_user_id,body,created_at").eq("room_id", id).order("created_at", { ascending: false }).limit(60)
+    ]);
+    if (id !== state.roomId) return;
+    if (roomResult.error || memberResult.error || messageResult.error) {
+      if (roomResult.error?.code === "PGRST116" || roomResult.error?.code === "42501") {
+        showHome("La sala se ha cerrado o has salido de ella.");
+        return;
+      }
+      throw roomResult.error || memberResult.error || messageResult.error;
+    }
+    state.room = roomResult.data;
+    state.members = memberResult.data || [];
+    state.messages = (messageResult.data || []).reverse();
+    if (!state.members.some((m) => m.user_id === state.user?.id)) {
+      showHome("Ya no formas parte de esa sala.");
+      return;
+    }
+    setRoute(state.room.code);
+    renderRoom();
+  } catch (error) { console.error(error); notify("No se pudo sincronizar: " + friendlyError(error)); }
+  finally { state.syncing = false; }
+}
+function element(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text !== undefined) el.textContent = String(text);
+  return el;
+}
+function renderPlayers() {
+  const list = $("player-list");
+  list.replaceChildren();
+  const hostId = state.room.host_user_id;
+  const isHost = hostId === state.user.id;
+  state.members.forEach((player) => {
+    const row = element("div", "player");
+    row.appendChild(element("div", "avatar", player.display_name.slice(0, 1).toUpperCase()));
+    const meta = element("div", "player-meta");
+    const displayName = player.display_name + (player.user_id === state.user.id ? " (tú)" : "");
+    meta.appendChild(element("span", "player-name", displayName));
+    meta.appendChild(element("span", "player-role", player.user_id === hostId ? "👑 Anfitrión" : "Invitado"));
+    row.appendChild(meta);
+    const ready = element("span", "ready-status" + (player.is_ready ? "" : " waiting"), player.is_ready ? "✓ Listo" : "● Esperando");
+    row.appendChild(ready);
+    if (isHost && player.user_id !== state.user.id) {
+      const kick = element("button", "kick", "Expulsar");
+      kick.type = "button";
+      kick.addEventListener("click", () => {
+        if (!confirm("¿Expulsar a " + player.display_name + " de la sala?")) return;
+        void action(async () => { await rpc("kick_room_member", { p_room_id: state.roomId, p_user_id: player.user_id }); await syncRoom(); }, kick);
+      });
+      row.appendChild(kick);
+    }
+    list.appendChild(row);
+  });
+}
+function renderGames() {
+  const container = $("game-options");
+  container.replaceChildren();
+  const isHost = state.room.host_user_id === state.user.id;
+  const canChange = isHost && state.room.status === "lobby";
+  GAMES.forEach((game) => {
+    const button = element("button", "game-option" + (game.id === state.room.game_id ? " selected" : ""));
+    button.type = "button";
+    button.disabled = !canChange;
+    button.appendChild(element("span", "", game.emoji));
+    button.appendChild(element("strong", "", game.name));
+    button.addEventListener("click", () => void action(async () => {
+      await rpc("set_room_game", { p_room_id: state.roomId, p_game_id: game.id });
+      await syncRoom();
+    }, button));
+    container.appendChild(button);
+  });
+}
+function renderChat() {
+  const container = $("chat-messages");
+  const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 40;
+  container.replaceChildren();
+  if (!state.messages.length) container.appendChild(element("p", "muted", "Todavía no hay mensajes. Rompe el hielo."));
+  const byId = new Map(state.members.map((m) => [m.user_id, m.display_name]));
+  state.messages.forEach((message) => {
+    const line = element("div", "chat-line");
+    line.appendChild(element("strong", "", byId.get(message.author_user_id) || "Invitado"));
+    line.appendChild(element("span", "", message.body));
+    container.appendChild(line);
+  });
+  if (atBottom) container.scrollTop = container.scrollHeight;
+}
+function renderRoom() {
+  const room = state.room;
+  const isHost = room.host_user_id === state.user.id;
+  const self = state.members.find((m) => m.user_id === state.user.id);
+  $("room-code").textContent = room.code;
+  $("player-count").textContent = state.members.length + "/" + room.max_players;
+  $("room-state-pill").textContent = room.status === "playing" ? "EN PARTIDA" : "EN ESPERA";
+  $("lobby-status").textContent = room.status === "playing"
+    ? "La sesión ha comenzado. El minijuego llegará próximamente."
+    : "Comparte el código y prepara a tu equipo.";
+  $("ready-btn").hidden = room.status !== "lobby";
+  $("ready-btn").textContent = self?.is_ready ? "✓ Estoy preparado" : "Estoy listo ✓";
+  $("ready-btn").disabled = room.status !== "lobby";
+  $("start-btn").hidden = !isHost || room.status !== "lobby";
+  $("start-btn").disabled = state.members.length < 2 || state.members.some((m) => !m.is_ready);
+  $("reset-btn").hidden = !isHost || room.status !== "playing";
+  renderPlayers();
+  renderGames();
+  renderChat();
+}
+async function copyText(value) {
+  try { await navigator.clipboard.writeText(value); }
+  catch {
+    const field = document.createElement("textarea");
+    field.value = value;
+    document.body.appendChild(field);
+    field.select();
+    document.execCommand("copy");
+    field.remove();
+  }
+  notify("¡Copiado! Envíalo al grupo.");
+}
+async function createRoom() {
+  const name = requireName();
+  await ensureGuest();
+  const result = await rpc("create_room", { p_name: name, p_max_players: Number($("capacity").value) });
+  const first = result?.[0];
+  if (!first?.room_id) throw new Error("No se pudo crear la sala.");
+  await enterRoom(first.room_id);
+}
+async function joinRoom() {
+  const name = requireName();
+  const code = $("join-code").value.trim().toUpperCase();
+  if (!/^[0-9A-F]{6}$/.test(code)) throw new Error("CODE_INVALID");
+  await ensureGuest();
+  const id = await rpc("join_room", { p_code: code, p_name: name });
+  await enterRoom(id);
+}
+function registerEvents() {
+  $("create-btn").addEventListener("click", () => void action(createRoom, $("create-btn")));
+  $("join-btn").addEventListener("click", () => void action(joinRoom, $("join-btn")));
+  $("join-code").addEventListener("input", () => { $("join-code").value = $("join-code").value.toUpperCase().replace(/[^0-9A-F]/g, ""); });
+  $("join-code").addEventListener("keydown", (event) => { if (event.key === "Enter") $("join-btn").click(); });
+  $("ready-btn").addEventListener("click", () => void action(async () => {
+    const self = state.members.find((m) => m.user_id === state.user.id);
+    await rpc("set_room_ready", { p_room_id: state.roomId, p_ready: !self?.is_ready });
+    await syncRoom();
+  }, $("ready-btn")));
+  $("start-btn").addEventListener("click", () => void action(async () => {
+    await rpc("start_room", { p_room_id: state.roomId });
+    await syncRoom();
+  }, $("start-btn")));
+  $("reset-btn").addEventListener("click", () => void action(async () => {
+    await rpc("reset_room", { p_room_id: state.roomId });
+    await syncRoom();
+  }, $("reset-btn")));
+  $("leave-btn").addEventListener("click", () => void action(async () => {
+    await rpc("leave_room", { p_room_id: state.roomId });
+    showHome("Has salido de la sala.");
+  }, $("leave-btn")));
+  $("chat-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    void action(async () => {
+      const message = $("chat-input").value.trim();
+      if (!message) return;
+      await rpc("send_room_message", { p_room_id: state.roomId, p_body: message });
+      $("chat-input").value = "";
+      await syncRoom();
+    }, $("chat-form").querySelector("button"));
+  });
+  $("copy-code-btn").addEventListener("click", () => void copyText(state.room.code));
+  $("share-btn").addEventListener("click", () => {
+    const link = new URL(window.location.href).href;
+    if (navigator.share) void navigator.share({ title: "Entra en mi sala Party Hub", url: link }).catch(() => {});
+    else void copyText(link);
+  });
+}
+async function init() {
+  registerEvents();
+  try { $("player-name").value = localStorage.getItem("partyhub_name") || ""; } catch {}
+  const code = new URLSearchParams(window.location.search).get("room");
+  if (code) { $("join-code").value = code.toUpperCase().slice(0, 6); notify("Introduce tu apodo y pulsa Entrar para unirte."); }
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+    $("setup-warning").hidden = false;
+    $("connection-label").textContent = "Pendiente de configurar";
+    $("create-btn").disabled = true;
+    $("join-btn").disabled = true;
+    return;
+  }
+  try {
+    // Import only after configuration exists; static previews need no CDN access.
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.58.0");
+    state.client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+    $("connection-label").textContent = "Online · Salas privadas";
+  } catch (error) {
+    console.error(error);
+    $("setup-warning").hidden = false;
+    $("setup-warning").textContent = "No ha sido posible conectar con Supabase. Comprueba la configuración y la conexión.";
+    $("create-btn").disabled = true;
+    $("join-btn").disabled = true;
+  }
+}
+void init();
