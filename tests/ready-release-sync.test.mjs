@@ -63,12 +63,28 @@ test("Client-side Pong prediction continues through wall reflections",()=>{
  const second=predictPongBall(ball,4,.5);
  assert.ok(second.x*n.x+second.y*n.y<first.x*n.x+first.y*n.y);
  const browser=src("js/pongagono.js");
- assert.match(browser,/this\.clockOffset\*\.78\+offset\*\.22/);
+ assert.match(browser,/this\.net\.sample\(data\.server_time,sentAt,completedAt\)/);
  assert.match(browser,/predictPongBall\(b,sides,age\)/);
 });
 test("Patinazo replay and countdown are tied to server time",()=>{
  const js=src("js/patinazo.js");
  assert.match(js,/this\.serverNow\(\)-Date\.parse\(d\.revealed_at\)/);
- assert.match(js,/this\.serverOffset=this\.hasServerClock/);
+ assert.match(js,/this\.net\.sample\(d\.server_time,sentAt,doneAt\)/);
  assert.match(js,/this\.serverNow\(\)>=Date\.parse\(d\.deadline\)/);
+});
+
+test("Network transport cadence is decoupled from render FPS and low RTT samples are preferred",()=>{
+ const js=src("js/netcode.js");
+ const pong=src("js/pongagono.js");
+ const rail=src("js/fin-de-linea.js");
+ assert.match(js,/class NetworkClock/);
+ assert.match(js,/class FrameMeter/);
+ assert.match(js,/const pause=bad\?Math\.max\(slow,base\):Math\.max\(30,base-latency\)/);
+ assert.match(pong,/requestAnimationFrame\(render\)/);
+ assert.match(pong,/this\.courtBg\.canvas/);
+ assert.match(pong,/this\.remoteU/);
+ assert.match(rail,/this\.backdrop/);
+ assert.match(rail,/requestAnimationFrame\(draw\)/);
+ assert.match(src("index.html"),/id="pong-perf"/);
+ assert.match(src("index.html"),/id="rail-perf"/);
 });
