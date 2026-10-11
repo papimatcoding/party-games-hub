@@ -109,7 +109,7 @@ export class PuertaONadaGame{
     if(data.my_second_choice!==null&&data.my_second_choice!==undefined){
       serverPicks.push(Number(data.my_second_choice));this.riskMode=true;
     }
-    if(!this.pending)this.localPick=serverPicks;
+    if(!this.pending&&!(this.riskMode&&this.localPick.length===1))this.localPick=serverPicks;
    }
    this.data=data;
    this.render();
