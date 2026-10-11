@@ -1,0 +1,86 @@
+/* PUERTA O NADA — compact responsive pure-RNG door arcade. */
+.door-screen{padding:22px 0 64px}
+.door-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px}
+.door-brand{display:flex;align-items:center;gap:13px}
+.door-symbol{display:grid;place-items:center;width:62px;height:62px;border-radius:17px;
+ background:linear-gradient(130deg,#e9a461,#945e55);font-size:32px;box-shadow:0 10px 25px #160d2455}
+.door-brand h2{font:900 clamp(28px,4.5vw,46px)/1.05 'Outfit',sans-serif;margin:3px 0}
+.door-back{border:1px solid #7a627f;background:#302a47;color:#f8e9dd;
+ border-radius:11px;padding:13px;cursor:pointer;font:800 12px 'Outfit',sans-serif}
+.door-metadata{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.door-metadata>span{border:1px solid #79648a;border-radius:22px;background:#322846;
+ font:800 11px 'Outfit',sans-serif;padding:9px 12px;color:#efdaed}
+.door-metadata #door-clock{background:#754049;color:#ffe2b3;border-color:#b06d63}
+.door-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(250px,.65fr);gap:18px;align-items:start}
+.door-stage{background:radial-gradient(ellipse at 50% 13%,#4c375e 1%,#292039 65%,#211c32);
+ border:1px solid #7e607f;border-radius:18px;min-width:0;overflow:hidden}
+.door-stage-top{text-align:center;padding:24px 16px 12px}
+.door-stage-top h3{font:900 clamp(23px,4vw,35px)/1.1 'Outfit',sans-serif;
+ margin:7px 0 9px;color:#ffdead}
+.door-stage-top p{font-size:12px;color:#e1cddf;margin:0;line-height:1.6}
+.door-doors{--door-count:4;display:grid;grid-template-columns:repeat(var(--door-count),minmax(0,1fr));
+ align-items:end;gap:clamp(7px,1.3vw,16px);padding:18px clamp(9px,2.5vw,25px) 23px;min-height:345px}
+.door-gate{position:relative;display:flex;flex-direction:column;gap:7px;align-items:stretch;
+ background:transparent;border:0;padding:0;color:#fff1e9;font:800 11px 'Outfit',sans-serif;
+ cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-width:0}
+.door-gate:disabled{cursor:default}
+.door-plaque{font-size:clamp(8px,1.4vw,12px);background:#5a4363;border:1px solid #907393;
+ border-radius:6px;padding:7px 3px;letter-spacing:.035em}
+.door-art{height:clamp(170px,23vw,255px);position:relative;display:grid;place-items:center;
+ border-radius:40px 40px 9px 9px;background:linear-gradient(95deg,#80617c,#a8786a 17%,#88535d 68%,#553a59);
+ border:5px solid #bd9e83;box-shadow:inset 11px 0 0 #ffffff19,inset -10px 0 0 #200d2555,
+ 0 13px 0 #332638,0 20px 20px #10091a88;transition:transform .24s,box-shadow .24s,background .3s}
+.door-art::before{position:absolute;content:"";inset:13px 12px;border:2px solid #e9c49e45;
+ border-radius:28px 28px 4px 4px;pointer-events:none}
+.door-number{font:900 clamp(34px,6vw,68px) 'Outfit',sans-serif;color:#fbe9c8;
+ text-shadow:0 4px 5px #38223796}
+.door-knob{position:absolute;z-index:1;right:10%;top:53%;color:#ffdca0;
+ text-shadow:0 0 10px #e0bb76;font-size:19px}
+.door-caption{min-height:27px;display:grid;place-items:center;text-align:center;font-size:clamp(8px,1.3vw,11px);
+ color:#f4d4e7;letter-spacing:.05em}
+.door-gate:not(:disabled):hover .door-art,.door-gate:not(:disabled):focus-visible .door-art{
+ transform:translateY(-7px);box-shadow:0 0 0 3px #ffdfa2,0 14px 20px #09091c99}
+.door-gate.door-chosen .door-art{box-shadow:0 0 0 4px #ffe18c,0 0 30px #ffbd6080;
+ transform:translateY(-7px)}
+.door-gate.door-chosen .door-caption{color:#ffdb94}
+.door-gate.door-safe .door-art{
+ background:linear-gradient(125deg,#2e966c,#79db9a 24%,#458b6c);
+ border-color:#c5f2bd;box-shadow:inset 10px 0 0 #f5ffca35,0 0 29px #64df8a77}
+.door-gate.door-trap .door-art{
+ background:linear-gradient(125deg,#772f4d,#da5569 26%,#651c3c);
+ border-color:#f6a0a6;box-shadow:inset 10px 0 0 #fce5db20,0 0 25px #f2567d55}
+.door-gate.door-safe .door-number,.door-gate.door-trap .door-number{animation:door-pop .35s ease-out}
+.door-gate.door-safe .door-caption{color:#b5ffd6}
+.door-gate.door-trap .door-caption{color:#ffc4ca}
+@keyframes door-pop{from{transform:scale(.6);opacity:.35}to{transform:scale(1);opacity:1}}
+.door-footer{text-align:center;border-top:1px solid #69536d;
+ background:#2b2338;padding:17px;min-height:90px}
+#door-message{color:#ffeac4;font:800 14px/1.5 'Outfit',sans-serif;margin:0 0 7px}
+#door-pick-status{font-size:12px;color:#d7c0e4}
+.door-sidebar{background:#2a233b;border:1px solid #726080;border-radius:18px;padding:21px}
+.door-sidebar h3{font:900 21px 'Outfit',sans-serif;margin:0 0 7px}
+.door-sidebar>p{color:#decce0;font-size:12px;line-height:1.65;margin:4px 0 17px}
+.door-roster{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.door-player{display:flex;align-items:center;gap:9px;padding:10px;
+ border-radius:10px;border:1px solid #635571;background:#393047;font-size:11px}
+.door-player-face{font-size:17px}
+.door-player strong{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.door-player-state{color:#ffe1ab;white-space:nowrap}
+.door-player-out{opacity:.55}
+.door-rules{background:#49314a;border:1px solid #8c657c;border-radius:13px;padding:15px;
+ color:#e2cbd9;font-size:12px;line-height:1.7}
+.door-rules strong{color:#ffdeac}
+.door-rules ul{padding-left:17px;margin:9px 0 0}
+#door-reset{width:100%;margin-top:14px}
+@media(max-width:980px){.door-layout{grid-template-columns:1fr}.door-doors{min-height:285px}
+ .door-art{height:clamp(160px,31vw,285px)}}
+@media(max-width:600px){.door-screen{padding-top:10px}.door-symbol{height:48px;width:48px;font-size:25px}
+ .door-brand{gap:8px}.door-brand h2{font-size:27px}.door-back{font-size:10px;padding:9px}
+ .door-doors{gap:6px;padding:14px 8px 20px;min-height:248px}
+ .door-art{border-width:3px;border-radius:22px 22px 5px 5px;height:clamp(133px,40vw,190px)}
+ .door-art::before{inset:8px 4px;border-radius:14px 14px 3px 3px}
+ .door-number{font-size:clamp(24px,7vw,44px)}.door-knob{font-size:12px}
+ .door-plaque{padding:5px 2px;font-size:8px}.door-caption{font-size:8px;line-height:1.3}
+ .door-stage-top{padding:18px 9px 4px}.door-stage-top h3{font-size:24px}
+ .door-sidebar{padding:15px}}
+@media(prefers-reduced-motion:reduce){.door-art{transition:none}.door-number{animation:none!important}}
