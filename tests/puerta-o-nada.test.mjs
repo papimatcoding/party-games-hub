@@ -5,17 +5,17 @@ import {doorBalance,doorStatus,MAX_DOOR_ROUNDS} from "../js/puerta-o-nada.js";
 const file=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
 test("Pure-chance door balance scales from 2 to 12 players",()=>{
- assert.deepEqual(doorBalance(2),{doors:3,safe:2});
- assert.deepEqual(doorBalance(3),{doors:3,safe:2});
- assert.deepEqual(doorBalance(4),{doors:4,safe:3});
- assert.deepEqual(doorBalance(7),{doors:4,safe:3});
- assert.deepEqual(doorBalance(8),{doors:5,safe:3});
- assert.deepEqual(doorBalance(12),{doors:5,safe:3});
+ assert.deepEqual(doorBalance(2),{doors:6,safe:4});
+ assert.deepEqual(doorBalance(3),{doors:6,safe:4});
+ assert.deepEqual(doorBalance(4),{doors:8,safe:5});
+ assert.deepEqual(doorBalance(7),{doors:8,safe:5});
+ assert.deepEqual(doorBalance(8),{doors:9,safe:6});
+ assert.deepEqual(doorBalance(12),{doors:9,safe:6});
  assert.equal(MAX_DOOR_ROUNDS,5);
- const schema=file("supabase/68_door_schema.sql");
+ const schema=file("supabase/72_door_risk_expansion.sql");
  assert.match(schema,/order by random\(\) limit p_safe/);
- assert.match(schema,/n<=3 then 3 when n<=7 then 4 else 5/);
- assert.match(schema,/n<=3 then 2 else 3/);
+ assert.match(schema,/n<=3 then 6 when n<=7 then 8 else 9/);
+ assert.match(schema,/n<=3 then 4 when n<=7 then 5 else 6/);
  assert.doesNotMatch(schema,/create table private\.door_hints/);
 });
 
@@ -72,4 +72,20 @@ test("The seventh game is responsive and can only start after all-ready check",(
  const engine=file("supabase/69_door_engine_api.sql");
  assert.match(engine,/if missing>0 then raise exception 'NOT_ALL_READY'/);
  assert.match(engine,/if not private\.game_is_live\(p_room_id\) then return/);
+});
+
+test("Double-or-nothing is voluntary, fully secret, and only breaks survival ties",()=>{
+ const migration=file("supabase/72_door_risk_expansion.sql");
+ const resolving=file("supabase/73_door_gamble_tie_resolution.sql");
+ const browser=file("js/puerta-o-nada.js");
+ assert.match(migration,/create function public\.door_pick_double/);
+ assert.match(migration,/p_first=p_second/);
+ assert.match(migration,/c\.second_door=any\(v_match\.safe_doors\)/);
+ assert.match(migration,/p\.risk_wins=p\.risk_wins\+1/);
+ assert.match(migration,/p\.alive desc,coalesce\(p\.eliminated_round,0\) desc,[\s\n]*p\.risk_wins desc/);
+ assert.match(resolving,/p\.risk_wins>0/);
+ assert.match(browser,/door_pick_double/);
+ assert.doesNotMatch(browser,/Math\.random/);
+ assert.match(file("index.html"),/id="door-double"/);
+ assert.match(file("css\/puerta-o-nada.css"),/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
