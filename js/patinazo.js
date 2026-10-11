@@ -18,6 +18,11 @@ export function cornerPosition(sides,corner){
  const base=arenaBase(sides);
  return {x:SPAWN*Math.cos(base+corner*TAU/sides),y:SPAWN*Math.sin(base+corner*TAU/sides)};
 }
+// The server now transmits each survivor's live position. Never reconstruct
+// it from the originally allotted corner after the opening round.
+export function currentIcePosition(player){
+  return {x:Number(player.x),y:Number(player.y)};
+}
 function el(tag,cls,value){
  const n=document.createElement(tag);
  if(cls)n.className=cls;
@@ -72,7 +77,7 @@ export class PatinazoGame{
    if(!this.canAim)return;
    if(start){this.dragging=true;this.canvas.setPointerCapture?.(e.pointerId);}
    if(!this.dragging)return;
-   const p=this.coords(e),home=cornerPosition(this.data.sides,this.self.corner);
+   const p=this.coords(e),home=currentIcePosition(this.self);
    if(Math.hypot(p.x-home.x,p.y-home.y)<.025)return;
    this.angle=(Math.atan2(p.y-home.y,p.x-home.x)+TAU)%TAU;
    e.preventDefault();
@@ -146,7 +151,7 @@ export class PatinazoGame{
    }else if(d.phase==="reveal")msg.textContent="💥 ¡Choques y caídas! Nadie puede corregir su trayectoria.";
    else if(!this.self?.alive)msg.textContent="💀 Has caído del hielo. Puedes seguir observando.";
    else if(d.my_direction!==null&&d.my_direction!==undefined)msg.textContent="✓ Dirección preparada. Puedes cambiarla hasta que acabe el tiempo.";
-   else msg.textContent="Pulsa o arrastra desde cualquier punto del hielo para elegir hacia dónde saldrás. La potencia es igual para todos.";
+   else msg.textContent="Apunta desde tu posición actual. La potencia es igual para todos y al terminar seguirás ahí la siguiente ronda.";
    $("ice-reset").hidden=d.phase!=="finished"||this.hostId!==this.userId;
    const list=$("ice-roster");list.replaceChildren();
    d.players.forEach((p,i)=>{
@@ -221,10 +226,10 @@ export class PatinazoGame{
    if(d.phase==="planning"){
      d.players.forEach(p=>{
        if(!p.alive)return;
-       this.person(cornerPosition(d.sides,p.corner),col(p.user_id),p.user_id===this.userId?"TÚ":p.name,true);
+       this.person(currentIcePosition(p),col(p.user_id),p.user_id===this.userId?"TÚ":p.name,true);
      });
      if(this.angle!==null&&this.self?.alive){
-       this.arrow(cornerPosition(d.sides,this.self.corner),this.angle,col(this.userId));
+       this.arrow(currentIcePosition(this.self),this.angle,col(this.userId));
      }
    }else{
      const frames=d.replay||[];
