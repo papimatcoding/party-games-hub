@@ -1,0 +1,44 @@
+/* PONGÁGONO — neon ring with individually rotated bottom paddle. */
+.pong-screen{padding:32px 0 90px}
+.pong-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:23px}
+.pong-brand{display:flex;gap:13px;align-items:center}
+.pong-brand-mark{background:linear-gradient(145deg,#ffbd69,#f47198);padding:12px;border-radius:16px;font-size:27px}
+.pong-brand h2{font:900 clamp(32px,4vw,50px)/1 'Outfit',sans-serif;letter-spacing:-1.8px;margin:2px 0}
+.pong-back{background:#302847;color:#f9f5ff;border:1px solid #66547c;border-radius:12px;padding:12px 15px;font-size:13px;font-weight:800}
+.pong-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:17px}
+.pong-badges span{border:1px solid #64547e;background:#2d2547;color:#d8cce9;padding:9px 12px;border-radius:40px;font-size:11px;font-weight:900}
+.pong-badges #pong-phase{color:#ffd28e}
+.pong-columns{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(258px,.62fr);gap:18px;align-items:start}
+.pong-court-wrap{background:#1c1a35;border:1px solid #4b496b;border-radius:22px;padding:12px}
+.pong-canvas-stage{position:relative;max-width:760px;margin:auto;border-radius:16px;overflow:hidden}
+#pong-canvas{width:100%;aspect-ratio:1;display:block;touch-action:none;cursor:ew-resize;outline:0}
+#pong-canvas:focus-visible{outline:4px solid #f6c477;outline-offset:-4px}
+.pong-countdown{position:absolute;top:13px;right:13px;background:#201a36d9;border:1px solid #6e6481;color:#fff0c7;border-radius:10px;padding:10px;font-weight:900;font-size:12px;pointer-events:none}
+.pong-controls{margin-top:15px;padding:15px;background:#242341;border-radius:14px;border:1px solid #464668}
+.pong-controls-title{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.pong-controls-title strong{font:900 16px 'Outfit'}
+.pong-controls-title span{font-size:11px;color:#bcaedb}
+#pong-slider{display:block;width:100%;height:28px;margin:17px auto;accent-color:#ffd37b;touch-action:pan-x;cursor:ew-resize}
+.pong-slider-ends{display:flex;justify-content:space-between;color:#c2b7d3;font-size:11px;font-weight:900}
+.pong-message{color:#ded2ee;line-height:1.6;margin:15px 3px 2px;font-size:13px}
+.pong-aside{background:#27213e;border:1px solid #55456f;border-radius:21px;padding:23px}
+.pong-aside h3{font:900 22px 'Outfit';margin:0}
+.pong-muted{font-size:12px;line-height:1.7;color:#bfb1d7}
+.pong-roster{display:flex;flex-direction:column;gap:8px;margin:17px 0 21px}
+.pong-member{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#382e53;border:1px solid #52446b;border-radius:11px;font-size:12px}
+.pong-member-out{opacity:.58;background:#252337}
+.pong-dot{font-size:17px}
+.pong-member strong{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pong-member-state{font-size:10px;color:#d5caf3;font-weight:900}
+.pong-help{background:#33284e;border:1px solid #71578d;border-radius:13px;padding:16px}
+.pong-help h4{font:900 16px 'Outfit';margin:0 0 8px;color:#ffe1a1}
+.pong-help p{font-size:12px;color:#d4c4e5;line-height:1.65;margin:8px 0}
+.pong-reset{margin-top:16px;width:100%}
+@media(max-width:950px){.pong-columns{grid-template-columns:1fr}.pong-aside{order:2}}
+@media(max-width:580px){
+ .pong-screen{padding:18px 0 55px}.pong-brand h2{font-size:34px}
+ .pong-brand-mark{padding:10px;font-size:20px}.pong-back{font-size:11px}
+ .pong-court-wrap{padding:6px;border-radius:15px}.pong-controls{padding:13px}
+ .pong-aside{padding:18px}.pong-badges{gap:5px}
+ .pong-badges span{font-size:10px;padding:7px 8px}
+}
