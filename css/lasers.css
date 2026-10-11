@@ -35,3 +35,8 @@
 .laser-host-button{width:100%;margin-top:18px}
 @media(max-width:900px){.laser-grid{grid-template-columns:1fr}.laser-aside{display:block}.laser-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.laser-screen{padding-top:20px}.laser-top{align-items:flex-start}.laser-arena-wrap{padding:6px;border-radius:13px}.laser-bottom-panel{flex-direction:column;align-items:stretch}.laser-bottom-panel .button{width:100%}.laser-members{grid-template-columns:1fr}.laser-status{gap:5px}.laser-status span{padding:7px 9px;font-size:10px}.laser-aside{padding:17px}.laser-back{font-size:11px}}
+
+.mode-panel{padding:26px}
+.mode-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.mode-options .game-option{min-height:86px;text-align:left}
+@media(max-width:690px){.mode-panel{padding:18px}.mode-options{grid-template-columns:1fr}}
