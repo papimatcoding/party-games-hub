@@ -1,5 +1,6 @@
 // ¡PATINAZO! — fixed-power ice arena. Decisions are secret until the server
 // resolves all trajectories and returns a synchronized, authoritative replay.
+import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.11.0";
 const $=id=>document.getElementById(id);
 const TAU=2*Math.PI;
 const CX=360,CY=360,SCALE=286,SPAWN=.66;
@@ -35,7 +36,7 @@ export class PatinazoGame{
    this.canvas=$("ice-canvas");this.ctx=this.canvas.getContext("2d");
    this.live=false;this.id=null;this.data=null;this.timer=null;this.frame=null;
    this.busy=false;this.inFlight=false;this.angle=null;this.dragging=false;this.lastRound=null;
-   this.serverOffset=0;this.hasServerClock=false;
+   this.serverOffset=0;this.hasServerClock=false;this.net=new NetworkClock();this.poller=null;this.dirty=true;
    this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
    this.canvas.addEventListener("pointermove",e=>this.point(e,false));
    this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -52,19 +53,22 @@ export class PatinazoGame{
    this.live=true;
    $("ice-screen").hidden=false;
    void this.refresh();
-   this.timer=setInterval(()=>void this.refresh(),1100);
+   this.poller=makeAdaptivePoller(()=>this.refresh(),{
+     active:()=>this.live,visible:()=>!document.hidden,fast:760,slow:1300,hidden:2200
+   });
+   this.poller.start();
    const draw=()=>{
      if(!this.live)return;
-     this.paint();
+     if(this.dirty||this.data?.phase==="reveal"){this.paint();this.dirty=false;}
      this.clock();
      this.frame=requestAnimationFrame(draw);
    };
    this.frame=requestAnimationFrame(draw);
  }
  exit(){
-   this.live=false;clearInterval(this.timer);cancelAnimationFrame(this.frame);
+   this.live=false;clearInterval(this.timer);this.poller?.stop();this.poller=null;cancelAnimationFrame(this.frame);
    this.timer=null;this.frame=null;this.id=null;this.data=null;this.angle=null;
-   this.dragging=false;this.lastRound=null;this.serverOffset=0;this.hasServerClock=false;
+   this.dragging=false;this.lastRound=null;this.serverOffset=0;this.hasServerClock=false;this.net=new NetworkClock();this.dirty=true;
    $("ice-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
@@ -83,7 +87,7 @@ export class PatinazoGame{
    if(Math.hypot(p.x-home.x,p.y-home.y)<.025)return;
    this.angle=(Math.atan2(p.y-home.y,p.x-home.x)+TAU)%TAU;
    e.preventDefault();
-   this.hud();
+   this.dirty=true;this.hud();
  }
  end(e){
    if(!this.dragging)return;
@@ -100,7 +104,7 @@ export class PatinazoGame{
    if(e.key==="ArrowRight")this.angle=(this.angle+step)%TAU;
    if(e.key==="ArrowUp")this.angle=3*Math.PI/2;
    if(e.key==="ArrowDown")this.angle=Math.PI/2;
-   this.hud();
+   this.dirty=true;this.hud();
  }
  async submit(){
    if(!this.canAim||this.angle===null||this.busy)return;
@@ -123,14 +127,13 @@ export class PatinazoGame{
      const doneAt=Date.now();
      if(!this.live||id!==this.id)return;
      if(!d){this.notify("No hay partida activa.");return;}
-     const offset=Date.parse(d.server_time)-(sentAt+doneAt)/2;
-     this.serverOffset=this.hasServerClock?this.serverOffset*.78+offset*.22:offset;
-     this.hasServerClock=true;
+     this.net.sample(d.server_time,sentAt,doneAt);
+     this.serverOffset=this.net.offset;this.hasServerClock=this.net.valid;
      if(d.round!==this.lastRound){this.lastRound=d.round;this.angle=null;}
      if(this.angle===null&&d.my_direction!==null&&d.my_direction!==undefined&&d.phase==="planning"){
        this.angle=Number(d.my_direction);
      }
-     this.data=d;this.hud();
+     this.data=d;this.dirty=true;this.hud();
    }catch(e){console.error(e);this.notify("Sincronización de ¡PATINAZO!: "+e.message);}
    finally{this.inFlight=false;}
  }
