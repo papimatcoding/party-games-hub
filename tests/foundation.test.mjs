@@ -11,7 +11,7 @@ test("Browser config is limited to publishable values", () => {
   assert.doesNotMatch(file("js/config.js"), /sb_secret_[A-Za-z0-9]{8}/);
 });
 test("Every social mutation uses a server RPC", () => {
-  const app = file("js/app.js");
+  const app = file("js/app.js") + file("js/lasers.js");
   const allSql = ["02_room_membership.sql","03_room_controls.sql","04_chat.sql","07_modes.sql","09_laser_start.sql","11_laser_api.sql"].map((n)=>file("supabase/"+n)).join("\n");
   for (const fn of ["create_room","join_room","leave_room","set_room_ready","set_room_game","start_lasers","reset_room","kick_room_member","send_room_message","set_room_mode","submit_laser_move","laser_state"]) {
     assert.ok(app.includes(fn), "frontend uses "+fn);
