@@ -55,3 +55,23 @@
 @media(max-width:550px){.party-live-screen{padding:18px 0}.party-live-top{padding:22px 14px}
 .party-live-columns .panel{padding:17px}.party-hud{padding:10px;margin:9px 0}
 .party-hud-cancel{padding:8px;font-size:10px}}
+
+
+.party-next-panel{display:flex;flex-direction:column;gap:10px;margin:16px 0;padding:15px;
+background:linear-gradient(130deg,#4d354e,#3b315c);border:1px solid #92719c;border-radius:14px}
+.party-next-panel strong{font-size:12px;color:#ffdbac;line-height:1.5}
+.party-next-panel button{width:100%;padding:14px;font-weight:900}
+.game-ready-overlay{position:fixed;inset:0;z-index:150;display:grid;place-items:center;
+background:#0c1025e8;backdrop-filter:blur(11px);padding:20px}
+.game-ready-overlay[hidden]{display:none!important}
+.game-ready-card{width:min(100%,470px);padding:clamp(24px,5vw,42px);border-radius:24px;
+background:radial-gradient(circle at top,#50406b,#281f40 85%);
+border:2px solid #a080ac;text-align:center;box-shadow:0 18px 80px #0009}
+.game-ready-card .ready-symbol{display:block;font-size:54px;margin-bottom:16px}
+.game-ready-card h2{font:900 clamp(26px,5vw,39px)/1.15 'Outfit',sans-serif;
+margin:11px 0;color:#fff2d0}
+.game-ready-card>p{font-size:14px;line-height:1.65;color:#e8d3e5}
+.game-ready-card>strong{display:block;color:#ffe5ac;margin:18px 0;font:900 18px 'Outfit'}
+.game-ready-card .button{min-height:52px;width:100%;font-size:15px}
+.game-ready-card .game-ready-tip{font-size:12px;color:#d0b7d7;margin-top:14px}
+.version-overlay{z-index:200}
