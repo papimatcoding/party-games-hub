@@ -1,10 +1,10 @@
-# PARTY HUB 🎉 — Alpha 0.3
+# PARTY HUB 🎉 — Alpha 0.4
 
 Arcade multijugador original para navegador con salas compartidas y dos modos: **Juego libre** y **Modo Party** (este último aún en diseño).
 
 ## Juegos disponibles
 - **⚡ Lásers** — movimiento libre en un hexágono, apuntado a 360°, preparación oculta, disparos simultáneos y reducción de anillos.
-- **🧠 ¡NO REPITAS!** — un tema por partida, respuestas secretas, eliminación por duplicadas, usadas en rondas anteriores o inválidas. **Toda respuesta revelada, incluso si es inválida, pasa a la lista negra de esa partida.**
+- **🧠 ¡NO REPITAS!** — tema aleatorio o seleccionado por el anfitrión, respuestas secretas, eliminación por duplicadas, usadas en rondas anteriores o inválidas. **Toda respuesta revelada, incluso si es inválida, pasa a la lista negra de esa partida.** Las respuestas rechazadas pueden marcarse para revisión editorial sin alterar los resultados.
 
 ## Despliegue y base de datos
 - Web: https://papimatcoding.github.io/party-games-hub/
@@ -22,8 +22,12 @@ Arcade multijugador original para navegador con salas compartidas y dos modos: *
 
 ## Validación de respuestas y temas
 - El servidor normaliza mayúsculas, espacios, tildes y puntuación; usa catálogos privados de respuestas canónicas y alias. Las coincidencias se resuelven antes de eliminar simultáneamente.
-- Temas iniciales adaptados al tamaño: planetas (2 jugadores), futbolistas del Barça masculino (2–7), países, elementos químicos y animales (2–12).
-- **Límite importante:** el catálogo de animales y algunos futbolistas es una selección inicial; no contiene todos los nombres posibles. Una respuesta correcta ausente del catálogo puede ser considerada inválida. Hace falta expandir y revisar ese contenido antes de un lanzamiento público.
+- **12 temas** adaptados al tamaño de sala: planetas (2); selecciones campeonas del Mundial masculino (2); películas I–IX de Star Wars (2); comunidades autónomas españolas (2–3); provincias de España (2–8); futbolistas del Barça masculino (2–7); marcas de coches e instrumentos (2–10); Pokémon de Kanto, animales, países y elementos químicos (2–12).
+- El anfitrión puede elegir tema en el lobby o mantener la opción **Aleatorio (sorpresa)**. Solo se muestran opciones adecuadas al número actual de participantes.
+- El catálogo incluye los 151 Pokémon de Kanto, las 50 provincias españolas y una selección de 302 animales. Se ha ampliado el Barça con leyendas y miembros de la plantilla 2026/27. **Lamine Yamal**, Lamine, Yamal y variantes próximas se reconocen como un mismo jugador.
+- Las erratas de **un solo carácter** se toleran únicamente si el resultado se puede atribuir sin ambigüedad a una sola respuesta y tiene al menos seis caracteres. Esto evita dar por válidos nombres cercanos pero distintos.
+- Las respuestas rechazadas pueden reportarse para que el equipo editorial revise omisiones; los informes quedan en una cola privada persistente. La revisión no corrige automáticamente la ronda ya jugada.
+- **Límite importante:** animales, marcas e instrumentos siguen siendo categorías abiertas; sus listas no pueden garantizar cobertura completa. Una respuesta correcta ausente podría ser rechazada, aunque ahora puede reportarse para revisión. Aún hay que ampliar y auditar estas categorías antes de un lanzamiento público.
 - **Wikidata:** no se consulta en vivo durante las rondas. Un script de revisión editorial (scripts/preview-wikidata-barca.mjs) permite obtener candidatos según P54 y FC Barcelona Q7156, pero nunca los publica automáticamente. Documentación del servicio: https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual/es
 
 ## Desarrollo y pruebas
