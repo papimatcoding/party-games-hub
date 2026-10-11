@@ -1,5 +1,5 @@
 // ¡FIN DE LÍNEA! — PC + touch client. No hit detection or movement authority here.
-import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.11.0";
+import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.11.0";
 const $=id=>document.getElementById(id);
 const COLOR=["#ffcc76","#80e9f5","#f3a0cc","#b2a0ff","#afec90","#fa8e81",
  "#fee993","#83b7ff","#a9f4c3","#dea5fb","#f6ae81","#a3f1ef"];
@@ -48,7 +48,7 @@ export class FinDeLineaGame{
   this.c=this.canvas.getContext("2d");
   this.active=false;this.roomId=null;this.snapshot=null;
   this.poll=null;this.frame=null;this.loading=false;this.lastAt=0;
-  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.backdrop=null;this.smooth=new Map();
+  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.meter=new FrameMeter();this.backdrop=null;this.smooth=new Map();
   this.nextFireLocal=0;this.intentLocal=0;this.actions=new Set();
   this.onKey=e=>{
    if(!this.active||e.target instanceof HTMLInputElement||
@@ -83,6 +83,8 @@ export class FinDeLineaGame{
    if(!this.active)return;
    const dt=clamp((timestamp-(this.lastAt||timestamp))/1000,0,.06);this.lastAt=timestamp;
    this.render(dt);this.clock();
+   if(this.meter.tick(timestamp))$("rail-perf").textContent=
+     "🎞 "+this.meter.fps+" FPS · 🌐 "+this.net.latencyLabel;
    this.frame=requestAnimationFrame(draw);
   };
   this.frame=requestAnimationFrame(draw);
@@ -92,7 +94,7 @@ export class FinDeLineaGame{
   document.removeEventListener("keydown",this.onKey);
   this.poll=null;this.frame=null;this.roomId=null;this.snapshot=null;
   this.smooth.clear();this.actions.clear();this.lastAt=0;
-  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.intentLocal=0;
+  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.intentLocal=0;
   $("rail-screen").hidden=true;
  }
  async choose(turn){
