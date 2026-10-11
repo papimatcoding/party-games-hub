@@ -258,7 +258,8 @@ export class PongagonoGame {
  clock(){
   if(!this.data)return;
   const seconds=Math.max(0,Math.ceil((Date.parse(this.data.serve_until)-Date.now()-this.clockOffset)/1000));
-  $("pong-clock").textContent=this.data.phase==="serve"?"SAQUE EN "+seconds+"s":this.data.phase==="finished"?"🏆":"";
+  const label=this.data.phase==="serve"?"SAQUE EN "+seconds+"s":this.data.phase==="finished"?"🏆":"";
+  if(label!==this.lastClockText){$("pong-clock").textContent=label;this.lastClockText=label;}
  }
  prepareCourt(sides,mySide){
   const canvas=document.createElement("canvas");
