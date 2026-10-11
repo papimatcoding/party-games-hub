@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.8.1
+# PARTY HUB 🎉 — Alpha 0.9.0
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de 5 minijuegos con medallas).
 
@@ -64,9 +64,18 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - Con 2–12 jugadores listos, pulsa **«Empezar fiesta de 5 pruebas»**. El servidor crea una lista congelada de participantes e inicia el primer minijuego. Cada participante juega desde su navegador con los mismos controles de Juego libre.
 - Al terminar una prueba, el motor de PostgreSQL calcula las posiciones según quién sobrevivió y cuándo cayó: los supervivientes quedan por delante, y quienes caen más tarde superan a quienes caen antes. Lava usa la altura final como desempate para caídas en la misma ronda. **PONGÁGONO** usa el orden real de eliminación, no un orden aleatorio.
 - Se entregan las medallas del podio automáticamente: **🥇 oro = 3 puntos, 🥈 plata = 2 y 🥉 bronce = 1**. En empates de posición, se comparten medallas y se aplica la numeración de puestos de competición (dos primeros empatados hacen que el siguiente sea tercero).
-- Después de cada juego se muestra una **pantalla de podio, clasificación general y próximo minijuego** durante 9 segundos. El servidor cambia al siguiente automáticamente, incluso si lo hace otro jugador al consultar el estado. Las medallas se registran una sola vez.
+- Después de cada juego se muestra una **pantalla de podio, clasificación general y próximo minijuego** durante un mínimo de 8 segundos. **Nunca se salta solo:** todos los jugadores presentes deben marcar «Listo para la siguiente prueba». El siguiente minijuego también espera el «Estoy listo» individual y comienza con una cuenta atrás común de 3 segundos. Las medallas se registran una sola vez.
 - Tras los cinco juegos aparece la **clasificación final**. Se ordena por puntos, después oros, platas y bronces. Si todo empata, hay campeones compartidos.
 - El anfitrión puede cancelar el circuito o, tras el final, volver al lobby para preparar una fiesta nueva. Se borran partidas antiguas y la sesión anterior al reiniciar.
 - **PONGÁGONO** tiene un límite especial de 180 segundos por prueba dentro del circuito para evitar un partido interminable; al alcanzarlo, los supervivientes empatan por su posición.
 - El diseño de datos contempla formatos de 10, 15 o 20 juegos, **aún bloqueados** hasta disponer de más minijuegos diferentes. Juego libre permanece independiente.
 - **Comprobación:** se ha ejecutado un circuito completo de cinco juegos mediante las API reales de cada juego en transacciones SQL, además de pruebas de empate, doble consulta, host-only, cancelación y medallas. Falta validar la sensación de juego y transiciones con 2+ navegadores/dispositivos reales.
+
+## Mejoras de juego en la Alpha 0.9.0
+- **Versiones:** los clientes verifican el protocolo 0.9.0 con el manifiesto de despliegue y Supabase. El servidor exige un registro compatible antes de marcar «Listo» o iniciar una sala. Al cambiar el protocolo deben actualizarse juntos js/release.js, release.json y la configuración privada. Se verifica compatibilidad del protocolo, no integridad criptográfica de los archivos.
+- **Preparación:** cada juego espera explícitamente «Todos listos» antes de iniciar una cuenta atrás sincronizada de tres segundos. El servidor pausa simulaciones y rechaza jugadas anticipadas.
+- **Pongágono:** mantiene instantáneas oficiales a unos 250 ms por RPC; ahora extrapola visualmente rebotes contra paredes y usa tiempo corregido del servidor. Sigue siendo una primera mejora: a latencias altas o con rebotes de pala pueden aparecer correcciones de posición.
+- **Patinazo:** cronómetro y repetición adaptados al desfase de reloj observado con Supabase, sin cambiar el resultado autoritativo de las trayectorias.
+- **Lavalabras:** solo admite respuestas exactas del catálogo y sus alias registrados, tras normalizar acentos y mayúsculas. No tolera erratas de un carácter; esa tolerancia se conserva únicamente en ¡NO REPITAS!
+- **Modo Fiesta:** el podio permanece al menos ocho segundos y hasta que todos estén listos para avanzar. Cada nuevo juego tiene su propia confirmación y cuenta atrás.
+- **Pendiente:** medir partidas reales en dos dispositivos, ampliar diccionarios, comprobar latencia de Pong y mejorar networking en siguientes pases. No se ha sustituido el sistema actual por un motor WebSocket de alta frecuencia.
