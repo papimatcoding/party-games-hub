@@ -1,6 +1,6 @@
-# PARTY HUB 🎉 — Alpha 0.7
+# PARTY HUB 🎉 — Alpha 0.8
 
-Arcade multijugador original para navegador con salas compartidas y dos modos: **Juego libre** y **Modo Party** (este último aún en diseño).
+Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de 5 minijuegos con medallas).
 
 ## Juegos disponibles
 - **🌋 LAVALABRAS** — categorías nuevas cada ronda, 24 segundos para escribir en secreto una respuesta del tema. El servidor compara con el catálogo curado de ¡NO REPITAS! y sus variantes. Cada letra de la respuesta válida añade un bloque a tu torre acumulada (espacios, números y puntuación no suman; cuenta la palabra realmente escrita). La lava sube 6 bloques en la primera ronda, 8 en la segunda, 10 en la tercera y así sucesivamente. Quien tenga la torre a la misma altura o por debajo de la lava queda eliminado. La última persona en pie gana, con máximo 12 rondas y empate si no queda un superviviente único. Se permiten respuestas iguales entre jugadores.
@@ -41,7 +41,7 @@ Arcade multijugador original para navegador con salas compartidas y dos modos: *
 - Los tests unitarios y las pruebas SQL con varios usuarios simulados pasan. Aún falta una partida real extremo a extremo con varios navegadores o móviles.
 
 ## Antes de abrir al público
-Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y límites de creación de salas, limpieza de partidas, herramientas de moderación y tests de navegador con redes reales. Las reglas del Modo Party siguen pendientes.
+Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y límites de creación de salas, limpieza de partidas, herramientas de moderación y tests de navegador con redes reales. El Modo Fiesta ya está implementado, pero su experiencia con varios navegadores reales aún requiere pruebas de jugabilidad y latencia.
 
 ## Balance inicial de ¡PATINAZO!
 - Dirección libre 360°, **sin selector de fuerza**. Impulso para todos: 0,96 unidades/s, frenado 0,88/s, choque con restitución 0,86 y pequeño extra 0,12 al impactar.
@@ -58,8 +58,14 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - El servidor realiza simulación en intervalos aproximados de 12 ms; los clientes consultan un estado oficial aproximadamente cuatro veces por segundo y extrapolan visualmente los instantes intermedios. La apariencia puede corregirse si hay latencia; las eliminaciones y velocidades proceden de PostgreSQL.
 - Requiere prueba manual en dos o más dispositivos y afinación de sensibilidad, latencia y dificultad antes de considerarlo listo para público general. No hay protección anticheat integral ni emparejamiento público.
 
-## Modo Fiesta — cimientos listos, circuito automático pendiente
-- La opción «Modo Fiesta» configura un **circuito aleatorio de 5 juegos**, uno de cada título actualmente disponible. El anfitrión puede consultar y mezclar ese orden desde el lobby; los invitados ven la misma secuencia.
-- Formatos posteriores de **10, 15 y 20 juegos** están previstos en el modelo de datos, pero aparecen bloqueados hasta disponer de tantos minijuegos distintos.
-- La clasificación tiene un almacén privado de medallas por jugador y por minijuego. **🥇 oro = 3 puntos, 🥈 plata = 2 y 🥉 bronce = 1**. Para desempatar se comparan primero las medallas de oro, después las de plata y finalmente las de bronce.
-- **Importante:** en esta alpha el circuito y el marcador se pueden **preparar y consultar**, pero **no se pueden disputar aún automáticamente las cinco pruebas ni adjudicar sus medallas**. Falta conectar los resultados autoritativos de los cinco minijuegos al marcador, el avance entre partidas y la pantalla de ganador del circuito. No debe habilitarse «Iniciar Modo Fiesta» antes de implementar y probar esos pasos.
+## Modo Fiesta — circuito automático de 5 pruebas (Alpha 0.8)
+- El anfitrión selecciona **Modo Fiesta** en el lobby. Se genera una secuencia **aleatoria de los cinco juegos, sin repetir**. El anfitrión puede mezclarla de nuevo; esto reinicia los estados de «Listo» para que todos confirmen el nuevo circuito.
+- Con 2–12 jugadores listos, pulsa **«Empezar fiesta de 5 pruebas»**. El servidor crea una lista congelada de participantes e inicia el primer minijuego. Cada participante juega desde su navegador con los mismos controles de Juego libre.
+- Al terminar una prueba, el motor de PostgreSQL calcula las posiciones según quién sobrevivió y cuándo cayó: los supervivientes quedan por delante, y quienes caen más tarde superan a quienes caen antes. Lava usa la altura final como desempate para caídas en la misma ronda. **PONGÁGONO** usa el orden real de eliminación, no un orden aleatorio.
+- Se entregan las medallas del podio automáticamente: **🥇 oro = 3 puntos, 🥈 plata = 2 y 🥉 bronce = 1**. En empates de posición, se comparten medallas y se aplica la numeración de puestos de competición (dos primeros empatados hacen que el siguiente sea tercero).
+- Después de cada juego se muestra una **pantalla de podio, clasificación general y próximo minijuego** durante 9 segundos. El servidor cambia al siguiente automáticamente, incluso si lo hace otro jugador al consultar el estado. Las medallas se registran una sola vez.
+- Tras los cinco juegos aparece la **clasificación final**. Se ordena por puntos, después oros, platas y bronces. Si todo empata, hay campeones compartidos.
+- El anfitrión puede cancelar el circuito o, tras el final, volver al lobby para preparar una fiesta nueva. Se borran partidas antiguas y la sesión anterior al reiniciar.
+- **PONGÁGONO** tiene un límite especial de 180 segundos por prueba dentro del circuito para evitar un partido interminable; al alcanzarlo, los supervivientes empatan por su posición.
+- El diseño de datos contempla formatos de 10, 15 o 20 juegos, **aún bloqueados** hasta disponer de más minijuegos diferentes. Juego libre permanece independiente.
+- **Comprobación:** se ha ejecutado un circuito completo de cinco juegos mediante las API reales de cada juego en transacciones SQL, además de pruebas de empate, doble consulta, host-only, cancelación y medallas. Falta validar la sensación de juego y transiciones con 2+ navegadores/dispositivos reales.
