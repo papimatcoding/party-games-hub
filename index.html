@@ -23,7 +23,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.7</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.8</span></div>
     </header>
 
     <main>
@@ -65,6 +65,33 @@
         <p class="catalog-note">Cinco minijuegos jugables y un Modo Fiesta en preparación</p>
       </section>
 
+      <section id="party-live-screen" class="party-live-screen" hidden>
+        <div class="party-live-top">
+          <div class="overline">🏅 MODO FIESTA · CIRCUITO DE 5</div>
+          <h1 id="party-live-title">¡PRUEBA COMPLETADA!</h1>
+          <p id="party-live-subtitle">Preparando la siguiente prueba...</p>
+          <span class="party-live-clock" id="party-live-clock"></span>
+        </div>
+        <div class="party-live-columns">
+          <section class="panel party-live-podium">
+            <h2 id="party-podium-title">🏆 Medallas de esta prueba</h2>
+            <div id="party-podium" class="party-live-medals"></div>
+            <h3>🎮 Recorrido de la fiesta</h3>
+            <div id="party-live-schedule" class="party-live-schedule"></div>
+          </section>
+          <aside class="panel party-live-score">
+            <h2>🏅 Clasificación general</h2>
+            <p>🥇 3 pts · 🥈 2 pts · 🥉 1 pt</p>
+            <div id="party-live-standings" class="party-live-standings"></div>
+            <button type="button" class="button button-dark" id="party-return" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <div id="party-hud" class="party-hud" hidden>
+        <div><strong id="party-hud-label">🏅 PRUEBA 1 DE 5</strong>
+             <span id="party-hud-score">Compite por las medallas</span></div>
+        <button id="party-cancel" type="button" class="party-hud-cancel" hidden>Cancelar circuito</button>
+      </div>
       <section id="lobby-screen" class="lobby" hidden>
         <div class="lobby-header">
           <div><div class="overline">TU SALA PRIVADA</div><h1>TODO EL MUNDO <em>DENTRO.</em></h1><p>Invita, prepara al grupo y escoged vuestra próxima aventura.</p></div>
@@ -85,7 +112,7 @@
               <div id="party-list" class="party-list"><p class="muted">Preparando el circuito...</p></div>
               <div id="party-score-list" class="party-score-list"></div>
               <button type="button" id="party-shuffle" class="button button-dark" hidden>🔀 Mezclar orden de juegos</button>
-              <p class="party-limited">El circuito y el marcador ya se pueden preparar. El inicio automático y el reparto de medallas entre minijuegos llegarán en una siguiente actualización.</p>
+              <p class="party-limited">¡Listo para competir! Los cinco juegos se encadenan automáticamente y el servidor entrega las medallas según el resultado de cada prueba.</p>
             </section>
             <section class="panel game-choice"><div class="panel-heading"><div><h2>🕹️ Votación de juego</h2><p>El anfitrión escoge, por ahora.</p></div></div><div id="game-options" class="game-options"></div>
               <div id="nr-topic-settings" class="nr-topic-settings" hidden>
