@@ -1,4 +1,5 @@
 // ¡FIN DE LÍNEA! — PC + touch client. No hit detection or movement authority here.
+import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.11.0";
 const $=id=>document.getElementById(id);
 const COLOR=["#ffcc76","#80e9f5","#f3a0cc","#b2a0ff","#afec90","#fa8e81",
  "#fee993","#83b7ff","#a9f4c3","#dea5fb","#f6ae81","#a3f1ef"];
@@ -47,7 +48,7 @@ export class FinDeLineaGame{
   this.c=this.canvas.getContext("2d");
   this.active=false;this.roomId=null;this.snapshot=null;
   this.poll=null;this.frame=null;this.loading=false;this.lastAt=0;
-  this.timeOffset=0;this.hasClock=false;this.smooth=new Map();
+  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.backdrop=null;this.smooth=new Map();
   this.nextFireLocal=0;this.intentLocal=0;this.actions=new Set();
   this.onKey=e=>{
    if(!this.active||e.target instanceof HTMLInputElement||
@@ -74,7 +75,10 @@ export class FinDeLineaGame{
   $("rail-screen").hidden=false;
   document.addEventListener("keydown",this.onKey);
   void this.refresh();
-  this.poll=setInterval(()=>void this.refresh(),240);
+  this.poller=makeAdaptivePoller(()=>this.refresh(),{
+   active:()=>this.active,visible:()=>!document.hidden,fast:190,slow:650,hidden:1800
+  });
+  this.poller.start();
   const draw=timestamp=>{
    if(!this.active)return;
    const dt=clamp((timestamp-(this.lastAt||timestamp))/1000,0,.06);this.lastAt=timestamp;
@@ -84,11 +88,11 @@ export class FinDeLineaGame{
   this.frame=requestAnimationFrame(draw);
  }
  exit(){
-  this.active=false;clearInterval(this.poll);cancelAnimationFrame(this.frame);
+  this.active=false;clearInterval(this.poll);this.poller?.stop();this.poller=null;cancelAnimationFrame(this.frame);
   document.removeEventListener("keydown",this.onKey);
   this.poll=null;this.frame=null;this.roomId=null;this.snapshot=null;
   this.smooth.clear();this.actions.clear();this.lastAt=0;
-  this.timeOffset=0;this.hasClock=false;this.intentLocal=0;
+  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.intentLocal=0;
   $("rail-screen").hidden=true;
  }
  async choose(turn){
@@ -117,9 +121,9 @@ export class FinDeLineaGame{
    const next=await this.rpc("rail_state",{p_room_id:id});
    const after=Date.now();
    if(!this.active||this.roomId!==id||!next)return;
-   const sample=Date.parse(next.server_time)-(before+after)/2;
-   this.timeOffset=this.hasClock?this.timeOffset*.75+sample*.25:sample;
-   this.hasClock=true;this.snapshot=next;this.hud();
+   this.net.sample(next.server_time,before,after);
+   this.timeOffset=this.net.offset;this.hasClock=this.net.valid;
+   this.snapshot=next;this.hud();
   }catch(err){
    if(this.active&&this.roomId===id)console.warn("Rail sync:",err.message);
   }finally{this.loading=false;}
@@ -167,8 +171,10 @@ export class FinDeLineaGame{
   $("rail-message").textContent=msg;
   $("rail-reset").hidden=s.phase!=="finished"||this.hostId!==this.userId;
  }
- render(dt){
-  const c=this.c,W=900,H=720;
+ prepareBackdrop(){
+  const bgCanvas=document.createElement("canvas");
+  bgCanvas.width=900;bgCanvas.height=720;
+  const c=bgCanvas.getContext("2d"),W=900,H=720;
   c.clearRect(0,0,W,H);
   const bg=c.createLinearGradient(0,0,W,H);
   bg.addColorStop(0,"#171e37");bg.addColorStop(1,"#25233b");
@@ -202,9 +208,19 @@ export class FinDeLineaGame{
    c.fillStyle="#547492";c.fillRect(x-.17,y-.17,.34,.34);
    c.fillStyle="#e6d88c";c.beginPath();c.arc(x,y,.048,0,Math.PI*2);c.fill();
   }
+  c.restore();
+  this.backdrop=bgCanvas;
+ }
+ render(dt){
+  if(!this.backdrop)this.prepareBackdrop();
+  const c=this.c,W=900,H=720;
+  c.clearRect(0,0,W,H);
+  c.drawImage(this.backdrop,0,0);
+  const scale=Math.min((W-80)/16,(H-58)/13);
+  c.save();c.translate((W-scale*16)/2,(H-scale*13)/2);c.scale(scale,scale);
   const s=this.snapshot;
   if(!s){c.restore();return;}
-  const age=clamp((Date.now()+this.timeOffset-Date.parse(s.last_tick))/1000,0,.43);
+  const age=this.net.age(s.last_tick,.65);
   const positions=new Map();
   s.players.forEach((p,i)=>{
    const projected=predictWagon(p,s.phase==="running"?age:0);
