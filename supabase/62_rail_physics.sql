@@ -9,8 +9,8 @@ declare m private.rail_matches%rowtype;
  nextxs double precision[];nextys double precision[];dirs integer[];
  intents integer[];life integer[];health integer[];hits integer[];
  kills integer[];ranks integer[];
- bids bigint[];owners uuid[]; bx double precision[];by double precision[];
- bvx double precision[];bvy double precision[];expires timestamptz[]; bactive boolean[];
+ bids bigint[];owners uuid[]; bx double precision[];bullet_y double precision[];
+ bvx double precision[];vel_y double precision[];expires timestamptz[]; bactive boolean[];
  np integer;nb integer;i integer;j integer;k integer;steps integer;
  elapsed double precision;dt double precision;travel double precision;distance double precision;
  curdir integer;newdir integer;hx integer;hy integer;
@@ -20,7 +20,7 @@ declare m private.rail_matches%rowtype;
  impact_t double precision;contact_x double precision;contact_y double precision;
  aligned double precision;rear double precision;crossdist double precision;
  n_alive integer;win uuid;elapsed_deadline boolean;elim_count integer;
- top_score integer;top_hp integer;top_kills integer;n_top integer;
+ top_score integer;top_hp integer;top_kills integer;n_top integer;shooter_idx integer;
 begin
  if not private.game_is_live(p_room_id) then return; end if;
  select * into m from private.rail_matches where room_id=p_room_id for update;
@@ -45,7 +45,7 @@ begin
         array_agg(b.x order by b.id),array_agg(b.y order by b.id),
         array_agg(b.vx order by b.id),array_agg(b.vy order by b.id),
         array_agg(b.expires_at order by b.id)
- into bids,owners,bx,by,bvx,bvy,expires
+ into bids,owners,bx,bullet_y,bvx,vel_y,expires
  from private.rail_projectiles b where b.match_id=m.id;
  nb:=coalesce(array_length(bids,1),0);
  for j in 1..nb loop bactive:=array_append(bactive,true);end loop;
@@ -77,10 +77,10 @@ begin
    for j in 1..nb loop
      if not bactive[j] then continue;end if;
      if expires[j]<=clock_timestamp() then bactive[j]:=false;continue;end if;
-     oldx:=bx[j];oldy:=by[j];
-     dx:=bvx[j]*dt;dy:=bvy[j]*dt;
+     oldx:=bx[j];oldy:=bullet_y[j];
+     dx:=bvx[j]*dt;dy:=vel_y[j]*dt;
      newx:=oldx+dx;newy:=oldy+dy;
-     bx[j]:=newx;by[j]:=newy;
+     bx[j]:=newx;bullet_y[j]:=newy;
      if newx<1.1 or newx>14.9 or newy<1.1 or newy>11.9 then
        bactive[j]:=false;continue;
      end if;
@@ -104,15 +104,15 @@ begin
        contact_x:=oldx+dx*impact_t;contact_y:=oldy+dy*impact_t;
        hx:=case dirs[i] when 0 then 1 when 2 then -1 else 0 end;
        hy:=case dirs[i] when 1 then 1 when 3 then -1 else 0 end;
-       aligned:=(bvx[j]*hx+bvy[j]*hy)/8.5;
+       aligned:=(bvx[j]*hx+vel_y[j]*hy)/8.5;
        rear:=-((contact_x-xs[i])*hx+(contact_y-ys[i])*hy);
        crossdist:=abs((contact_x-xs[i])*hy-(contact_y-ys[i])*hx);
        if aligned>=.94 and rear>=.20 and crossdist<=.22 then
          health[i]:=health[i]-1;
-         for k in 1..np loop
-           if ids[k]=owners[j] then
-             hits[k]:=hits[k]+1;
-             if health[i]<=0 then kills[k]:=kills[k]+1;end if;
+         for shooter_idx in 1..np loop
+           if ids[shooter_idx]=owners[j] then
+             hits[shooter_idx]:=hits[shooter_idx]+1;
+             if health[i]<=0 then kills[shooter_idx]:=kills[shooter_idx]+1;end if;
              exit;
            end if;
          end loop;
@@ -139,7 +139,7 @@ begin
    if not bactive[j] then
      delete from private.rail_projectiles where id=bids[j];
    else
-     update private.rail_projectiles set x=bx[j],y=by[j] where id=bids[j];
+     update private.rail_projectiles set x=bx[j],y=bullet_y[j] where id=bids[j];
    end if;
  end loop;
  select count(*) into n_alive from private.rail_players
