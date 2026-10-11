@@ -1,14 +1,13 @@
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
+import { LaserGame } from "./lasers.js";
 
 const $ = (id) => document.getElementById(id);
 const GAMES = [
-  { id: "pool", emoji: "🎱", name: "Pool" },
-  { id: "bomb", emoji: "💣", name: "Bomb" },
-  { id: "draw", emoji: "🎨", name: "Draw" },
-  { id: "trivia", emoji: "❓", name: "Trivia" }
+  { id: "lasers", emoji: "⚡", name: "Lásers" }
 ];
 const state = { client: null, user: null, roomId: null, room: null, members: [], messages: [], channel: null, poll: null, busy: false, syncing: false };
 let toastTimeout;
+let lasers = null;
 
 function notify(message) {
   const el = $("toast");
@@ -30,7 +29,14 @@ const errors = {
   NEED_TWO_PLAYERS: "Hace falta al menos otro jugador.",
   NOT_ALL_READY: "Todos los jugadores deben estar preparados.",
   SLOW_DOWN: "¡Un mensaje por segundo, máquina!",
-  MESSAGE_INVALID: "El mensaje debe tener entre 1 y 240 caracteres."
+  MESSAGE_INVALID: "El mensaje debe tener entre 1 y 240 caracteres.",
+  OUTSIDE_HEX: "¡Elige una posición dentro del hexágono!",
+  ANGLE_INVALID: "El ángulo del láser no es válido.",
+  PLANNING_CLOSED: "Se agotó el tiempo. Espera la revelación.",
+  ELIMINATED: "Ya has sido eliminado.",
+  PARTY_COMING_SOON: "El Modo Party todavía no está disponible.",
+  USE_LASER_START: "Esta sala tiene que iniciar Lásers.",
+  WRONG_GAME: "Selecciona Lásers en Juego libre."
 };
 function friendlyError(error) {
   const msg = error?.message || String(error);
@@ -82,6 +88,7 @@ function setRoute(code) {
   history.replaceState(null, "", url.pathname + url.search + url.hash);
 }
 function showHome(message) {
+  lasers?.exit();
   clearInterval(state.poll);
   state.poll = null;
   if (state.channel && state.client) state.client.removeChannel(state.channel);
@@ -182,11 +189,34 @@ function renderPlayers() {
     list.appendChild(row);
   });
 }
+function renderModes() {
+  const container = $("mode-options");
+  if (!container) return;
+  container.replaceChildren();
+  const isHost = state.room.host_user_id === state.user.id;
+  for (const mode of [
+    {id:"freeplay",name:"🎮 Juego libre",desc:"Elige un minijuego y juega partidas sueltas."},
+    {id:"party",name:"🎲 Modo Party",desc:"Circuito original de pruebas. Próximamente."}
+  ]) {
+    const b=element("button","game-option"+(state.room.mode===mode.id?" selected":""));
+    b.type="button";b.disabled=!isHost||state.room.status!=="lobby";
+    b.style.textAlign="left";
+    const title=element("strong","",mode.name);
+    const desc=element("small","",mode.desc);
+    desc.style.display="block";desc.style.marginTop="6px";desc.style.opacity=".7";
+    b.append(title,desc);
+    b.addEventListener("click",()=>void action(async()=>{
+      await rpc("set_room_mode",{p_room_id:state.roomId,p_mode:mode.id});
+      await syncRoom();
+    },b));
+    container.appendChild(b);
+  }
+}
 function renderGames() {
   const container = $("game-options");
   container.replaceChildren();
   const isHost = state.room.host_user_id === state.user.id;
-  const canChange = isHost && state.room.status === "lobby";
+  const canChange = isHost && state.room.status === "lobby" && state.room.mode === "freeplay";
   GAMES.forEach((game) => {
     const button = element("button", "game-option" + (game.id === state.room.game_id ? " selected" : ""));
     button.type = "button";
@@ -222,17 +252,27 @@ function renderRoom() {
   $("player-count").textContent = state.members.length + "/" + room.max_players;
   $("room-state-pill").textContent = room.status === "playing" ? "EN PARTIDA" : "EN ESPERA";
   $("lobby-status").textContent = room.status === "playing"
-    ? "La sesión ha comenzado. El minijuego llegará próximamente."
-    : "Comparte el código y prepara a tu equipo.";
+    ? "Partida en curso."
+    : (room.mode === "party" ? "Modo Party en desarrollo." : "Comparte el código y prepara a tu equipo.");
   $("ready-btn").hidden = room.status !== "lobby";
   $("ready-btn").textContent = self?.is_ready ? "✓ Estoy preparado" : "Estoy listo ✓";
   $("ready-btn").disabled = room.status !== "lobby";
   $("start-btn").hidden = !isHost || room.status !== "lobby";
-  $("start-btn").disabled = state.members.length < 2 || state.members.some((m) => !m.is_ready);
+  $("start-btn").disabled = room.mode !== "freeplay" || room.game_id !== "lasers" ||
+    state.members.length < 2 || state.members.some((m) => !m.is_ready);
+  $("start-btn").textContent = room.mode==="party" ? "Modo Party próximamente" : "⚡ Jugar Lásers";
   $("reset-btn").hidden = !isHost || room.status !== "playing";
   renderPlayers();
+  renderModes();
   renderGames();
   renderChat();
+  if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "lasers") {
+    $("lobby-screen").hidden = true;
+    lasers?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
+  } else {
+    lasers?.exit();
+    $("lobby-screen").hidden = false;
+  }
 }
 async function copyText(value) {
   try { await navigator.clipboard.writeText(value); }
@@ -273,7 +313,8 @@ function registerEvents() {
     await syncRoom();
   }, $("ready-btn")));
   $("start-btn").addEventListener("click", () => void action(async () => {
-    await rpc("start_room", { p_room_id: state.roomId });
+    if (state.room.mode!=="freeplay"||state.room.game_id!=="lasers") throw new Error("PARTY_COMING_SOON");
+    await rpc("start_lasers", { p_room_id: state.roomId });
     await syncRoom();
   }, $("start-btn")));
   $("reset-btn").addEventListener("click", () => void action(async () => {
@@ -302,6 +343,11 @@ function registerEvents() {
   });
 }
 async function init() {
+  lasers = new LaserGame({
+    rpc,notify,
+    leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de Lásers.");}),
+    reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
+  });
   registerEvents();
   try { $("player-name").value = localStorage.getItem("partyhub_name") || ""; } catch {}
   const code = new URLSearchParams(window.location.search).get("room");
