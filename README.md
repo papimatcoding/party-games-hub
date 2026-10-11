@@ -1,10 +1,10 @@
-# PARTY HUB 🎉 — Alpha 0.4
+# PARTY HUB 🎉 — Alpha 0.4.1
 
 Arcade multijugador original para navegador con salas compartidas y dos modos: **Juego libre** y **Modo Party** (este último aún en diseño).
 
 ## Juegos disponibles
 - **⚡ Lásers** — movimiento libre en un hexágono, apuntado a 360°, preparación oculta, disparos simultáneos y reducción de anillos.
-- **🧠 ¡NO REPITAS!** — tema aleatorio o seleccionado por el anfitrión, respuestas secretas, eliminación por duplicadas, usadas en rondas anteriores o inválidas. **Toda respuesta revelada, incluso si es inválida, pasa a la lista negra de esa partida.** Las respuestas rechazadas pueden marcarse para revisión editorial sin alterar los resultados.
+- **🧠 ¡NO REPITAS!** — tema aleatorio o seleccionado por el anfitrión, respuestas secretas, eliminación por duplicadas, usadas en rondas anteriores o inválidas. **Toda respuesta revelada, incluso si es inválida, pasa a la lista negra secreta de esa partida.** Los jugadores ven únicamente los resultados de la ronda actual durante la revelación; el historial de respuestas anteriores no aparece en pantalla ni en la respuesta del servidor, así que deben recordarlo. Las respuestas rechazadas pueden marcarse para revisión editorial sin alterar los resultados.
 
 ## Despliegue y base de datos
 - Web: https://papimatcoding.github.io/party-games-hub/
@@ -24,6 +24,7 @@ Arcade multijugador original para navegador con salas compartidas y dos modos: *
 - El servidor normaliza mayúsculas, espacios, tildes y puntuación; usa catálogos privados de respuestas canónicas y alias. Las coincidencias se resuelven antes de eliminar simultáneamente.
 - **12 temas** adaptados al tamaño de sala: planetas (2); selecciones campeonas del Mundial masculino (2); películas I–IX de Star Wars (2); comunidades autónomas españolas (2–3); provincias de España (2–8); futbolistas del Barça masculino (2–7); marcas de coches e instrumentos (2–10); Pokémon de Kanto, animales, países y elementos químicos (2–12).
 - El anfitrión puede elegir tema en el lobby o mantener la opción **Aleatorio (sorpresa)**. Solo se muestran opciones adecuadas al número actual de participantes.
+- **País Valencià** y **País Valenciano** son respuestas válidas como nombres alternativos de **Comunitat Valenciana**. Todas esas denominaciones comparten identidad y se bloquean mutuamente en rondas posteriores.
 - El catálogo incluye los 151 Pokémon de Kanto, las 50 provincias españolas y una selección de 302 animales. Se ha ampliado el Barça con leyendas y miembros de la plantilla 2026/27. **Lamine Yamal**, Lamine, Yamal y variantes próximas se reconocen como un mismo jugador.
 - Las erratas de **un solo carácter** se toleran únicamente si el resultado se puede atribuir sin ambigüedad a una sola respuesta y tiene al menos seis caracteres. Esto evita dar por válidos nombres cercanos pero distintos.
 - Las respuestas rechazadas pueden reportarse para que el equipo editorial revise omisiones; los informes quedan en una cola privada persistente. La revisión no corrige automáticamente la ronda ya jugada.
