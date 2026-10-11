@@ -5,7 +5,7 @@ const VERDICTS={
  valid:["✓","Sobrevive","nr-ok"],
  duplicate:["✕","Coincidencia","nr-bad"],
  reused:["↻","Ya estaba en lista negra","nr-bad"],
- invalid:["?","Respuesta no reconocida","nr-bad"],
+ invalid:["?","No figura en el catálogo","nr-bad"],
  timeout:["⌛","No respondió","nr-bad"]
 };
 function node(tag,klass,value){
@@ -116,7 +116,26 @@ export class NoRepitasGame{
      const title=node("div","nr-result-title");
      title.append(node("strong","",r.name),node("span","",r.answer||"Sin respuesta"));
      const status=node("span","nr-result-verdict",meta[0]+" "+meta[1]);
-     card.append(title,status);entries.append(card);
+     card.append(title,status);
+     if(r.user_id===this.userId && r.verdict==="invalid"){
+       const report=node("button","nr-report-button",
+         d.reported_invalid ? "✓ Enviada para revisión" : "⚑ Creo que era válida");
+       report.type="button";
+       report.disabled=Boolean(d.reported_invalid);
+       report.addEventListener("click",async()=>{
+         report.disabled=true;
+         try{
+           await this.rpc("nr_report_rejected_answer",{p_room_id:this.id,p_round_no:d.round});
+           this.notify("Anotada para revisión del catálogo. No cambia esta partida.");
+           await this.refresh();
+         }catch(error){
+           this.notify("No se pudo enviar la revisión: "+error.message);
+           report.disabled=false;
+         }
+       });
+       card.append(report);
+     }
+     entries.append(card);
    }
    const used=$("nr-used"),history=$("nr-blacklist");
    history.replaceChildren();
