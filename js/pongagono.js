@@ -1,7 +1,7 @@
 // PONGÁGONO: responsive Pong on a regular polygon.
 // The database alone decides paddle catches, wall collisions, acceleration and KOs.
 // This canvas only presents the latest authoritative state with short prediction.
-import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.11.0";
+import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.11.0";
 const $=id=>document.getElementById(id);
 const TAU=2*Math.PI,CENTER=350,SCALE=288;
 const COLORS=["#ffc56c","#ff8fad","#8ce8df","#b29aff","#b8eb81","#86bcff",
@@ -79,7 +79,7 @@ export class PongagonoGame {
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
   this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
   this.target=.5;this.visualU=null;this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.lastClockText="";this.lastEliminations=null;
+  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.meter=new FrameMeter();this.lastClockText="";this.lastEliminations=null;
   this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
   this.canvas.addEventListener("pointermove",e=>this.point(e,false));
   this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -112,6 +112,8 @@ export class PongagonoGame {
    const dt=Math.min(.06,Math.max(0,(timestamp-this.lastRender)/1000));
    this.lastRender=timestamp;
    this.stepInput(dt);this.paint(timestamp);this.clock();
+   if(this.meter.tick(timestamp))$("pong-perf").textContent=
+      "🎞 "+this.meter.fps+" FPS · 🌐 "+this.net.latencyLabel;
    this.frame=requestAnimationFrame(render);
   };
   this.frame=requestAnimationFrame(render);
@@ -120,7 +122,7 @@ export class PongagonoGame {
   this.live=false;clearInterval(this.tickHandle);this.poller?.stop();this.poller=null;cancelAnimationFrame(this.frame);
   this.tickHandle=null;this.frame=null;this.roomId=null;this.data=null;
   this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.lastClockText="";
+  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.lastClockText="";
   $("pong-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
