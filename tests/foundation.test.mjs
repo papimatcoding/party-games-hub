@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 const file = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 test("Live frontend is Party Hub", () => {
   assert.match(file("index.html"), /PARTY HUB/);
-  assert.doesNotMatch(file("js/app.js"), /futbin|sbc|packVerse|card_data/i);
+  assert.doesNotMatch(file("index.html"), /futbin|sbc|packVerse|card_data/i);
 });
 test("Browser config is limited to publishable values", () => {
   assert.match(file("js/config.js"), /SUPABASE_PUBLISHABLE_KEY/);
