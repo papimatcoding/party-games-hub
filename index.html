@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./css/lavalabras.css?v=0.10.0">
   <link rel="stylesheet" href="./css/party.css?v=0.10.0">
   <link rel="stylesheet" href="./css/fin-de-linea.css?v=0.10.0">
+  <link rel="stylesheet" href="./css/puerta-o-nada.css?v=0.10.0">
   <script type="module" src="./js/app.js?v=0.10.0"></script>
 </head>
 <body>
@@ -61,10 +62,11 @@
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#fbcd88,#dd719f 55%,#54296c)"><span style="font:900 96px 'Outfit',sans-serif;color:#fff4de;text-shadow:8px 9px #45204d">?!</span></div><div class="game-info"><strong>¡NO REPITAS!</strong><span>🧠 Respuestas secretas · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcf74,#dd663d 52%,#70233b)"><span style="font-size:90px;filter:drop-shadow(0 5px 16px #e84349)">🌋</span></div><div class="game-info"><strong>LAVALABRAS</strong><span>🔥 Palabras largas · torres contra la lava</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at 50% 40%,#ffd8a2,#9b628a 58%,#32234e)"><span style="font-size:84px;filter:drop-shadow(0 6px 15px #e9b089)">🚪</span></div><div class="game-info"><strong>PUERTA O NADA</strong><span>🍀 Azar puro · elige y sobrevive</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcb7b,#a76140 60%,#3e264e)"><span style="font-size:88px;filter:drop-shadow(0 5px 18px #ffbc78)">🚂</span></div><div class="game-info"><strong>¡FIN DE LÍNEA!</strong><span>🎯 Cañón frontal · diana trasera · vías y desvíos</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#8f7ec4,#402b72 64%,#1c1635)"><span style="font-size:90px;filter:drop-shadow(0 5px 13px #301c67)">🏓</span></div><div class="game-info"><strong>PONGÁGONO</strong><span>⚡ Pong poligonal · 2–12 jugadores</span></div></article>
         </div>
-        <p class="catalog-note">Seis minijuegos · Modo Fiesta con cinco pruebas y podios</p>
+        <p class="catalog-note">Siete minijuegos · Modo Fiesta con cinco pruebas y podios</p>
       </section>
 
       <section id="party-live-screen" class="party-live-screen" hidden>
@@ -127,7 +129,7 @@
                   <option value="">🎲 Aleatorio (sorpresa)</option>
                 </select>
                 <p id="nr-topic-help">Por defecto, el tema se anuncia al iniciar. El anfitrión puede elegir uno válido para el grupo.</p>
-              </div><p class="muted">Seis minijuegos en Juego libre. Modo Fiesta: cinco diferentes por circuito, con podios y confirmación antes de continuar.</p></section>
+              </div><p class="muted">Siete minijuegos en Juego libre. Modo Fiesta: cinco diferentes por circuito, con podios y confirmación antes de continuar.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -413,6 +415,53 @@
               </ul>
             </div>
             <button class="button button-dark" id="rail-reset" type="button" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="door-screen" class="door-screen" hidden>
+        <div class="door-top">
+          <div class="door-brand">
+            <span class="door-symbol">🚪</span>
+            <div><div class="overline">SÉPTIMO MINIJUEGO</div><h2>PUERTA O NADA</h2></div>
+          </div>
+          <button type="button" id="door-exit" class="door-back">← Salir de la sala</button>
+        </div>
+        <div class="door-metadata">
+          <span id="door-round">RONDA 1 / 5</span>
+          <span id="door-phase">ELIGE PUERTA</span>
+          <span id="door-clock">12s</span>
+          <span id="door-alive">0 supervivientes</span>
+          <span>SALA <b id="door-code">------</b></span>
+        </div>
+        <div class="door-layout">
+          <div class="door-stage">
+            <div class="door-stage-top">
+              <div class="overline">🍀 SOLO LA SUERTE DECIDE</div>
+              <h3 id="door-detail">¿QUÉ PUERTA ELIGES?</h3>
+              <p id="door-hint">Sin pistas. Ninguna puerta es más segura que otra.</p>
+            </div>
+            <div id="door-doors" class="door-doors" aria-label="Elige una puerta numerada"></div>
+            <div class="door-footer" aria-live="polite">
+              <p id="door-message">Elige una puerta para intentar sobrevivir.</p>
+              <span id="door-pick-status">Esperando elecciones...</span>
+            </div>
+          </div>
+          <aside class="door-sidebar">
+            <h3>👥 Supervivientes</h3>
+            <p>Todos deciden en secreto. Las puertas se abren a la vez y cada ronda se sortean de nuevo.</p>
+            <div class="door-roster" id="door-players"></div>
+            <div class="door-rules">
+              <strong>Cómo se juega</strong>
+              <ul>
+                <li>Elige una puerta antes de que termine el tiempo.</li>
+                <li>Sin pistas ni patrones: las seguras cambian aleatoriamente cada ronda.</li>
+                <li>Si tu puerta es peligrosa, quedas eliminado.</li>
+                <li>Máximo cinco rondas; quienes sobreviven hasta el final comparten la victoria.</li>
+                <li>Si todos caen, quienes hayan resistido más rondas quedan por delante.</li>
+                <li>PC: teclas 1–5 · Móvil: toca la puerta.</li>
+              </ul>
+            </div>
+            <button type="button" id="door-reset" class="button button-dark" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
