@@ -48,7 +48,7 @@ export class FinDeLineaGame{
   this.c=this.canvas.getContext("2d");
   this.active=false;this.roomId=null;this.snapshot=null;
   this.poll=null;this.frame=null;this.loading=false;this.lastAt=0;
-  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.meter=new FrameMeter();this.backdrop=null;this.smooth=new Map();
+  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.meter=new FrameMeter();this.backdrop=null;this.lastClockText="";this.lastFireText="";this.smooth=new Map();
   this.nextFireLocal=0;this.intentLocal=0;this.actions=new Set();
   this.onKey=e=>{
    if(!this.active||e.target instanceof HTMLInputElement||
@@ -94,7 +94,7 @@ export class FinDeLineaGame{
   document.removeEventListener("keydown",this.onKey);
   this.poll=null;this.frame=null;this.roomId=null;this.snapshot=null;
   this.smooth.clear();this.actions.clear();this.lastAt=0;
-  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.intentLocal=0;
+  this.timeOffset=0;this.hasClock=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.intentLocal=0;this.lastClockText="";this.lastFireText="";
   $("rail-screen").hidden=true;
  }
  async choose(turn){
@@ -133,7 +133,8 @@ export class FinDeLineaGame{
  clock(){
   const s=this.snapshot;if(!s)return;
   const left=Math.max(0,Math.ceil((Date.parse(s.deadline)-Date.now()-this.timeOffset)/1000));
-  $("rail-clock").textContent=s.phase==="finished"?"FINAL":left+" s";
+  const label=s.phase==="finished"?"FINAL":left+" s";
+  if(label!==this.lastClockText){$("rail-clock").textContent=label;this.lastClockText=label;}
   const me=this.me;
   if(me){
    const fireReady=Math.max(0,(Date.parse(me.cooldown_until)-Date.now()-this.timeOffset)/1000);
