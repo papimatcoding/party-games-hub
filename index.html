@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="./css/no-repitas.css">
   <link rel="stylesheet" href="./css/patinazo.css">
   <link rel="stylesheet" href="./css/pongagono.css">
+  <link rel="stylesheet" href="./css/lavalabras.css">
+  <link rel="stylesheet" href="./css/party.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
@@ -21,7 +23,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.6</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.7</span></div>
     </header>
 
     <main>
@@ -57,9 +59,10 @@
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#bdeff5,#4f99be 60%,#1f3a65)"><span style="font-size:92px;filter:drop-shadow(0 6px 17px #0b4e7d)">🧊</span></div><div class="game-info"><strong>¡PATINAZO!</strong><span>❄ Dirección secreta · choques sobre hielo</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#f9a3b7,#ac4068 45%,#301843)"><span style="font-size:92px;filter:drop-shadow(0 0 15px #fff7)">⚡</span></div><div class="game-info"><strong>Lásers</strong><span>🎯 Posición secreta · 2–12 jugadores</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at center,#fbcd88,#dd719f 55%,#54296c)"><span style="font:900 96px 'Outfit',sans-serif;color:#fff4de;text-shadow:8px 9px #45204d">?!</span></div><div class="game-info"><strong>¡NO REPITAS!</strong><span>🧠 Respuestas secretas · 2–12 jugadores</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcf74,#dd663d 52%,#70233b)"><span style="font-size:90px;filter:drop-shadow(0 5px 16px #e84349)">🌋</span></div><div class="game-info"><strong>LAVALABRAS</strong><span>🔥 Palabras largas · torres contra la lava</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#8f7ec4,#402b72 64%,#1c1635)"><span style="font-size:90px;filter:drop-shadow(0 5px 13px #301c67)">🏓</span></div><div class="game-info"><strong>PONGÁGONO</strong><span>⚡ Pong poligonal · 2–12 jugadores</span></div></article>
         </div>
-        <p class="catalog-note">Cuatro minijuegos: Lásers, ¡NO REPITAS!, ¡PATINAZO! y PONGÁGONO</p>
+        <p class="catalog-note">Cinco minijuegos jugables y un Modo Fiesta en preparación</p>
       </section>
 
       <section id="lobby-screen" class="lobby" hidden>
@@ -75,6 +78,15 @@
           </section>
           <div class="lobby-sidebar">
             <section class="panel mode-panel"><div class="panel-heading"><div><h2>🎲 ¿Cómo jugamos?</h2><p>Dos maneras de liarla con amigos.</p></div></div><div id="mode-options" class="mode-options"></div></section>
+            <section id="party-preview-panel" class="panel party-preview" hidden>
+              <div class="panel-heading"><div><h2>🏅 CIRCUITO PARTY</h2><p>5 juegos · medallas acumuladas</p></div></div>
+              <div class="party-formats"><strong>5</strong><span>10 🔒</span><span>15 🔒</span><span>20 🔒</span></div>
+              <p class="party-desc">🥇 Oro = 3 puntos · 🥈 Plata = 2 · 🥉 Bronce = 1. Empate: más oros, luego más platas.</p>
+              <div id="party-list" class="party-list"><p class="muted">Preparando el circuito...</p></div>
+              <div id="party-score-list" class="party-score-list"></div>
+              <button type="button" id="party-shuffle" class="button button-dark" hidden>🔀 Mezclar orden de juegos</button>
+              <p class="party-limited">El circuito y el marcador ya se pueden preparar. El inicio automático y el reparto de medallas entre minijuegos llegarán en una siguiente actualización.</p>
+            </section>
             <section class="panel game-choice"><div class="panel-heading"><div><h2>🕹️ Votación de juego</h2><p>El anfitrión escoge, por ahora.</p></div></div><div id="game-options" class="game-options"></div>
               <div id="nr-topic-settings" class="nr-topic-settings" hidden>
                 <label for="nr-topic-select">🧠 TEMA PARA ¡NO REPITAS!</label>
@@ -82,7 +94,7 @@
                   <option value="">🎲 Aleatorio (sorpresa)</option>
                 </select>
                 <p id="nr-topic-help">Por defecto, el tema se anuncia al iniciar. El anfitrión puede elegir uno válido para el grupo.</p>
-              </div><p class="muted">Lásers, ¡NO REPITAS!, ¡PATINAZO! y PONGÁGONO son jugables. El próximo lo decides tú.</p></section>
+              </div><p class="muted">Cinco minijuegos disponibles en Juego libre. Modo Fiesta: circuito de 5 en preparación.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -253,6 +265,69 @@
               <p>La pala y el hueco se ajustan al tamaño de la arena. La pelota acelera con los rebotes, pero <strong>recupera su velocidad inicial cada vez que se elimina a alguien.</strong></p>
             </div>
             <button id="pong-reset" class="button button-dark pong-reset" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="lava-screen" class="lava-screen" hidden>
+        <div class="lava-top">
+          <div class="lava-brand"><span class="lava-brand-mark">🌋</span>
+            <div><div class="overline">QUINTO MINIJUEGO</div><h2>LAVALABRAS</h2></div>
+          </div>
+          <button id="lava-leave" class="lava-back">← Salir de la sala</button>
+        </div>
+        <div class="lava-badges">
+          <span id="lava-round">RONDA 1 / 12</span>
+          <span id="lava-phase">PALABRAS SECRETAS</span>
+          <span id="lava-live">0 vivos</span>
+          <span id="lava-height">LAVA: 0 BLOQUES</span>
+          <span>SALA <b id="lava-code">------</b></span>
+        </div>
+        <div class="lava-columns">
+          <div class="lava-main">
+            <div class="lava-topic-banner">
+              <small>📝 TEMA DE ESTA RONDA</small>
+              <h3 id="lava-topic">Descubriendo tema...</h3>
+              <p id="lava-hint">Busca una respuesta lo más larga posible.</p>
+            </div>
+            <div class="lava-arena">
+              <div class="lava-canvas-wrap">
+                <canvas id="lava-canvas" width="700" height="500"
+                  aria-label="Torres de bloques de cada jugador, con lava subiendo desde el suelo."></canvas>
+                <span id="lava-clock" class="lava-clock">24s</span>
+              </div>
+            </div>
+            <div class="lava-form-panel">
+              <h3>🧱 Construye tu torre</h3>
+              <form id="lava-form" autocomplete="off">
+                <div class="lava-answer-row">
+                  <input id="lava-input" maxlength="65" spellcheck="false" autocomplete="off"
+                    aria-label="Respuesta para el tema actual" placeholder="Escribe una respuesta válida...">
+                  <button type="submit" class="button button-primary" id="lava-send">Enviar palabra ↑</button>
+                </div>
+                <div class="lava-input-sub">
+                  <span id="lava-letters">0 letras</span>
+                  <span>Espacios y signos no dan bloques</span>
+                </div>
+              </form>
+              <p id="lava-message" class="lava-message" role="status">Una letra = un bloque. ¡Huye de la lava!</p>
+            </div>
+            <div class="lava-results" id="lava-results" hidden>
+              <h3>🔥 Resultado de la ronda</h3>
+              <div id="lava-results-list" class="lava-results-list"></div>
+            </div>
+          </div>
+          <aside class="lava-side">
+            <h3>🧗 Supervivientes</h3>
+            <p class="lava-muted">Cada ronda trae una categoría diferente. Las respuestas se descubren al subir la lava.</p>
+            <div id="lava-roster" class="lava-roster"></div>
+            <div class="lava-rules">
+              <strong>Cómo se juega</strong>
+              <p>Escribe una palabra o nombre válido del tema. Cada letra suma un bloque permanente a tu torre. Se admiten respuestas iguales entre jugadores.</p>
+              <p>La lava sube 6 bloques en la primera ronda, 8 en la segunda, 10 en la tercera… El que queda a su altura o por debajo se elimina.</p>
+              <p id="lava-next">Próxima crecida: +6 bloques</p>
+              <p>Gana el último en pie. Si todos caen a la vez o no hay un único superviviente tras 12 rondas, hay empate.</p>
+            </div>
+            <button id="lava-reset" class="button button-dark lava-reset" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
