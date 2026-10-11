@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="./css/pongagono.css">
   <link rel="stylesheet" href="./css/lavalabras.css">
   <link rel="stylesheet" href="./css/party.css">
-  <script type="module" src="./js/app.js"></script>
+  <script type="module" src="./js/app.js?v=0.9.0"></script>
 </head>
 <body>
   <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
@@ -23,7 +23,7 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.8.1</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.9.0</span></div>
     </header>
 
     <main>
@@ -62,7 +62,7 @@
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcf74,#dd663d 52%,#70233b)"><span style="font-size:90px;filter:drop-shadow(0 5px 16px #e84349)">🌋</span></div><div class="game-info"><strong>LAVALABRAS</strong><span>🔥 Palabras largas · torres contra la lava</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#8f7ec4,#402b72 64%,#1c1635)"><span style="font-size:90px;filter:drop-shadow(0 5px 13px #301c67)">🏓</span></div><div class="game-info"><strong>PONGÁGONO</strong><span>⚡ Pong poligonal · 2–12 jugadores</span></div></article>
         </div>
-        <p class="catalog-note">Cinco minijuegos jugables y un Modo Fiesta en preparación</p>
+        <p class="catalog-note">Cinco minijuegos · Modo Fiesta con podios y preparación</p>
       </section>
 
       <section id="party-live-screen" class="party-live-screen" hidden>
@@ -83,6 +83,10 @@
             <h2>🏅 Clasificación general</h2>
             <p>🥇 3 pts · 🥈 2 pts · 🥉 1 pt</p>
             <div id="party-live-standings" class="party-live-standings"></div>
+            <div id="party-next-panel" class="party-next-panel" hidden>
+              <strong id="party-next-status">Esperando a los jugadores...</strong>
+              <button id="party-next-ready" type="button" class="button button-primary">Estoy listo para el siguiente juego ✓</button>
+            </div>
             <button type="button" class="button button-dark" id="party-return" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
@@ -121,7 +125,7 @@
                   <option value="">🎲 Aleatorio (sorpresa)</option>
                 </select>
                 <p id="nr-topic-help">Por defecto, el tema se anuncia al iniciar. El anfitrión puede elegir uno válido para el grupo.</p>
-              </div><p class="muted">Cinco minijuegos disponibles en Juego libre. Modo Fiesta: circuito de 5 en preparación.</p></section>
+              </div><p class="muted">Cinco minijuegos disponibles en Juego libre. Modo Fiesta: cinco pruebas con podio y listo antes de continuar.</p></section>
             <section class="panel chat-panel"><div class="panel-heading"><div><h2>💬 Chat de la sala</h2><p>Que empiece el trash talk.</p></div></div><div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" maxlength="240" placeholder="Escribe un mensaje..." autocomplete="off" aria-label="Mensaje"><button class="button button-dark" type="submit">Enviar ↗</button></form></section>
           </div>
         </div>
@@ -360,6 +364,25 @@
       </section>
     </main>
     <footer><span>PARTY HUB © 2026 · HECHO PARA PICARSE ENTRE AMIGOS</span><span>Un arcade pequeño, grandes desgracias.</span></footer>
+  </div>
+  <div id="game-ready-overlay" class="game-ready-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="game-ready-heading">
+    <div class="game-ready-card">
+      <span class="ready-symbol">🎮</span>
+      <div class="overline">PREPARACIÓN DE PARTIDA</div>
+      <h2 id="game-ready-heading">¿Todo listo?</h2>
+      <p id="game-ready-description">La partida comenzará cuando todos confirmen.</p>
+      <strong id="game-ready-counter">0 / 0 jugadores preparados</strong>
+      <button id="game-ready-confirm" type="button" class="button button-primary">✓ Estoy listo</button>
+      <p class="game-ready-tip">PC: ratón o teclado · Móvil: controles táctiles.</p>
+    </div>
+  </div>
+  <div id="version-overlay" class="game-ready-overlay version-overlay" hidden role="alertdialog" aria-modal="true" aria-labelledby="version-heading">
+    <div class="game-ready-card">
+      <span class="ready-symbol">🔄</span>
+      <h2 id="version-heading">Actualización necesaria</h2>
+      <p id="version-message">Todos debemos jugar con una versión compatible de Party Hub.</p>
+      <button id="version-reload" class="button button-primary" type="button">Actualizar Party Hub ↻</button>
+    </div>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body>
