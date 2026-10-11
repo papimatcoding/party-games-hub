@@ -440,7 +440,11 @@
               <h3 id="door-detail">¿QUÉ PUERTA ELIGES?</h3>
               <p id="door-hint">Sin pistas. Ninguna puerta es más segura que otra.</p>
             </div>
-            <div id="door-doors" class="door-doors" aria-label="Elige una puerta numerada"></div>
+            <div class="door-gamble">
+              <button id="door-double" type="button" class="door-gamble-button">🔥 ACTIVAR DOBLE O NADA</button>
+              <span id="door-risk-label">Elige una puerta, o arriesga dos por una estrella ⭐ de desempate.</span>
+            </div>
+            <div id="door-doors" class="door-doors" aria-label="Elige una o dos puertas numeradas"></div>
             <div class="door-footer" aria-live="polite">
               <p id="door-message">Elige una puerta para intentar sobrevivir.</p>
               <span id="door-pick-status">Esperando elecciones...</span>
@@ -453,12 +457,13 @@
             <div class="door-rules">
               <strong>Cómo se juega</strong>
               <ul>
-                <li>Elige una puerta antes de que termine el tiempo.</li>
+                <li>Elige una puerta antes de que termine el tiempo; hay entre 6 y 9.</li>
                 <li>Sin pistas ni patrones: las seguras cambian aleatoriamente cada ronda.</li>
                 <li>Si tu puerta es peligrosa, quedas eliminado.</li>
+                <li><b>Doble o nada:</b> escoge dos puertas distintas. Solo sobrevives si ambas son seguras; ganas ⭐ para desempates.</li>
                 <li>Máximo cinco rondas; quienes sobreviven hasta el final comparten la victoria.</li>
                 <li>Si todos caen, quienes hayan resistido más rondas quedan por delante.</li>
-                <li>PC: teclas 1–5 · Móvil: toca la puerta.</li>
+                <li>PC: teclas 1–9 · Móvil: toca la puerta.</li>
               </ul>
             </div>
             <button type="button" id="door-reset" class="button button-dark" hidden>↩ Volver al lobby</button>
