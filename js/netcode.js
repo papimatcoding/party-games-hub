@@ -45,7 +45,9 @@ export function makeAdaptivePoller(fetchSnapshot,{active=()=>true,visible=()=>tr
    // At high RTT, avoid stacking pending snapshots in PostgreSQL.
    // Do not throttle the frame loop: only transport cadence changes.
    const base=!visible()?hidden:latency>400?slow:fast;
-   const pause=bad?Math.max(slow,base):base;
+   // Cadence measures START-to-START, not end-to-start; otherwise every
+   // request silently adds its RTT to the apparent tick interval.
+   const pause=bad?Math.max(slow,base):Math.max(30,base-latency);
    timer=setTimeout(run,pause);
   }
  }
@@ -54,4 +56,19 @@ export function makeAdaptivePoller(fetchSnapshot,{active=()=>true,visible=()=>tr
   stop(){stopped=true;clearTimeout(timer);timer=null;},
   poke(){if(stopped||inFlight)return;clearTimeout(timer);timer=null;void run();}
  };
+}
+
+
+// Lightweight display-rate measurement, updated only once per second.
+export class FrameMeter{
+ constructor(){this.count=0;this.last=0;this.fps=0;}
+ tick(time){
+  if(!this.last)this.last=time;
+  this.count++;
+  const span=time-this.last;
+  if(span<1000)return false;
+  this.fps=Math.round(this.count*1000/span);
+  this.count=0;this.last=time;
+  return true;
+ }
 }
