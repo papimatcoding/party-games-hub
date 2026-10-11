@@ -32,10 +32,6 @@
 .nr-player-dot{color:#ffda98}
 .nr-player-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800}
 .nr-player-status{font-size:9px;color:#bce8ba;font-weight:900;white-space:nowrap}
-.nr-used-panel{background:#312947;margin-top:15px;padding:19px}
-.nr-used-panel h4{font:800 15px 'Outfit';margin:0}
-.nr-blacklist{display:flex;flex-wrap:wrap;gap:7px;max-height:240px;overflow-y:auto;margin-top:14px}
-.nr-used-answer{padding:7px 10px;color:#e2cce6;background:#4b3758;border:1px solid #7c577d;border-radius:50px;font-size:11px}
 .nr-result-list{display:flex;flex-direction:column;gap:9px;margin-top:17px}
 .nr-result{background:#372d4e;border-left:4px solid #f5a7b9;border-radius:10px;padding:12px}
 .nr-result.nr-ok{border-left-color:#9eedab}
