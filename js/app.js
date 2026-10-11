@@ -1,10 +1,11 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
-import { LaserGame } from "./lasers.js";
-import { NoRepitasGame } from "./no-repitas.js";
-import { PatinazoGame } from "./patinazo.js";
-import { PongagonoGame } from "./pongagono.js";
-import { LavalabrasGame } from "./lavalabras.js";
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js?v=0.9.0";
+import { LaserGame } from "./lasers.js?v=0.9.0";
+import { NoRepitasGame } from "./no-repitas.js?v=0.9.0";
+import { PatinazoGame } from "./patinazo.js?v=0.9.0";
+import { PongagonoGame } from "./pongagono.js?v=0.9.0";
+import { LavalabrasGame } from "./lavalabras.js?v=0.9.0";
 
+import { APP_BUILD } from "./release.js?v=0.9.0";
 const $ = (id) => document.getElementById(id);
 const GAMES = [
   { id: "lasers", emoji: "⚡", name: "Lásers" },
@@ -24,6 +25,11 @@ let partyCache = { signature: null, loading: false, data: null };
 let partyData = null;
 let partyPoll = null;
 let partyBusy = false;
+let gameGateData=null;
+let gameGatePoll=null;
+let releasePoll=null;
+let gateBusy=false;
+let versionBlocked=false;
 
 let nrTopicsCache = { signature: null, items: [], loading: false };
 function renderNrTopicSettings() {
@@ -148,6 +154,9 @@ function renderPartyPresentation() {
     : "Las medallas se entregan al acabar cada prueba";
   $("party-cancel").hidden=!isHost||d.phase==="finished";
   if(!between)return;
+  lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();
+  $("lobby-screen").hidden=true;
+  $("game-ready-overlay").hidden=true;
   const isFinal=d.phase==="finished";
   const champions=scores.filter(x=>x.place===1);
   $("party-live-title").textContent=isFinal
@@ -158,7 +167,8 @@ function renderPartyPresentation() {
     ? "Circuito completado. La clasificación definitiva se decide por puntos, oros y platas."
     : "Siguiente prueba: "+partyGameLabel(next?.game||"")+". El cambio será automático.";
   const remaining=Math.max(0,Math.ceil((Date.parse(d.transition_at)-Date.now())/1000));
-  $("party-live-clock").textContent=isFinal?"🎉 CIRCUITO TERMINADO":"⏱ Cambio en "+remaining+"s";
+  $("party-live-clock").textContent=isFinal?"🎉 CIRCUITO TERMINADO":
+    remaining>0?"🏅 Podio · al menos "+remaining+"s más":"🏅 Podio · esperaremos a todos";
   $("party-podium-title").textContent=isFinal?"🏅 Podio de la quinta prueba":"🏅 Medallas de la prueba "+d.current_slot;
   const podium=$("party-podium");podium.replaceChildren();
   if(slot?.podium?.length){
@@ -187,6 +197,14 @@ function renderPartyPresentation() {
       element("span",item.completed?"✓ Completado":item.slot===d.current_slot?"En curso":"Pendiente"));
     if(item.completed)line.lastChild.className="party-live-done";
     schedule.append(line);
+  }
+  const nextPanel=$("party-next-panel"),nextReady=$("party-next-ready");
+  nextPanel.hidden=isFinal;
+  if(!isFinal){
+    $("party-next-status").textContent=(d.ready_count||0)+" / "+(d.ready_total||0)+
+      " listos para la siguiente prueba"+(remaining>0?" · podio "+remaining+"s":"");
+    nextReady.disabled=Boolean(d.my_ready);
+    nextReady.textContent=d.my_ready?"✓ Preparado · esperando al grupo":"✓ Listo para la siguiente prueba";
   }
   const back=$("party-return");
   back.hidden=false;
@@ -223,6 +241,71 @@ async function leavePartyCircuit() {
   partyData=null;
   partyCache={signature:null,loading:false,data:null};
   await syncRoom();
+}
+
+
+function blockOldVersion(reason) {
+  versionBlocked=true;
+  $("version-message").textContent=reason||"La versión instalada no coincide con la requerida por el servidor.";
+  $("version-overlay").hidden=false;
+  $("game-ready-overlay").hidden=true;
+}
+async function validateRelease() {
+  const resp=await fetch("./release.json?check="+Date.now(),{cache:"no-store"});
+  if(!resp.ok)throw new Error("No se pudo comprobar la versión publicada.");
+  const published=await resp.json();
+  const backend=await rpc("required_client_build",{});
+  if(published.build!==APP_BUILD||backend!==APP_BUILD){
+    blockOldVersion("Versión local "+APP_BUILD+" · versión requerida "+backend+". Todos necesitáis actualizar.");
+    throw new Error("CLIENT_VERSION_OUTDATED");
+  }
+  return true;
+}
+function renderGameGate() {
+  const r=state.room, d=gameGateData;
+  if(versionBlocked){$("game-ready-overlay").hidden=true;return;}
+  if(!r||r.status!=="playing"||
+    (r.mode==="party"&&partyData&&partyData.current_game===r.game_id
+      &&["intermission","finished"].includes(partyData.phase))){
+    $("game-ready-overlay").hidden=true;return;
+  }
+  const known=d?.game_id===r.game_id&&d.active;
+  const when=known&&d.live_at?Date.parse(d.live_at):null;
+  const remain=when===null?null:Math.max(0,Math.ceil((when-Date.now())/1000));
+  if(known&&when!==null&&remain===0){
+    $("game-ready-overlay").hidden=true;return;
+  }
+  $("game-ready-overlay").hidden=false;
+  const button=$("game-ready-confirm");
+  if(!known){
+    $("game-ready-heading").textContent="Cargando la partida...";
+    $("game-ready-description").textContent="Sincronizando jugadores y versión.";
+    $("game-ready-counter").textContent="Comprobando...";
+    button.disabled=true;button.hidden=false;
+  }else if(when!==null){
+    $("game-ready-heading").textContent="¡Todos preparados!";
+    $("game-ready-description").textContent="La partida empieza para todos a la vez.";
+    $("game-ready-counter").textContent="🏁 "+remain+" · "+(d.ready_count||0)+"/"+(d.ready_total||0)+" listos";
+    button.hidden=true;
+  }else{
+    $("game-ready-heading").textContent="¿Listos para "+(GAMES.find(x=>x.id===r.game_id)?.name||"jugar")+"?";
+    $("game-ready-description").textContent="Tu juego ya está cargado. La cuenta atrás no arrancará hasta que todos pulséis Listo.";
+    $("game-ready-counter").textContent=d.ready_count+" / "+d.ready_total+" jugadores listos";
+    button.hidden=false;button.disabled=Boolean(d.my_ready);
+    button.textContent=d.my_ready?"✓ Ya estás listo":"✓ Estoy listo, empezar";
+  }
+}
+async function syncGameGate() {
+  const room=state.room,roomId=state.roomId;
+  if(!room||!roomId||room.status!=="playing"||versionBlocked||gateBusy)return;
+  gateBusy=true;
+  try{
+    const data=await rpc("game_gate_state",{p_room_id:roomId});
+    if(roomId!==state.roomId||state.room?.status!=="playing")return;
+    gameGateData=data;
+    renderGameGate();
+  }catch(e){console.error("Preparación:",e);}
+  finally{gateBusy=false;}
 }
 
 function notify(message) {
@@ -314,6 +397,9 @@ function showHome(message) {
   pongagono?.exit();
   lavalabras?.exit();
   clearInterval(partyPoll);partyPoll=null;partyData=null;
+  clearInterval(gameGatePoll);gameGatePoll=null;gameGateData=null;
+  clearInterval(releasePoll);releasePoll=null;
+  $("game-ready-overlay").hidden=true;
   document.body.classList.remove("party-active");
   $("party-live-screen").hidden=true;$("party-hud").hidden=true;
   clearInterval(state.poll);
@@ -347,8 +433,15 @@ function watchRoom(id) {
   state.poll = setInterval(refresh, 8000);
   clearInterval(partyPoll);
   partyPoll = setInterval(()=>void syncParty(),1300);
+  clearInterval(gameGatePoll);
+  gameGatePoll = setInterval(()=>void syncGameGate(),800);
+  clearInterval(releasePoll);
+  releasePoll = setInterval(()=>void validateRelease().catch(e=>console.warn("Release check:",e.message)),18000);
 }
 async function enterRoom(id) {
+  await validateRelease();
+  await rpc("client_checkin",{p_room_id:id,p_build:APP_BUILD});
+  versionBlocked=false;$("version-overlay").hidden=true;
   state.roomId = id;
   $("home-screen").hidden = true;
   $("catalog").hidden = true;
@@ -550,6 +643,7 @@ function renderRoom() {
     $("lobby-screen").hidden = false;
   }
   renderPartyPresentation();
+  renderGameGate();
 }
 async function copyText(value) {
   try { await navigator.clipboard.writeText(value); }
@@ -582,6 +676,20 @@ async function joinRoom() {
 function registerEvents() {
   $("party-return").addEventListener("click",()=>void action(leavePartyCircuit,$("party-return")));
   $("party-cancel").addEventListener("click",()=>void action(leavePartyCircuit,$("party-cancel")));
+  $("party-next-ready").addEventListener("click",()=>void action(async()=>{
+    await rpc("party_next_ready",{p_room_id:state.roomId,p_ready:true});
+    await syncParty();
+  },$("party-next-ready")));
+  $("game-ready-confirm").addEventListener("click",()=>void action(async()=>{
+    await validateRelease();
+    await rpc("game_gate_ready",{p_room_id:state.roomId,p_ready:true});
+    await syncGameGate();
+  },$("game-ready-confirm")));
+  $("version-reload").addEventListener("click",()=>{
+    const url=new URL(window.location.href);
+    url.searchParams.set("reload",String(Date.now()));
+    window.location.replace(url.href);
+  });
   $("create-btn").addEventListener("click", () => void action(createRoom, $("create-btn")));
   $("party-shuffle").addEventListener("click",()=>void action(async()=>{
     await rpc("party_prepare",{p_room_id:state.roomId});
