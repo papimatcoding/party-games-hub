@@ -189,7 +189,10 @@ function renderPartyPresentation() {
     schedule.append(line);
   }
   const back=$("party-return");
-  back.hidden=!isHost;back.textContent=isFinal?"↩ Volver al lobby y preparar otra fiesta":"Cancelar el circuito";
+  back.hidden=false;
+  back.textContent=isHost
+    ? (isFinal?"↩ Volver al lobby y preparar otra fiesta":"Cancelar el circuito")
+    : "← Abandonar la sala";
 }
 async function syncParty() {
   const room=state.room,roomId=state.roomId;
@@ -210,7 +213,11 @@ async function syncParty() {
   finally{partyBusy=false;}
 }
 async function leavePartyCircuit() {
-  if(state.room?.host_user_id!==state.user?.id)return;
+  if(state.room?.host_user_id!==state.user?.id){
+    await rpc("leave_room",{p_room_id:state.roomId});
+    showHome("Has abandonado el Modo Fiesta.");
+    return;
+  }
   if(partyData?.phase!=="finished"&&!confirm("¿Cancelar toda la fiesta? Se perderán las medallas de esta sesión."))return;
   await rpc("party_exit",{p_room_id:state.roomId});
   partyData=null;
