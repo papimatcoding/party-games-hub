@@ -24,6 +24,9 @@ jobs:
         run: |
           npm test
           node --check js/app.js
+          node --check js/lasers.js
+          node --check js/no-repitas.js
+          node --check scripts/preview-wikidata-barca.mjs
           node --check js/config.js
       - uses: actions/configure-pages@v5
       - name: Build static site
