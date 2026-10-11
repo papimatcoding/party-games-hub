@@ -139,7 +139,8 @@ export class FinDeLineaGame{
   if(me){
    const fireReady=Math.max(0,(Date.parse(me.cooldown_until)-Date.now()-this.timeOffset)/1000);
    $("rail-fire").disabled=!this.canPlay;
-   $("rail-fire").textContent=fireReady>.1?"RECARGA "+fireReady.toFixed(1)+"s":"💥 DISPARAR";
+   const fireLabel=fireReady>.1?"RECARGA "+fireReady.toFixed(1)+"s":"💥 DISPARAR";
+   if(fireLabel!==this.lastFireText){$("rail-fire").textContent=fireLabel;this.lastFireText=fireLabel;}
   }
  }
  updateChoiceButtons(){
