@@ -160,7 +160,7 @@ function renderPartyPresentation() {
     : "Las medallas se entregan al acabar cada prueba";
   $("party-cancel").hidden=!isHost||d.phase==="finished";
   if(!between)return;
-  lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();finDeLinea?.exit();puertaONada?.exit();puertaONada?.exit();
+  lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();finDeLinea?.exit();puertaONada?.exit();
   $("lobby-screen").hidden=true;
   $("game-ready-overlay").hidden=true;
   const isFinal=d.phase==="finished";
@@ -614,7 +614,7 @@ function renderRoom() {
   const showPartyBoard=room.mode==="party"&&room.status==="playing"&&partyData&&
     partyData.current_game===room.game_id&&["intermission","finished"].includes(partyData.phase);
   if(showPartyBoard){
-    lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();finDeLinea?.exit();
+    lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();finDeLinea?.exit();puertaONada?.exit();
     $("lobby-screen").hidden=true;
   } else if (room.status === "playing" && ["freeplay","party"].includes(room.mode) && room.game_id === "lasers") {
     $("lobby-screen").hidden = true;
