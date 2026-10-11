@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.10.0
+# PARTY HUB 🎉 — Alpha 0.11.0
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de cinco minijuegos seleccionados entre siete, con medallas).
 
