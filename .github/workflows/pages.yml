@@ -35,7 +35,7 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p site
-          cp index.html site/
+          cp index.html release.json site/
           cp -r css js assets site/
           touch site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
