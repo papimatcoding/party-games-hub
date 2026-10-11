@@ -33,7 +33,7 @@ test("Only one answer per round, changeable until the deadline; no duplicate pen
  assert.match(api,/set raw_answer=excluded\.raw_answer/);
  assert.doesNotMatch(file("supabase/40_lavalabras_engine.sql"),/verdict='duplicate'/);
 });
-test("Five-game medal circuit is configured, not falsely playable yet",()=>{
+test("Five-game medal circuit is now playable and server-authoritative",()=>{
  const sql=file("supabase/42_party_mode_foundation.sql");
  const app=file("js/app.js");
  assert.match(sql,/set_size integer not null default 5 check\(set_size in \(5,10,15,20\)\)/);
@@ -44,7 +44,11 @@ test("Five-game medal circuit is configured, not falsely playable yet",()=>{
  assert.match(app,/party_prepare/);
  assert.match(app,/party_state/);
  assert.match(app,/Modo Fiesta/);
- assert.match(app,/room\.mode !== "freeplay"/);
+ assert.match(app,/start_party/);
+ const runtime=file("supabase/47_party_medals_and_handoff.sql");
+ assert.match(runtime,/create function private\.party_tick/);
+ assert.match(runtime,/create function private\.party_award/);
+ assert.match(runtime,/perform private\.party_launch/);
 });
 test("Fifth game appears on site and can start only in freeplay",()=>{
  const app=file("js/app.js"),html=file("index.html");
