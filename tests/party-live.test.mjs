@@ -21,7 +21,8 @@ test("Party transitions are based only on server results and happen once",()=>{
  const sql=source("supabase/47_party_medals_and_handoff.sql");
  assert.match(sql,/perform private\.party_award/);
  assert.match(sql,/where session_id=s\.id and slot=s\.current_slot and completed_at is null/);
- assert.match(sql,/set transition_at=clock_timestamp\(\)\+interval '9 seconds'/);
+ assert.match(source("supabase/54_party_podium_ready.sql"),/set transition_at=clock_timestamp\(\)\+interval '8 seconds'/);
+ assert.match(source("supabase/54_party_podium_ready.sql"),/create function public\.party_next_ready/);
  assert.match(sql,/perform private\.party_launch\(s\.id,next_game\)/);
  assert.match(sql,/on conflict\(session_id,slot,user_id\) do nothing/g);
  assert.match(sql,/private\.pong_tick\(p_room_id\)/);
