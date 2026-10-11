@@ -15,13 +15,17 @@ export function pongVertices(sides){
   x:Math.cos(base+i*TAU/sides),y:Math.sin(base+i*TAU/sides)
  }));
 }
+const EDGE_CACHE=new Map();
 export function pongEdge(sides,side){
+ const key=sides+":"+side;
+ if(EDGE_CACHE.has(key))return EDGE_CACHE.get(key);
  const base=sides===4?Math.PI/4:-Math.PI/2;
  const phi=base+(side+.5)*TAU/sides;
- return {normal:{x:Math.cos(phi),y:Math.sin(phi)},
+ const edge={normal:{x:Math.cos(phi),y:Math.sin(phi)},
    tangent:{x:Math.sin(phi),y:-Math.cos(phi)},
    apothem:Math.cos(Math.PI/sides),
    halfside:Math.sin(Math.PI/sides)};
+ EDGE_CACHE.set(key,edge);return edge;
 }
 export function pongPaddleEnds(sides,side,u,ratio=pongPaddleRatio(sides)){
  const edge=pongEdge(sides,side);
@@ -79,7 +83,7 @@ export class PongagonoGame {
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
   this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
   this.target=.5;this.visualU=null;this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.meter=new FrameMeter();this.lastClockText="";this.lastEliminations=null;
+  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.courtBg=null;this.remoteU=new Map();this.meter=new FrameMeter();this.lastClockText="";this.lastEliminations=null;
   this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
   this.canvas.addEventListener("pointermove",e=>this.point(e,false));
   this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -111,7 +115,7 @@ export class PongagonoGame {
    if(!this.live)return;
    const dt=Math.min(.06,Math.max(0,(timestamp-this.lastRender)/1000));
    this.lastRender=timestamp;
-   this.stepInput(dt);this.paint(timestamp);this.clock();
+   this.stepInput(dt);this.paint(timestamp,dt);this.clock();
    if(this.meter.tick(timestamp))$("pong-perf").textContent=
       "🎞 "+this.meter.fps+" FPS · 🌐 "+this.net.latencyLabel;
    this.frame=requestAnimationFrame(render);
@@ -122,7 +126,7 @@ export class PongagonoGame {
   this.live=false;clearInterval(this.tickHandle);this.poller?.stop();this.poller=null;cancelAnimationFrame(this.frame);
   this.tickHandle=null;this.frame=null;this.roomId=null;this.data=null;
   this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.lastClockText="";
+  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.lastClockText="";this.remoteU.clear();
   $("pong-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
@@ -256,21 +260,16 @@ export class PongagonoGame {
   const seconds=Math.max(0,Math.ceil((Date.parse(this.data.serve_until)-Date.now()-this.clockOffset)/1000));
   $("pong-clock").textContent=this.data.phase==="serve"?"SAQUE EN "+seconds+"s":this.data.phase==="finished"?"🏆":"";
  }
- paint(now){
-  const c=this.ctx,d=this.data;
-  c.clearRect(0,0,700,700);
+ prepareCourt(sides,mySide){
+  const canvas=document.createElement("canvas");
+  canvas.width=700;canvas.height=700;
+  const c=canvas.getContext("2d"),vertices=pongVertices(sides);
+  const normal=pongEdge(sides,mySide).normal;
+  const angle=Math.PI/2-Math.atan2(normal.y,normal.x);
   const backdrop=c.createRadialGradient(350,350,40,350,350,470);
   backdrop.addColorStop(0,"#242954");backdrop.addColorStop(1,"#0b1025");
   c.fillStyle=backdrop;c.fillRect(0,0,700,700);
-  if(!d)return;
-  const sides=d.sides,vertices=pongVertices(sides);
-  const mySide=this.self?.side??0;
-  const myNormal=pongEdge(sides,mySide).normal;
-  const angle=Math.PI/2-Math.atan2(myNormal.y,myNormal.x);
-  const players=new Map(d.players.map((p,i)=>[p.side,{...p,color:COLORS[i%COLORS.length]}]));
-  const scale=SCALE;
-  c.save();c.translate(CENTER,CENTER);c.rotate(angle);c.scale(scale,scale);
-  // Court fill / clipped faint grid.
+  c.save();c.translate(CENTER,CENTER);c.rotate(angle);c.scale(SCALE,SCALE);
   c.beginPath();vertices.forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();
   const surface=c.createRadialGradient(0,0,0,0,0,1.3);
   surface.addColorStop(0,"#273a6c");surface.addColorStop(1,"#142444");
@@ -282,6 +281,23 @@ export class PongagonoGame {
   }
   c.restore();
   c.beginPath();c.arc(0,0,.20,0,TAU);c.lineWidth=.006;c.strokeStyle="#6dc6f466";c.stroke();
+  c.restore();
+  this.courtBg={key:sides+":"+mySide,canvas};
+ }
+ paint(now,dt){
+  const c=this.ctx,d=this.data;
+  if(!d){c.clearRect(0,0,700,700);return;}
+  const sides=d.sides,mySide=this.self?.side??0;
+  const key=sides+":"+mySide;
+  if(!this.courtBg||this.courtBg.key!==key)this.prepareCourt(sides,mySide);
+  c.clearRect(0,0,700,700);
+  c.drawImage(this.courtBg.canvas,0,0);
+  const vertices=pongVertices(sides);
+  const myNormal=pongEdge(sides,mySide).normal;
+  const angle=Math.PI/2-Math.atan2(myNormal.y,myNormal.x);
+  const players=new Map(d.players.map((p,i)=>[p.side,{...p,color:COLORS[i%COLORS.length]}]));
+  const scale=SCALE;
+  c.save();c.translate(CENTER,CENTER);c.rotate(angle);c.scale(scale,scale);
   // The boundary is solid only on unused or eliminated sides.
   for(let i=0;i<sides;i++){
    const a=vertices[i],b=vertices[(i+1)%sides],player=players.get(i);
@@ -296,7 +312,11 @@ export class PongagonoGame {
   }
   for(const [side,p] of players){
    if(!p.alive)continue;
-   const u=side===mySide&&this.visualU!==null?this.visualU:Number(p.u);
+   const actual=Number(p.u);
+  const prior=this.remoteU.has(side)?this.remoteU.get(side):actual;
+  const smooth=prior+(actual-prior)*(1-Math.exp(-17*Math.max(0,dt)));
+  this.remoteU.set(side,smooth);
+  const u=side===mySide&&this.visualU!==null?this.visualU:smooth;
    const ends=pongPaddleEnds(sides,side,u,d.paddle_ratio);
    c.lineCap="round";c.beginPath();c.moveTo(ends.a.x,ends.a.y);c.lineTo(ends.b.x,ends.b.y);
    c.lineWidth=.075;c.strokeStyle=p.color;c.shadowColor=p.color;c.shadowBlur=19;c.stroke();c.shadowBlur=0;
