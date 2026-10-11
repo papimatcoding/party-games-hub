@@ -6,10 +6,10 @@ const src=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("Both sides of deployment use exactly the same protocol build",()=>{
  const release=src("js/release.js"),manifest=JSON.parse(src("release.json"));
- const sql=src("supabase/71_release_011.sql");
- assert.equal(manifest.build,"0.11.0");
- assert.match(release,/APP_BUILD = "0\.11\.0"/);
- assert.match(sql,/set required_build='0\.11\.0'/);
+ const sql=src("supabase/74_release_012.sql");
+ assert.equal(manifest.build,"0.12.0");
+ assert.match(release,/APP_BUILD = "0\.12\.0"/);
+ assert.match(sql,/set required_build='0\.12\.0'/);
  assert.match(src(".github/workflows/pages.yml"),/cp index\.html release\.json site\//);
 });
 test("A stale client cannot mark ready or start matches without current protocol",()=>{
