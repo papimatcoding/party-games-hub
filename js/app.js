@@ -21,6 +21,10 @@ let patinazo = null;
 let pongagono = null;
 let lavalabras = null;
 let partyCache = { signature: null, loading: false, data: null };
+let partyData = null;
+let partyPoll = null;
+let partyBusy = false;
+
 let nrTopicsCache = { signature: null, items: [], loading: false };
 function renderNrTopicSettings() {
   const box = $("nr-topic-settings");
@@ -119,6 +123,101 @@ function renderPartyPreview() {
   show();
 }
 
+
+const medals={1:"🥇",2:"🥈",3:"🥉"};
+function partyGameLabel(gameId) {
+  const g=GAMES.find(x=>x.id===gameId);
+  return g ? g.emoji+" "+g.name : gameId;
+}
+function renderPartyPresentation() {
+  const r=state.room, d=partyData;
+  const enabled=r?.mode==="party"&&r.status==="playing";
+  const between=enabled&&d&&d.current_game===r.game_id&&
+    (d.phase==="intermission"||d.phase==="finished");
+  document.body.classList.toggle("party-active",Boolean(enabled));
+  $("party-live-screen").hidden=!between;
+  $("party-hud").hidden=!enabled||Boolean(between);
+  if(!enabled||!d)return;
+  const scores=Array.isArray(d.scores)?d.scores:[];
+  const slot=(d.schedule||[]).find(x=>x.slot===d.current_slot);
+  const isHost=r.host_user_id===state.user?.id;
+  $("party-hud-label").textContent="🏅 PRUEBA "+d.current_slot+" DE "+d.length+" · "+partyGameLabel(d.current_game);
+  const self=scores.find(x=>x.user_id===state.user?.id);
+  $("party-hud-score").textContent=self
+    ? "Tus medallas: 🥇 "+self.gold+" · 🥈 "+self.silver+" · 🥉 "+self.bronze+" · "+self.score+" pts"
+    : "Las medallas se entregan al acabar cada prueba";
+  $("party-cancel").hidden=!isHost||d.phase==="finished";
+  if(!between)return;
+  const isFinal=d.phase==="finished";
+  const champions=scores.filter(x=>x.place===1);
+  $("party-live-title").textContent=isFinal
+    ? (champions.length===1?"🏆 ¡"+champions[0].name+" GANA LA FIESTA!":"🏆 ¡EMPATE EN LA FIESTA!")
+    : "🏅 ¡PRUEBA "+d.current_slot+" SUPERADA!";
+  const next=d.schedule?.find(x=>x.slot===d.current_slot+1);
+  $("party-live-subtitle").textContent=isFinal
+    ? "Circuito completado. La clasificación definitiva se decide por puntos, oros y platas."
+    : "Siguiente prueba: "+partyGameLabel(next?.game||"")+". El cambio será automático.";
+  const remaining=Math.max(0,Math.ceil((Date.parse(d.transition_at)-Date.now())/1000));
+  $("party-live-clock").textContent=isFinal?"🎉 CIRCUITO TERMINADO":"⏱ Cambio en "+remaining+"s";
+  $("party-podium-title").textContent=isFinal?"🏅 Podio de la quinta prueba":"🏅 Medallas de la prueba "+d.current_slot;
+  const podium=$("party-podium");podium.replaceChildren();
+  if(slot?.podium?.length){
+    for(const entry of slot.podium){
+      const line=element("div","party-live-medal-row");
+      line.append(element("span","party-live-medal-icon",medals[entry.rank]||"🏅"),
+        element("strong","",entry.name),
+        element("span","",entry.rank===1?"ORO · +3":entry.rank===2?"PLATA · +2":"BRONCE · +1"));
+      podium.append(line);
+    }
+  }else podium.append(element("p","muted","Nadie ha conseguido medalla en esta prueba."));
+  const standings=$("party-live-standings");standings.replaceChildren();
+  for(const player of scores){
+    const line=element("div","party-live-rank");
+    line.append(element("span","",String(player.place||"–")+"º"),
+      element("strong","",player.name+(player.user_id===state.user?.id?" (tú)":"")),
+      element("span","","🥇"+player.gold+" 🥈"+player.silver+" 🥉"+player.bronze),
+      element("span","party-live-points",player.score+" pts"));
+    standings.append(line);
+  }
+  const schedule=$("party-live-schedule");schedule.replaceChildren();
+  for(const item of d.schedule||[]){
+    const line=element("div","party-live-schedule-row");
+    line.append(element("span","",item.slot+"."),
+      element("strong","",partyGameLabel(item.game)),
+      element("span",item.completed?"✓ Completado":item.slot===d.current_slot?"En curso":"Pendiente"));
+    if(item.completed)line.lastChild.className="party-live-done";
+    schedule.append(line);
+  }
+  const back=$("party-return");
+  back.hidden=!isHost;back.textContent=isFinal?"↩ Volver al lobby y preparar otra fiesta":"Cancelar el circuito";
+}
+async function syncParty() {
+  const room=state.room,roomId=state.roomId;
+  if(!roomId||!room||room.mode!=="party"||room.status!=="playing"||partyBusy)return;
+  partyBusy=true;
+  try{
+    const next=await rpc("party_state",{p_room_id:roomId});
+    if(roomId!==state.roomId||state.room?.mode!=="party")return;
+    const old=partyData;
+    partyData=next;
+    renderPartyPresentation();
+    // A server tick may finish a minigame or start the next game.
+    if(state.room.game_id!==next.current_game||
+      !old||old.phase!==next.phase||old.current_slot!==next.current_slot){
+      await syncRoom();
+    }
+  }catch(e){console.error("Modo Fiesta:",e); }
+  finally{partyBusy=false;}
+}
+async function leavePartyCircuit() {
+  if(state.room?.host_user_id!==state.user?.id)return;
+  if(partyData?.phase!=="finished"&&!confirm("¿Cancelar toda la fiesta? Se perderán las medallas de esta sesión."))return;
+  await rpc("party_exit",{p_room_id:state.roomId});
+  partyData=null;
+  partyCache={signature:null,loading:false,data:null};
+  await syncRoom();
+}
+
 function notify(message) {
   const el = $("toast");
   el.textContent = message;
@@ -207,6 +306,9 @@ function showHome(message) {
   patinazo?.exit();
   pongagono?.exit();
   lavalabras?.exit();
+  clearInterval(partyPoll);partyPoll=null;partyData=null;
+  document.body.classList.remove("party-active");
+  $("party-live-screen").hidden=true;$("party-hud").hidden=true;
   clearInterval(state.poll);
   state.poll = null;
   if (state.channel && state.client) state.client.removeChannel(state.channel);
@@ -236,6 +338,8 @@ function watchRoom(id) {
   clearInterval(state.poll);
   // Polling is a safety net for missed DELETE events and reconnects.
   state.poll = setInterval(refresh, 8000);
+  clearInterval(partyPoll);
+  partyPoll = setInterval(()=>void syncParty(),1300);
 }
 async function enterRoom(id) {
   state.roomId = id;
@@ -316,7 +420,7 @@ function renderModes() {
   const isHost = state.room.host_user_id === state.user.id;
   for (const mode of [
     {id:"freeplay",name:"🎮 Juego libre",desc:"Elige un minijuego y juega partidas sueltas."},
-    {id:"party",name:"🏅 Modo Fiesta",desc:"Prepara un circuito aleatorio de 5 juegos y su marcador de medallas (inicio automático próximamente)."}
+    {id:"party",name:"🏅 Modo Fiesta",desc:"Cinco pruebas seguidas, podios automáticos y clasificación por medallas."}
   ]) {
     const b=element("button","game-option"+(state.room.mode===mode.id?" selected":""));
     b.type="button";b.disabled=!isHost||state.room.status!=="lobby";
@@ -374,14 +478,14 @@ function renderRoom() {
   $("room-state-pill").textContent = room.status === "playing" ? "EN PARTIDA" : "EN ESPERA";
   $("lobby-status").textContent = room.status === "playing"
     ? "Partida en curso."
-    : (room.mode === "party" ? "Circuito de cinco juegos y medallas en preparación." : "Comparte el código y prepara a tu equipo.");
+    : (room.mode === "party" ? "Circuito de cinco juegos con medallas automáticas." : "Comparte el código y prepara a tu equipo.");
   $("ready-btn").hidden = room.status !== "lobby";
   $("ready-btn").textContent = self?.is_ready ? "✓ Estoy preparado" : "Estoy listo ✓";
   $("ready-btn").disabled = room.status !== "lobby";
   $("start-btn").hidden = !isHost || room.status !== "lobby";
-  $("start-btn").disabled = room.mode !== "freeplay" || !["lasers","no_repitas","patinazo","pongagono","lavalabras"].includes(room.game_id) ||
+  $("start-btn").disabled = !["freeplay","party"].includes(room.mode) || (room.mode==="freeplay" && !["lasers","no_repitas","patinazo","pongagono","lavalabras"].includes(room.game_id)) ||
     state.members.length < 2 || state.members.some((m) => !m.is_ready);
-  $("start-btn").textContent = room.mode==="party" ? "Modo Party próximamente" :
+  $("start-btn").textContent = room.mode==="party" ? "🏅 ¡Empezar fiesta de 5 pruebas!" :
     room.game_id==="no_repitas" ? "🧠 Jugar ¡NO REPITAS!" : room.game_id==="patinazo" ? "🧊 Jugar ¡PATINAZO!" : room.game_id==="pongagono" ? "🏓 Jugar PONGÁGONO" : room.game_id==="lavalabras" ? "🌋 Jugar LAVALABRAS" : "⚡ Jugar Lásers";
   $("reset-btn").hidden = !isHost || room.status !== "playing";
   renderPlayers();
@@ -390,35 +494,40 @@ function renderRoom() {
   renderNrTopicSettings();
   renderPartyPreview();
   renderChat();
-  if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "lasers") {
+  const showPartyBoard=room.mode==="party"&&room.status==="playing"&&partyData&&
+    partyData.current_game===room.game_id&&["intermission","finished"].includes(partyData.phase);
+  if(showPartyBoard){
+    lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();
+    $("lobby-screen").hidden=true;
+  } else if (room.status === "playing" && ["freeplay","party"].includes(room.mode) && room.game_id === "lasers") {
     $("lobby-screen").hidden = true;
     noRepitas?.exit();
     patinazo?.exit();
     pongagono?.exit();
     lavalabras?.exit();
     lasers?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
-  } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "no_repitas") {
+  } else if (room.status === "playing" && ["freeplay","party"].includes(room.mode) && room.game_id === "no_repitas") {
     $("lobby-screen").hidden = true;
     lasers?.exit();
     patinazo?.exit();
     pongagono?.exit();
     lavalabras?.exit();
     noRepitas?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
-  } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "patinazo") {
+  } else if (room.status === "playing" && ["freeplay","party"].includes(room.mode) && room.game_id === "patinazo") {
     $("lobby-screen").hidden = true;
     lasers?.exit();
     noRepitas?.exit();
     pongagono?.exit();
     lavalabras?.exit();
     patinazo?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
-  } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "pongagono") {
+  } else if (room.status === "playing" && ["freeplay","party"].includes(room.mode) && room.game_id === "pongagono") {
     $("lobby-screen").hidden = true;
     lasers?.exit();
     noRepitas?.exit();
     patinazo?.exit();
     lavalabras?.exit();
     pongagono?.enter(state.roomId,state.user.id,room.code,room.host_user_id);
-  } else if (room.status === "playing" && room.mode === "freeplay" && room.game_id === "lavalabras") {
+  } else if (room.status === "playing" && ["freeplay","party"].includes(room.mode) && room.game_id === "lavalabras") {
     $("lobby-screen").hidden = true;
     lasers?.exit();
     noRepitas?.exit();
@@ -433,6 +542,7 @@ function renderRoom() {
     lavalabras?.exit();
     $("lobby-screen").hidden = false;
   }
+  renderPartyPresentation();
 }
 async function copyText(value) {
   try { await navigator.clipboard.writeText(value); }
@@ -463,6 +573,8 @@ async function joinRoom() {
   await enterRoom(id);
 }
 function registerEvents() {
+  $("party-return").addEventListener("click",()=>void action(leavePartyCircuit,$("party-return")));
+  $("party-cancel").addEventListener("click",()=>void action(leavePartyCircuit,$("party-cancel")));
   $("create-btn").addEventListener("click", () => void action(createRoom, $("create-btn")));
   $("party-shuffle").addEventListener("click",()=>void action(async()=>{
     await rpc("party_prepare",{p_room_id:state.roomId});
@@ -484,10 +596,16 @@ function registerEvents() {
     await syncRoom();
   }, $("ready-btn")));
   $("start-btn").addEventListener("click", () => void action(async () => {
-    if (state.room.mode!=="freeplay") throw new Error("PARTY_COMING_SOON");
-    if (!["lasers","no_repitas","patinazo","pongagono","lavalabras"].includes(state.room.game_id)) throw new Error("GAME_NOT_AVAILABLE");
-    await rpc(state.room.game_id==="no_repitas" ? "start_no_repitas" : state.room.game_id==="patinazo" ? "start_patinazo" : state.room.game_id==="pongagono" ? "start_pongagono" : state.room.game_id==="lavalabras" ? "start_lavalabras" : "start_lasers", { p_room_id: state.roomId });
-    await syncRoom();
+    if(state.room.mode==="party"){
+      await rpc("start_party",{p_room_id:state.roomId});
+      partyData=null;
+      await syncRoom();
+      await syncParty();
+    }else{
+      if (!["lasers","no_repitas","patinazo","pongagono","lavalabras"].includes(state.room.game_id)) throw new Error("GAME_NOT_AVAILABLE");
+      await rpc(state.room.game_id==="no_repitas" ? "start_no_repitas" : state.room.game_id==="patinazo" ? "start_patinazo" : state.room.game_id==="pongagono" ? "start_pongagono" : state.room.game_id==="lavalabras" ? "start_lavalabras" : "start_lasers", { p_room_id: state.roomId });
+      await syncRoom();
+    }
   }, $("start-btn")));
   $("reset-btn").addEventListener("click", () => void action(async () => {
     await rpc("reset_room", { p_room_id: state.roomId });
