@@ -249,3 +249,38 @@
  .avatar-season-characters{min-height:135px}.avatar-season-character{height:138px}
  .avatar-season-hero h3{font-size:26px}
 }
+
+/* Emotes: one clean readable action at a time, without excessive whole-body spinning. */
+.ph-anim-wave .ph-avatar svg,.ph-anim-flex .ph-avatar svg{animation:none!important}
+.ph-anim-wave .ph-avatar [data-arm="right"]{animation:ph-greeting .42s ease-in-out 4;transform-origin:120px 134px}
+.ph-anim-laugh .ph-avatar svg{animation:ph-bounce-smile .46s ease-in-out 4}
+.ph-anim-cry .ph-avatar svg{animation:ph-sad .72s ease-in-out 3}
+.ph-anim-flex .ph-avatar [data-arm="right"]{animation:ph-power-right .7s ease-in-out 3}
+.ph-anim-flex .ph-avatar [data-arm="left"]{animation:ph-power-left .7s ease-in-out 3}
+.ph-anim-dance .ph-avatar svg{animation:ph-groove .58s ease-in-out 4}
+.ph-anim-confetti .ph-avatar svg{animation:ph-bounce-smile .55s ease-in-out 4}
+.ph-anim-spook .ph-avatar svg{animation:ph-boo .56s cubic-bezier(.2,1.6,.4,1) 2}
+.avatar-preview-figure.ph-anim-spook::after{
+ content:"¡BUUU!";position:absolute;right:4%;top:8%;font:900 17px 'Outfit',sans-serif;
+ color:#fbe9b7;letter-spacing:1px;text-shadow:0 4px #372840;
+ animation:ph-scare-caption .75s ease-out 2;pointer-events:none
+}
+@keyframes ph-greeting{0%,100%{transform:rotate(0)}20%,55%{transform:rotate(-27deg)}40%,75%{transform:rotate(10deg)}}
+@keyframes ph-bounce-smile{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(-7px) scale(1.04,.97)}}
+@keyframes ph-sad{0%,100%{transform:translateY(0)}45%{transform:translateY(5px)}}
+@keyframes ph-power-right{0%,100%{transform:rotate(0)}40%,70%{transform:rotate(-24deg)}}
+@keyframes ph-power-left{0%,100%{transform:rotate(0)}40%,70%{transform:rotate(24deg)}}
+@keyframes ph-groove{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(5deg) translateY(-7px)}}
+@keyframes ph-boo{0%{transform:scale(.9) translateY(4px)}45%{transform:scale(1.13) translateY(-12px)}100%{transform:scale(1)}}
+@keyframes ph-scare-caption{0%{opacity:0;transform:translateY(12px) scale(.7)}40%{opacity:1;transform:translateY(-4px) scale(1.1)}100%{opacity:0;transform:translateY(-12px)}}
+@media(prefers-reduced-motion:reduce){
+ .ph-anim-wave .ph-avatar [data-arm="right"],
+ .ph-anim-laugh .ph-avatar svg,
+ .ph-anim-cry .ph-avatar svg,
+ .ph-anim-flex .ph-avatar [data-arm="right"],
+ .ph-anim-flex .ph-avatar [data-arm="left"],
+ .ph-anim-dance .ph-avatar svg,
+ .ph-anim-confetti .ph-avatar svg,
+ .ph-anim-spook .ph-avatar svg,
+ .avatar-preview-figure.ph-anim-spook::after{animation:none!important}
+}
