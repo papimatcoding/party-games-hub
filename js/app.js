@@ -36,7 +36,7 @@ function avatarFor(id) { return avatarStyles.get(id) || {}; }
 function avatarCelebration(id){
  const emote=avatarFor(id).emote||"emote_wave";
  return ["emote_wave","emote_laugh","emote_cry","emote_flex",
-         "emote_dance","emote_confetti"].includes(emote)?"ph-anim-"+emote.slice(6):"ph-anim-wave";
+         "emote_dance","emote_confetti","emote_spook"].includes(emote)?"ph-anim-"+emote.slice(6):"ph-anim-wave";
 }
 async function refreshRoomAvatars(force=false){
   const id=state.roomId;
