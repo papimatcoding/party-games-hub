@@ -31,6 +31,8 @@ jobs:
           node --check js/lavalabras.js
           node --check js/fin-de-linea.js
           node --check js/puerta-o-nada.js
+          node --check js/avatar-art.js
+          node --check js/avatar-studio.js
           node --check scripts/preview-wikidata-barca.mjs
           node --check js/config.js
       - uses: actions/configure-pages@v5
