@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // PUERTA O NADA — responsive pure-chance survival, authoritative Supabase rounds.
 const $=id=>document.getElementById(id);
 export const MAX_DOOR_ROUNDS=5;
@@ -17,8 +18,8 @@ function makeEl(tag,cls,text){
  return el;
 }
 export class PuertaONadaGame{
- constructor({rpc,notify,leave,reset}){
-  Object.assign(this,{rpc,notify,leave,reset});
+ constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+  Object.assign(this,{rpc,notify,leave,reset,avatarFor});
   this.active=false;this.roomId=null;this.userId=null;this.data=null;
   this.timer=null;this.frame=null;this.loading=false;this.pending=false;
   this.offset=0;this.hasClock=false;this.lastRound=null;
@@ -224,7 +225,7 @@ export class PuertaONadaGame{
     a.name.localeCompare(b.name));
   for(const p of ordered){
    const row=makeEl("div","door-player"+(p.alive?"":" door-player-out"));
-   row.appendChild(makeEl("span","door-player-face",p.alive?"🙂":"💀"));
+   row.appendChild(makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"));
    row.appendChild(makeEl("strong","",p.name+(p.user_id===this.userId?" (tú)":"")));
    let status=p.alive?
        (d.phase==="choosing"?(p.submitted?"✓ Elegida":"… Esperando"):"✓ En pie"):
