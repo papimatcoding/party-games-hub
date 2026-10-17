@@ -146,3 +146,35 @@
  .ph-roster-avatar{width:45px;height:51px}
  .ph-podium-avatar{width:43px;height:48px}
 }
+
+/* Art pass 2: sell the cosmetic itself, not a microscopic duplicate character. */
+.avatar-item-icon{overflow:hidden;isolation:isolate}
+.avatar-item-figure{width:100%;height:100%;overflow:hidden}
+.avatar-item-figure svg{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 3px #190e2880)}
+.avatar-item-icon:has([data-cosmetic-slot="head"]),
+.avatar-item-icon:has([data-cosmetic-slot="face"]){background:linear-gradient(145deg,#746081,#39304e)}
+.avatar-item-card:hover .avatar-item-figure{transform:translateY(-2px);transition:transform .2s}
+.avatar-emote-card{position:relative}
+.avatar-emote-symbol{position:absolute;bottom:1px;right:2px;display:grid;place-items:center;
+ min-width:19px;height:19px;background:#251d40;border:1px solid #d2aa90;border-radius:7px;
+ color:#ffe4ac;font-size:14px;box-shadow:0 3px 8px #0007}
+.avatar-item-card:has([data-cosmetic-slot="emote"]):hover .avatar-item-figure{
+ animation:ph-dance .45s ease-in-out 2}
+.avatar-item-card:has([data-cosmetic-slot="emote"]) .avatar-preview-btn::after{content:" ▶"}
+.avatar-item-figure[data-cosmetic-slot="back"] svg{overflow:visible}
+.avatar-tryout-hint{color:#f7c991;font-size:11px;text-align:center;min-height:16px;margin:4px 0}
+@keyframes ph-wave-arm{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-35deg)}65%{transform:rotate(17deg)}}
+@keyframes ph-flex-arms{0%,100%{transform:rotate(0deg)}40%,70%{transform:rotate(-25deg)}}
+@keyframes ph-sparkle{0%,100%{opacity:0;transform:translateY(8px)}35%,65%{opacity:1;transform:translateY(-7px)}}
+.ph-anim-wave .ph-avatar [data-arm="right"]{transform-origin:119px 130px;animation:ph-wave-arm .55s ease-in-out 4}
+.ph-anim-flex .ph-avatar [data-arm="right"]{transform-origin:119px 130px;animation:ph-flex-arms .65s ease-in-out 3}
+.ph-anim-flex .ph-avatar [data-arm="left"]{transform-origin:61px 130px;animation:ph-flex-arms .65s ease-in-out 3 reverse}
+.ph-anim-cry .ph-avatar [data-expression-effect="tears"]{opacity:1;animation:ph-sparkle .5s ease-in-out 4}
+.ph-anim-confetti .ph-avatar [data-expression-effect="confetti"]{opacity:1;animation:ph-sparkle .6s ease-in-out 4}
+@media(prefers-reduced-motion:reduce){
+ .ph-anim-wave .ph-avatar [data-arm="right"],
+ .ph-anim-flex .ph-avatar [data-arm="right"],
+ .ph-anim-flex .ph-avatar [data-arm="left"],
+ .ph-anim-cry .ph-avatar [data-expression-effect="tears"],
+ .ph-anim-confetti .ph-avatar [data-expression-effect="confetti"]{animation:none!important}
+}
