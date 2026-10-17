@@ -94,7 +94,7 @@ function outfitArt(s,col){
  case "outfit_galaxy":
   fill="#514090";details='<circle cx="70" cy="140" r="5" fill="#efdc96"/><circle cx="112" cy="156" r="4" fill="#b0edee"/><path d="M66 164Q92 131 119 143" stroke="#b48bdf" stroke-width="4" fill="none"/><path d="M101 132L103 141L111 143L103 146L101 154L98 146L92 143L98 140Z" fill="#e8bddf"/>';
   break;
- default:details="";
+ default:details=details;
  }
  return '<path d="M58 122Q90 111 122 122L136 178Q89 192 43 178Z" fill="'+fill+'" stroke="'+outline+'" stroke-width="5" stroke-linejoin="round"/>'+
  '<path d="M65 125Q91 138 115 125" fill="none" stroke="#ffffff" opacity=".16" stroke-width="6"/>'+details;
