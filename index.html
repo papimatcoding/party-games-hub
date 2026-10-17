@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="./css/puerta-o-nada.css?v=0.15.0">
   <link rel="stylesheet" href="./css/avatar-studio.css?v=0.15.0">
   <link rel="stylesheet" href="./css/viewport-games.css?v=0.15.0">
+  <link rel="stylesheet" href="./css/timing-games.css?v=0.15.0">
   <script type="module" src="./js/app.js?v=0.15.0"></script>
 </head>
 <body>
@@ -69,8 +70,10 @@
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle at 50% 40%,#ffd8a2,#9b628a 58%,#32234e)"><span style="font-size:84px;filter:drop-shadow(0 6px 15px #e9b089)">🚪</span></div><div class="game-info"><strong>PUERTA O NADA</strong><span>🍀 Azar puro · elige y sobrevive</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#ffcb7b,#a76140 60%,#3e264e)"><span style="font-size:88px;filter:drop-shadow(0 5px 18px #ffbc78)">🚂</span></div><div class="game-info"><strong>¡FIN DE LÍNEA!</strong><span>🎯 Cañón frontal · diana trasera · vías y desvíos</span></div></article>
           <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#8f7ec4,#402b72 64%,#1c1635)"><span style="font-size:90px;filter:drop-shadow(0 5px 13px #301c67)">🏓</span></div><div class="game-info"><strong>PONGÁGONO</strong><span>⚡ Pong poligonal · 2–12 jugadores</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#fcda86,#b16e8f 62%,#342454)"><span style="font-size:93px">⏱️</span></div><div class="game-info"><strong>¿YA?</strong><span>⏳ Cronómetro oculto · precisión extrema</span></div></article>
+          <article class="game-card"><div class="game-art" style="background:radial-gradient(circle,#c6d9df,#5a83a1 55%,#29254b)"><span style="font-size:87px">🏋️</span></div><div class="game-info"><strong>¡AGUANTA!</strong><span>💥 Frena el peso justo antes del impacto</span></div></article>
         </div>
-        <p class="catalog-note">Siete minijuegos · Modo Fiesta con cinco pruebas y podios</p>
+        <p class="catalog-note">Nueve minijuegos · Modo Fiesta con cinco pruebas y podios</p>
       </section>
 
       <section id="party-live-screen" class="party-live-screen" hidden>
@@ -472,6 +475,39 @@
               </ul>
             </div>
             <button type="button" id="door-reset" class="button button-dark" hidden>↩ Volver al lobby</button>
+          </aside>
+        </div>
+      </section>
+      <section id="timing-screen" class="timing-screen" hidden>
+        <div class="timing-header">
+          <div class="timing-brand"><span id="timing-icon" class="timing-brand-icon">⏱️</span>
+            <div><span class="overline">RETO DE PRECISIÓN · MULTIJUGADOR</span><h2 id="timing-name">¿YA?</h2></div></div>
+          <button type="button" class="timing-back" id="timing-exit">← Salir de la sala</button>
+        </div>
+        <p id="timing-guide" class="timing-sub">Pulsa justo en el instante adecuado.</p>
+        <div class="timing-info"><span id="timing-mode">PRECISIÓN</span><span id="timing-phase">PREPARACIÓN</span>
+          <span>PC: ESPACIO · MÓVIL: PULSAR</span></div>
+        <div class="timing-layout">
+          <div class="timing-main">
+            <span class="overline">TU OBJETIVO</span>
+            <h3 id="timing-target">10.000 s</h3>
+            <div id="timing-stage" class="timing-stage timing-watch-game">
+              <div id="timing-watch" class="timing-watch"><strong id="timing-clock" class="timing-clock">0.000 s</strong></div>
+              <div id="timing-weight" class="timing-weight" aria-label="Peso que cae"></div>
+              <div id="timing-character" class="timing-character"></div>
+              <div class="timing-impact-line"></div>
+            </div>
+            <button id="timing-stop" class="timing-stop" type="button" disabled>ESPERANDO...</button>
+            <p id="timing-result-message" class="timing-result-message">Todos empezáis a la vez. El marcador solo muestra los tiempos al terminar.</p>
+          </div>
+          <aside class="timing-side">
+            <h3>👥 Jugadores</h3>
+            <div id="timing-roster" class="timing-roster"></div>
+            <div id="timing-results" class="timing-results" hidden>
+              <h3>🏆 RESULTADOS</h3>
+              <div id="timing-results-list" class="timing-result-list"></div>
+            </div>
+            <button id="timing-reset" class="button button-dark timing-reset" type="button" hidden>↩ Volver al lobby</button>
           </aside>
         </div>
       </section>
