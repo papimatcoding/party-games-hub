@@ -35,7 +35,7 @@ begin
  update public.room_members set is_ready=false where room_id=p_room_id;
  update public.rooms set updated_at=now() where id=p_room_id;
 end;
-$fn$
+$fn$;
 
 
 CREATE OR REPLACE FUNCTION public.set_room_game(p_room_id uuid, p_game_id text)
@@ -56,7 +56,7 @@ begin
  update public.rooms set game_id=p_game_id,updated_at=clock_timestamp() where id=p_room_id;
  update public.room_members set is_ready=false where room_id=p_room_id;
 end;
-$fn$
+$fn$;
 
 
 CREATE OR REPLACE FUNCTION private.party_launch(p_session_id uuid, p_game text)
@@ -179,7 +179,7 @@ begin
    slot_started_at=clock_timestamp(),transition_at=null,updated_at=clock_timestamp()
  where id=s.id;
 end;
-$fn$
+$fn$;
 
 
 CREATE OR REPLACE FUNCTION private.party_tick(p_room_id uuid)
@@ -270,7 +270,7 @@ begin
    update public.rooms set updated_at=clock_timestamp() where id=p_room_id;
  end if;
 end;
-$fn$
+$fn$;
 
 
 CREATE OR REPLACE FUNCTION private.party_award(p_session uuid, p_slot integer, p_game text, p_room_id uuid)
@@ -364,7 +364,7 @@ begin
  else raise exception 'GAME_NOT_AVAILABLE';
  end if;
 end;
-$fn$
+$fn$;
 
 
 CREATE OR REPLACE FUNCTION private.avatar_finished_match()
@@ -395,7 +395,7 @@ begin
  end loop;
  return new;
 end;
-$fn$
+$fn$;
 
 
 create trigger avatar_timing_rewards after update of phase on private.timing_matches
