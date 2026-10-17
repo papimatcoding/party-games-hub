@@ -57,16 +57,43 @@ function frontBackArt(s){
 }
 function outfitArt(s,col){
  let fill=col,details="";
- if(s==="outfit_suit"){fill="#46506f";details='<path d="M65 126L89 150L115 126" fill="#fff4dc" stroke="#30263d" stroke-width="3"/><path d="M87 140L96 140L94 171H87Z" fill="#e8897f"/>';}
- if(s==="outfit_sport")details='<path d="M61 139H120M67 158H116" stroke="#fff1df" stroke-width="6"/>';
- if(s==="outfit_denim"){fill="#428fc5";details='<path d="M64 127L91 146L115 127M91 146V176" stroke="#d0e6eb" stroke-width="4" fill="none"/>';}
- if(s==="outfit_chef"){fill="#f4eadd";details='<path d="M90 127V179" stroke="#8da0aa" stroke-width="3"/><circle cx="80" cy="151" r="3.5" fill="#536373"/><circle cx="80" cy="167" r="3.5" fill="#536373"/>';}
- if(s==="outfit_space"){fill="#eef1f3";details='<rect x="76" y="139" width="29" height="19" rx="4" fill="#7fd4d7" stroke="#48526c" stroke-width="3"/><path d="M64 129V166M116 129V166" stroke="#a6b2c4" stroke-width="5"/>';}
- if(s==="outfit_ninja"){fill="#40405c";details='<path d="M60 129L119 165M120 129L61 165" stroke="#9370b5" stroke-width="8"/>';}
- if(s==="outfit_royal"){fill="#7952a6";details='<path d="M63 137L90 160L116 137" stroke="#f5d16f" stroke-width="8" fill="none"/>';}
- if(s==="outfit_banana"){fill="#f9cd52";details='<path d="M70 130L109 171" stroke="#fff3ad" stroke-width="12"/>';}
- if(s==="outfit_galaxy"){fill="#514090";details='<circle cx="70" cy="140" r="5" fill="#efdc96"/><circle cx="112" cy="155" r="4" fill="#b0edee"/><path d="M65 164Q92 130 119 141" stroke="#b48bdf" stroke-width="4" fill="none"/>';}
- return '<path d="M58 122Q90 110 121 122L138 179Q90 195 43 179Z" fill="'+fill+'" stroke="#30243d" stroke-width="5"/><path d="M64 127Q91 138 116 127" fill="none" stroke="#ffffff48" stroke-width="7"/>'+details;
+ const outline="#30243d";
+ switch(s){
+ case "outfit_hoodie":
+  details='<path d="M65 122Q91 143 115 122" fill="none" stroke="#272438" stroke-width="4"/><path d="M79 132L79 153M101 132L101 153" stroke="#f4e1cf" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M69 160Q91 152 110 160V170Q90 177 69 170Z" fill="#25223a" opacity=".19"/><path d="M74 159H106" stroke="#ffffff" opacity=".34" stroke-width="3"/>';
+  break;
+ case "outfit_sport":
+  details='<path d="M61 139H120M68 163H112" stroke="#fff1df" stroke-width="5"/><path d="M81 143H99V162H81Z" fill="#fff4e4" opacity=".28"/><text x="90" y="158" text-anchor="middle" font-size="15" font-family="sans-serif" font-weight="900" fill="#fff3df">7</text>';
+  break;
+ case "outfit_denim":
+  fill="#428fc5";
+  details='<path d="M64 127L91 146L115 127M91 146V176" stroke="#d2ebf4" stroke-width="4" fill="none"/><path d="M56 150H80L75 162H58ZM101 150H124L122 162H105Z" fill="#2d78a9" stroke="#b3d9e6" stroke-width="2"/><circle cx="92" cy="157" r="2.7" fill="#fbd78d"/>';
+  break;
+ case "outfit_suit":
+  fill="#46506f";details='<path d="M67 127L90 151L114 127" fill="#fcf1e5" stroke="#30263d" stroke-width="3"/><path d="M71 130L88 152L80 159M108 130L94 152L101 159" stroke="#9da4b5" stroke-width="3" fill="none"/><path d="M86 141L96 141L94 168H88Z" fill="#ee927c"/><circle cx="87" cy="170" r="2.5" fill="#efdbb0"/>';
+  break;
+ case "outfit_chef":
+  fill="#f4eadd";details='<path d="M90 126V179" stroke="#aeb5bc" stroke-width="3"/><circle cx="78" cy="149" r="3.5" fill="#647588"/><circle cx="78" cy="165" r="3.5" fill="#647588"/><path d="M100 141H117V151H100Z" fill="#d6a27b"/><path d="M101 147H116" stroke="#fff" stroke-width="2"/>';
+  break;
+ case "outfit_space":
+  fill="#eef1f3";details='<rect x="74" y="139" width="33" height="22" rx="5" fill="#7fd4d7" stroke="#48526c" stroke-width="3"/><path d="M66 128V169M114 128V169" stroke="#a6b2c4" stroke-width="5"/><circle cx="84" cy="149" r="3" fill="#f7cb70"/><circle cx="96" cy="149" r="3" fill="#6a91da"/><path d="M60 172H121" stroke="#cad1da" stroke-width="5"/>';
+  break;
+ case "outfit_ninja":
+  fill="#40405c";details='<path d="M62 129L118 165M118 129L62 165" stroke="#9370b5" stroke-width="8"/><path d="M71 170H109" stroke="#c8aecb" stroke-width="5"/>';
+  break;
+ case "outfit_royal":
+  fill="#7952a6";details='<path d="M62 131L90 159L118 131" stroke="#f5d16f" stroke-width="8" fill="none"/><rect x="63" y="164" width="54" height="7" rx="3" fill="#e1b65b"/><circle cx="91" cy="168" r="5" fill="#f4e7ac"/><circle cx="60" cy="130" r="5" fill="#f1d06b"/><circle cx="121" cy="130" r="5" fill="#f1d06b"/>';
+  break;
+ case "outfit_banana":
+  fill="#f9cd52";details='<path d="M71 126L111 176" stroke="#fff3ad" stroke-width="12"/><path d="M69 158Q87 168 111 158" stroke="#a87a35" stroke-width="3" fill="none"/><path d="M90 128V177" stroke="#a87a35" stroke-width="2.5" opacity=".55"/>';
+  break;
+ case "outfit_galaxy":
+  fill="#514090";details='<circle cx="70" cy="140" r="5" fill="#efdc96"/><circle cx="112" cy="156" r="4" fill="#b0edee"/><path d="M66 164Q92 131 119 143" stroke="#b48bdf" stroke-width="4" fill="none"/><path d="M101 132L103 141L111 143L103 146L101 154L98 146L92 143L98 140Z" fill="#e8bddf"/>';
+  break;
+ default:details="";
+ }
+ return '<path d="M58 122Q90 111 122 122L136 178Q89 192 43 178Z" fill="'+fill+'" stroke="'+outline+'" stroke-width="5" stroke-linejoin="round"/>'+
+ '<path d="M65 125Q91 138 115 125" fill="none" stroke="#ffffff" opacity=".16" stroke-width="6"/>'+details;
 }
 function headArt(s){
  switch(s){
