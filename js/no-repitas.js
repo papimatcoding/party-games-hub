@@ -1,4 +1,4 @@
-import {makeAvatar} from "./avatar-art.js?v=0.15.0";
+import {makeAvatar} from "./avatar-art.js?v=0.16.0";
 // NO REPITAS! — server-authoritative hidden-answer survival game.
 // Submitted texts are never checked in the browser against the private catalog.
 const $=id=>document.getElementById(id);
