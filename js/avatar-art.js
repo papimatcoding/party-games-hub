@@ -89,31 +89,80 @@ function faceArt(s){
  default:return "";
  }
 }
+// Fixed landmarks shared by skin, hairstyle and accessories. The anatomical ears
+// must be UNDER the face outline and IN FRONT OF the rear hair silhouette.
+export const AVATAR_ANCHORS=Object.freeze({
+ centerX:90,topOfHead:23,faceLine:87,leftEar:43,rightEar:137,
+ hairLine:57,shoulder:125,feet:191
+});
+const LONG_HAIR=new Set([1,3,5,6,8,9,11]);
+const LAYER_ORDER=Object.freeze(["ground","rear-accessory","legs","arms","outfit",
+ "neck","rear-hair","ears","face","features","front-hair","headwear","facial-accessory"]);
+function rearHair(hair,color){
+ const ends=LONG_HAIR.has(hair)?(hair===11?141:hair===3?128:122):106;
+ return '<path d="M44 80Q33 52 43 37Q55 18 91 21Q132 21 139 50L135 '+
+  ends+'Q125 '+(ends+7)+' 114 '+(ends-1)+'L65 '+(ends-1)+
+  'Q50 '+(ends+8)+' 44 '+ends+'Z" fill="'+color+
+  '" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/>'+
+  (LONG_HAIR.has(hair)?'<path d="M49 93Q44 115 55 '+(ends-5)+
+  'M131 93Q136 115 124 '+(ends-5)+
+  '" fill="none" stroke="#ffffff" opacity=".12" stroke-width="3" stroke-linecap="round"/>':"");
+}
 export function avatarMarkup(p={}){
- const skin=SKINS[num(p.skin,8,3)],hairColor=HAIR_COLORS[num(p.hair_color,10,1)],cloth=CLOTH_COLORS[num(p.outfit_color,10,0)];
- const hair=num(p.hair,12,0),eyes=num(p.eyes,8,0),mouth=num(p.mouth,8,0);
- const outfit=p.outfit||"outfit_hoodie",head=p.head||"head_none",face=p.face||"face_none",back=p.back||"back_none";
+ const skin=SKINS[num(p?.skin,8,3)],hairColor=HAIR_COLORS[num(p?.hair_color,10,1)],
+ cloth=CLOTH_COLORS[num(p?.outfit_color,10,0)];
+ const hair=num(p?.hair,12,0),eyes=num(p?.eyes,8,0),mouth=num(p?.mouth,8,0);
+ const outfit=p?.outfit||"outfit_hoodie",head=p?.head||"head_none",
+ face=p?.face||"face_none",back=p?.back||"back_none";
+ const bodyColor=outfit==="outfit_suit"?"#46506f":
+  outfit==="outfit_space"?"#eef1f3":outfit==="outfit_chef"?"#f4eadd":
+  outfit==="outfit_ninja"?"#40405c":outfit==="outfit_royal"?"#7952a6":
+  outfit==="outfit_banana"?"#f9cd52":outfit==="outfit_galaxy"?"#514090":
+  outfit==="outfit_denim"?"#428fc5":cloth;
+ const isHat=head!=="head_none"&&head!=="head_cat"&&head!=="head_party";
+ const hasOpenEyes=[0,2,5].includes(eyes);
+ const backBanana=outfit==="outfit_banana"?
+ '<path d="M47 72Q28 25 75 16Q111 8 131 46L143 24Q139 84 129 110L54 105Z" fill="#f3ca55" stroke="#30243d" stroke-width="5"/><path d="M53 48Q81 16 117 45" fill="none" stroke="#fff2aa" stroke-width="7" opacity=".8"/>':"";
  return [
  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 205" role="img" aria-label="Avatar caricaturesco Party Hub">',
- '<ellipse cx="90" cy="190" rx="49" ry="9" fill="#20192c" opacity=".23"/>',
- backArt(back),
- '<path d="M70 165L66 183Q76 195 88 190L94 170M107 165L112 183Q102 194 93 190L90 170" fill="'+cloth+'" stroke="#30243d" stroke-width="5" stroke-linejoin="round"/>',
- '<path d="M61 180Q72 175 85 183Q91 192 84 195H57Q51 193 61 180ZM97 183Q109 175 122 183Q130 194 120 195H93Q87 191 97 183Z" fill="#f4e8df" stroke="#30243d" stroke-width="4"/>',
- '<path d="M58 133Q32 130 39 150L44 168Q54 176 64 164L70 147M121 133Q145 130 141 150L136 168Q125 176 116 163L110 147" fill="'+skin+'" stroke="#30243d" stroke-width="5" stroke-linecap="round"/>',
- outfitArt(outfit,cloth),
- '<path d="M81 116V130Q90 138 100 130V116" fill="'+skin+'" stroke="#30243d" stroke-width="4"/>',
- '<path d="M40 80Q36 21 89 22Q144 22 140 85L131 115Q108 140 90 132Q58 140 45 111Z" fill="'+hairColor+'" stroke="#30243d" stroke-width="4"/>',
- '<path d="M57 48Q90 26 122 48Q139 70 130 111Q110 135 90 135Q65 134 50 111Q41 78 57 48Z" fill="'+skin+'" stroke="#30243d" stroke-width="4"/>',
- '<path d="M61 55Q90 39 119 54" fill="none" stroke="#fff3dd" stroke-width="4" opacity=".25"/>',
- '<ellipse cx="50" cy="96" rx="9" ry="13" fill="'+skin+'" stroke="#30243d" stroke-width="3.5"/>',
- '<ellipse cx="130" cy="96" rx="9" ry="13" fill="'+skin+'" stroke="#30243d" stroke-width="3.5"/>',
- '<ellipse cx="66" cy="108" rx="11" ry="5" fill="#f58b9b" opacity=".24"/><ellipse cx="113" cy="108" rx="11" ry="5" fill="#f58b9b" opacity=".24"/>',
- '<g fill="#30243d" stroke="#30243d">',eyeStyles[eyes],'</g>',
- '<path d="M87 102Q91 105 95 102" stroke="#9a624e" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
- '<g stroke="#30243d">',mouthStyles[mouth],'</g>',
+ '<g data-layer="ground"><ellipse cx="90" cy="194" rx="48" ry="8" fill="#131026" opacity=".28"/></g>',
+ '<g data-layer="rear-accessory">',backArt(back),backBanana,'</g>',
+ '<g data-layer="legs">',
+ '<path d="M67 166L64 182Q70 191 82 185L88 168M104 166L111 184Q120 191 124 182L116 165" fill="'+bodyColor+'" stroke="#30243d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>',
+ '<path d="M58 180Q68 175 81 180Q94 185 85 192L53 192Q48 185 58 180ZM99 180Q112 175 124 180Q136 186 126 192H96Q90 186 99 180Z" fill="#faf0e6" stroke="#30243d" stroke-width="4"/>',
+ '<path d="M57 187H84M98 187H126" stroke="#b2acbd" stroke-width="2" opacity=".8"/>',
+ '</g>',
+ '<g data-layer="arms">',
+ '<path d="M61 129Q49 122 42 135L37 158Q33 174 46 177Q58 177 62 160L71 143M118 129Q132 122 139 135L143 158Q147 174 133 177Q121 177 118 160L109 143" fill="'+skin+'" stroke="#30243d" stroke-width="5" stroke-linejoin="round"/>',
+ '<path d="M63 128Q51 124 45 135L41 151Q52 159 64 151L72 139M117 128Q129 124 135 135L139 151Q128 159 116 151L108 139" fill="'+bodyColor+'" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/>',
+ '</g>',
+ '<g data-layer="outfit">',outfitArt(outfit,cloth),
+ '<path d="M70 175Q90 180 111 175" stroke="#ffffff" opacity=".15" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
+ '<g data-layer="neck"><path d="M81 113V128Q90 138 101 128V113" fill="'+skin+'" stroke="#30243d" stroke-width="4"/></g>',
+ '<g data-layer="rear-hair">',rearHair(hair,hairColor),'</g>',
+ '<g data-layer="ears">',
+ '<ellipse cx="43" cy="96" rx="10" ry="14" fill="'+skin+'" stroke="#30243d" stroke-width="4"/>',
+ '<ellipse cx="137" cy="96" rx="10" ry="14" fill="'+skin+'" stroke="#30243d" stroke-width="4"/>',
+ '<path d="M42 92Q37 97 43 102M138 92Q143 97 137 102" fill="none" stroke="#8e5b56" opacity=".55" stroke-width="2.1" stroke-linecap="round"/>',
+ '</g>',
+ '<g data-layer="face">',
+ '<path d="M51 67Q55 43 89 40Q124 40 129 67L131 91Q131 115 111 129Q91 141 70 128Q49 114 49 91Z" fill="'+skin+'" stroke="#30243d" stroke-width="4.1" stroke-linejoin="round"/>',
+ '<path d="M54 76Q59 51 79 49" fill="none" stroke="#fff3e2" stroke-width="5" opacity=".3" stroke-linecap="round"/>',
+ '<ellipse cx="64" cy="106" rx="10" ry="5.5" fill="#f17e90" opacity=".19"/>',
+ '<ellipse cx="116" cy="106" rx="10" ry="5.5" fill="#f17e90" opacity=".19"/>',
+ '</g>',
+ '<g data-layer="features" fill="#30243d" stroke="#30243d">',
+ '<path d="M61 78Q69 75 76 78M104 78Q112 75 119 78" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
+ eyeStyles[eyes],
+ hasOpenEyes?'<ellipse cx="67.5" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/><ellipse cx="109" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/>':"",
+ '<path d="M87 101Q90 103 93 101" stroke="#956154" stroke-width="2" fill="none" stroke-linecap="round"/>',
+ mouthStyles[mouth],'</g>',
+ '<g data-layer="front-hair">',
  '<path d="'+hairShapes[hair]+'" fill="'+hairColor+'" stroke="#30243d" stroke-width="3.5" stroke-linejoin="round"/>',
- '<path d="M53 50Q65 31 83 30" stroke="#fff5e2" stroke-width="4" stroke-linecap="round" opacity=".22" fill="none"/>',
- faceArt(face),headArt(head),
+ isHat?'':('<path d="M55 49Q68 32 84 32" stroke="#fff7e7" stroke-width="3.5" fill="none" opacity=".15" stroke-linecap="round"/>'),
+ '</g>',
+ '<g data-layer="headwear">',headArt(head),'</g>',
+ '<g data-layer="facial-accessory">',faceArt(face),'</g>',
  '</svg>'
  ].join("");
 }
