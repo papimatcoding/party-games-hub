@@ -1,8 +1,8 @@
-import {makeAvatar} from "./avatar-art.js?v=0.14.0";
+import {makeAvatar} from "./avatar-art.js?v=0.15.0";
 // PONGÁGONO: responsive Pong on a regular polygon.
 // The database alone decides paddle catches, wall collisions, acceleration and KOs.
 // This canvas only presents the latest authoritative state with short prediction.
-import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.14.0";
+import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.15.0";
 const $=id=>document.getElementById(id);
 const TAU=2*Math.PI,CENTER=350,SCALE=288;
 const COLORS=["#ffc56c","#ff8fad","#8ce8df","#b29aff","#b8eb81","#86bcff",
