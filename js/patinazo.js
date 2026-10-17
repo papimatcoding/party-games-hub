@@ -1,7 +1,7 @@
-import {makeAvatar} from "./avatar-art.js?v=0.12.0";
+import {makeAvatar} from "./avatar-art.js?v=0.13.0";
 // ¡PATINAZO! — fixed-power ice arena. Decisions are secret until the server
 // resolves all trajectories and returns a synchronized, authoritative replay.
-import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.12.0";
+import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.13.0";
 const $=id=>document.getElementById(id);
 const TAU=2*Math.PI;
 const CX=360,CY=360,SCALE=286,SPAWN=.66;
