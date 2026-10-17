@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // Secret-placement Lásers: only own move is visible until server reveal.
 export const HEX_SIZE=700;
 const CENTER=350,SCALE=290,TAU=2*Math.PI;
@@ -28,8 +29,8 @@ function endOfRay(x,y,angle,r){
 }
 const $=id=>document.getElementById(id);
 export class LaserGame{
-  constructor({rpc,notify,leave,reset}){
-    Object.assign(this,{rpc,notify,leave,reset});
+  constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+    Object.assign(this,{rpc,notify,leave,reset,avatarFor});
     this.canvas=$("laser-canvas");this.ctx=this.canvas.getContext("2d");
     this.live=false;this.inFlight=false;this.timer=null;this.frame=null;this.lastRound=null;
     this.data=null;this.placement=null;this.dragging=false;
@@ -141,7 +142,7 @@ export class LaserGame{
       const circle=document.createElement("span");circle.className="laser-member-dot";circle.style.background=COLORS[i%COLORS.length];
       const name=document.createElement("span");name.textContent=p.name+(p.user_id===this.userId?" (tú)":"");
       const status=document.createElement("b");status.textContent=!p.alive?"💀":d.phase==="planning"?(p.submitted?"✓":"…"):"●";
-      item.append(circle,name,status);list.append(item);
+      item.append(circle,makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"),name,status);list.append(item);
     });
   }
   path(radius){
