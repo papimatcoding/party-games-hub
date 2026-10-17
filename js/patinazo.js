@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // ¡PATINAZO! — fixed-power ice arena. Decisions are secret until the server
 // resolves all trajectories and returns a synchronized, authoritative replay.
 import {NetworkClock,makeAdaptivePoller} from "./netcode.js?v=0.12.0";
@@ -31,8 +32,8 @@ function el(tag,cls,value){
  return n;
 }
 export class PatinazoGame{
- constructor({rpc,notify,leave,reset}){
-   Object.assign(this,{rpc,notify,leave,reset});
+ constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+   Object.assign(this,{rpc,notify,leave,reset,avatarFor});
    this.canvas=$("ice-canvas");this.ctx=this.canvas.getContext("2d");
    this.live=false;this.id=null;this.data=null;this.timer=null;this.frame=null;
    this.busy=false;this.inFlight=false;this.angle=null;this.dragging=false;this.lastRound=null;
@@ -169,7 +170,7 @@ export class PatinazoGame{
      const dot=el("span","ice-player-dot","●");dot.style.color=COLORS[i%COLORS.length];
      const name=el("span","ice-player-name",p.name+(p.user_id===this.userId?" (tú)":""));
      const status=el("span","ice-player-status",!p.alive?"💀":d.phase==="planning"?(p.submitted?"✓":"…"):"●");
-     row.append(dot,name,status);list.append(row);
+     row.append(dot,makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"),name,status);list.append(row);
    });
    this.clock();
  }
