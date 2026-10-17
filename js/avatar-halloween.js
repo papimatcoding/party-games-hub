@@ -26,6 +26,7 @@ export function halloweenOutfit(s){
  }
 }
 export function halloweenBack(s){
+ if(s==="back_smoke")return '<path d="M60 160Q20 163 29 139Q14 115 37 103Q22 76 51 66Q61 54 78 68M119 160Q159 163 150 139Q166 115 143 103Q157 76 130 66Q119 54 102 68" fill="none" stroke="#b49adb" stroke-width="12" stroke-linecap="round" opacity=".9"/><path d="M53 166Q16 156 35 137M126 165Q161 153 143 137" fill="none" stroke="#f5d3ef" stroke-width="4" stroke-linecap="round" opacity=".7"/><circle cx="32" cy="94" r="8" fill="#a385c7" opacity=".75"/><circle cx="150" cy="98" r="8" fill="#a385c7" opacity=".75"/>';
  if(s!=="back_bats")return "";
  return '<path d="M41 126L23 103L27 123L10 118L18 145L40 143L49 159L61 138Z" fill="#554265" stroke="#30243d" stroke-width="3"/><path d="M139 126L157 103L153 123L170 118L162 145L140 143L131 159L119 138Z" fill="#554265" stroke="#30243d" stroke-width="3"/><circle cx="30" cy="135" r="2.2" fill="#f7bac9"/><circle cx="149" cy="135" r="2.2" fill="#f7bac9"/>';
 }
