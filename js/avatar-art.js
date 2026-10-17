@@ -180,7 +180,7 @@ export function avatarMarkup(p={}){
  const backBanana=outfit==="outfit_banana"?
  '<path d="M47 72Q28 25 75 16Q111 8 131 46L143 24Q139 84 129 110L54 105Z" fill="#f3ca55" stroke="#30243d" stroke-width="5"/><path d="M53 48Q81 16 117 45" fill="none" stroke="#fff2aa" stroke-width="7" opacity=".8"/>':"";
  return [
- '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 205" role="img" aria-label="Avatar caricaturesco Party Hub">',
+ '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 205" role="img" aria-label="Avatar caricaturesco Party Hub" data-hair-coverage="'+coverage+'">',
  '<g data-layer="ground"><ellipse cx="90" cy="194" rx="48" ry="8" fill="#131026" opacity=".28"/></g>',
  '<g data-layer="rear-accessory">',backArt(back),backBanana,'</g>',
  '<g data-layer="legs">',
@@ -210,10 +210,10 @@ export function avatarMarkup(p={}){
  '</g>',
  '<g data-layer="features" style="display:',coverage==="replace"?"none":"inline",'" fill="#30243d" stroke="#30243d">',
  '<path d="M61 78Q69 75 76 78M104 78Q112 75 119 78" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
- eyeStyles[eyes],
- hasOpenEyes?'<ellipse cx="67.5" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/><ellipse cx="109" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/>':"",
+ (["face_scary","face_mask","face_star","face_sun"].includes(face))?"":eyeStyles[eyes],
+ hasOpenEyes&&!["face_scary","face_mask","face_star","face_sun"].includes(face)?'<ellipse cx="67.5" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/><ellipse cx="109" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/>':"",
  '<path d="M87 101Q90 103 93 101" stroke="#956154" stroke-width="2" fill="none" stroke-linecap="round"/>',
- mouthStyles[mouth],'</g>',
+ (["face_stitched","face_mask","face_mustache"].includes(face))?"":mouthStyles[mouth],"</g>",
  '<g data-layer="front-hair">',integratedHair,
  coverage==="show"?'<path d="'+hairShapes[hair]+'" fill="'+hairColor+'" stroke="#30243d" stroke-width="3.5" stroke-linejoin="round"/>':"",
  coverage==="show"?('<path d="M55 49Q68 32 84 32" stroke="#fff7e7" stroke-width="3.5" fill="none" opacity=".15" stroke-linecap="round"/>'):"",
@@ -221,6 +221,7 @@ export function avatarMarkup(p={}){
  '<g data-layer="headwear">',headArt(head),'</g>',
  '<g data-layer="facial-accessory" style="display:',coverage==="replace"?"none":"inline",'">',faceArt(face),'</g>',
  '<g data-expression-effect="tears" opacity="0"><path d="M60 99L56 114Q59 120 63 114Z" fill="#85e4f5" stroke="#3a829c" stroke-width="2"/><path d="M116 99L119 114Q115 120 112 114Z" fill="#85e4f5" stroke="#3a829c" stroke-width="2"/></g>',
+ '<g data-expression-effect="evil" opacity="0"><path d="M58 86Q67 72 77 84M102 84Q111 72 122 86" stroke="#e06b8e" stroke-width="5" stroke-linecap="round" fill="none"/><ellipse cx="69" cy="91" rx="6" ry="7" fill="#b84169"/><ellipse cx="111" cy="91" rx="6" ry="7" fill="#b84169"/></g>',
  '<g data-expression-effect="confetti" opacity="0"><path d="M28 53L35 42L41 52Z" fill="#ffd478"/><path d="M146 95L155 79L164 90Z" fill="#f19dbc"/><circle cx="150" cy="26" r="5" fill="#90d6c4"/><rect x="17" y="111" width="8" height="8" rx="1" fill="#b2a9fa" transform="rotate(20 17 111)"/></g>',
  '</svg>'
  ].join("");
