@@ -1,4 +1,4 @@
-import {makeAvatar} from "./avatar-art.js?v=0.12.0";
+import {makeAvatar} from "./avatar-art.js?v=0.13.0";
 // PUERTA O NADA — responsive pure-chance survival, authoritative Supabase rounds.
 const $=id=>document.getElementById(id);
 export const MAX_DOOR_ROUNDS=5;
