@@ -8,18 +8,18 @@ export const CLOTH_COLORS=["#8978ee","#f2a04b","#e77a99","#4dafa7","#7590ea","#e
 export const STYLE_OPTIONS={skin:8,hair:12,eyes:8,mouth:8,hair_color:10,outfit_color:10};
 const num=(v,max,def=0)=>Number.isInteger(Number(v))&&Number(v)>=0&&Number(v)<max?Number(v):def;
 const hairShapes=[
-'M47 66Q29 30 68 25Q115 12 132 57L119 60 108 46 93 64 75 51 57 68Z',
-'M40 70Q33 23 84 25Q129 25 136 65L114 51 100 72 84 48 69 79 53 52Z',
-'M43 64Q44 27 92 27Q128 32 135 64L113 48 103 62 83 46 59 66Z',
-'M37 69Q27 39 65 24Q109 10 136 55L124 68 105 55 93 73 67 52Z',
-'M52 54Q53 28 88 29Q125 30 129 57L113 52 93 61 73 52Z',
-'M38 74Q37 34 70 27Q125 18 139 72L115 50 107 75 84 50 72 76 58 54Z',
-'M43 70Q22 36 63 25Q120 14 139 67L120 49 101 67 94 45 78 72 56 52Z',
-'M42 64Q47 29 90 30Q123 31 133 59Q110 72 94 52Q67 75 42 64Z',
-'M39 70Q26 31 74 26Q122 13 140 61L123 73 105 52 87 68 67 51Z',
-'M41 70Q41 21 87 23Q120 26 135 60L124 73 107 54 93 69 80 51 62 68Z',
-'M47 56Q53 31 85 32Q121 28 130 57Q108 65 96 54Q66 65 47 56Z',
-'M35 78Q24 30 67 26Q126 14 142 72L124 52 116 77 95 53 83 77 62 54Z'
+'M47 65Q46 33 75 29Q91 22 112 30Q132 39 133 63Q113 55 103 46Q89 61 77 51Q61 62 47 65Z',
+'M46 64Q44 27 81 27Q114 20 134 59L121 53Q106 41 96 58Q84 46 73 63Q60 54 46 64Z',
+'M48 62Q53 28 89 28Q122 28 133 62Q108 50 96 58Q82 49 68 60Z',
+'M45 64Q45 32 75 26Q108 18 135 59Q116 52 103 57Q91 49 80 57Q65 52 45 64Z',
+'M54 57Q58 29 90 28Q121 28 126 58Q108 51 93 52Q78 54 54 57Z',
+'M45 69Q39 32 80 26Q114 22 136 63L120 60Q108 44 95 62Q82 49 69 67L56 53Z',
+'M43 67Q44 31 81 25Q117 19 136 64L120 53L108 66L96 51L82 65L67 53L55 70Z',
+'M47 63Q53 31 86 29Q115 27 133 58Q121 64 105 50Q92 64 79 52Q61 66 47 63Z',
+'M43 65Q45 34 72 26Q111 15 137 62Q124 66 109 49Q91 62 79 53Q62 68 43 65Z',
+'M45 67Q42 29 89 25Q119 25 135 62L121 65L108 52L94 63L80 52L65 67L54 58Z',
+'M55 55Q57 32 88 32Q117 29 127 56Q111 62 96 53Q76 62 55 55Z',
+'M42 70Q41 31 82 24Q120 19 137 66L121 55L111 70L96 52L81 71L67 55L54 70Z'
 ];
 const eyeStyles=[
 '<ellipse cx="69" cy="91" rx="4.7" ry="6.3"/><ellipse cx="111" cy="91" rx="4.7" ry="6.3"/>',
@@ -101,7 +101,7 @@ function outfitArt(s,col){
 }
 function headArt(s){
  const seasonal=halloweenHead(s);if(seasonal)return seasonal;
- if(s==="head_party")return '<path d="M69 65L90 7L111 65Z" fill="#f3a766" stroke="#30243d" stroke-width="4.5" stroke-linejoin="round"/><path d="M77 47H104M84 32H97" stroke="#fff0b3" stroke-width="7"/><circle cx="90" cy="7" r="6" fill="#f87fa5" stroke="#30243d" stroke-width="2"/><path d="M68 64Q90 67 112 64" stroke="#d47b80" stroke-width="5" fill="none"/>';
+ if(s==="head_party")return '<path d="M48 65Q48 39 89 37Q131 39 132 65Q90 75 48 65Z" fill="#e2a4aa" stroke="#30243d" stroke-width="4"/><path d="M69 65L90 7L111 65Z" fill="#f3a766" stroke="#30243d" stroke-width="4.5" stroke-linejoin="round"/><path d="M77 47H104M84 32H97" stroke="#fff0b3" stroke-width="7"/><circle cx="90" cy="7" r="6" fill="#f87fa5" stroke="#30243d" stroke-width="2"/><path d="M68 64Q90 67 112 64" stroke="#d47b80" stroke-width="5" fill="none"/>';
  switch(s){
  case "head_cap":
   return '<path d="M45 60Q41 27 70 20Q92 14 115 25Q136 36 136 60L130 67H48Z" fill="#6079cb" stroke="#30243d" stroke-width="4"/><path d="M89 61Q119 57 151 70Q127 82 91 71Z" fill="#374c86" stroke="#30243d" stroke-width="3"/><path d="M72 28Q92 21 114 33" fill="none" stroke="#b5c3f6" stroke-width="4" opacity=".6"/><path d="M63 59H116" stroke="#2d467e" stroke-width="3"/>';
@@ -173,6 +173,9 @@ export function avatarMarkup(p={}){
   outfit==="outfit_denim"?"#428fc5":cloth);
  const coverage=headHairMode(head);
  const isHat=coverage!=="show";
+ const integratedHair=coverage==="integrated"?
+  '<path d="M49 66Q50 39 78 35Q92 30 111 38Q132 45 132 65Q122 56 111 56L100 65L90 58L80 66L66 57L53 70Z" fill="'+hairColor+
+  '" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/>':"";
  const hasOpenEyes=[0,2,5].includes(eyes);
  const backBanana=outfit==="outfit_banana"?
  '<path d="M47 72Q28 25 75 16Q111 8 131 46L143 24Q139 84 129 110L54 105Z" fill="#f3ca55" stroke="#30243d" stroke-width="5"/><path d="M53 48Q81 16 117 45" fill="none" stroke="#fff2aa" stroke-width="7" opacity=".8"/>':"";
@@ -211,7 +214,7 @@ export function avatarMarkup(p={}){
  hasOpenEyes?'<ellipse cx="67.5" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/><ellipse cx="109" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/>':"",
  '<path d="M87 101Q90 103 93 101" stroke="#956154" stroke-width="2" fill="none" stroke-linecap="round"/>',
  mouthStyles[mouth],'</g>',
- '<g data-layer="front-hair">',
+ '<g data-layer="front-hair">',integratedHair,
  coverage==="show"?'<path d="'+hairShapes[hair]+'" fill="'+hairColor+'" stroke="#30243d" stroke-width="3.5" stroke-linejoin="round"/>':"",
  coverage==="show"?('<path d="M55 49Q68 32 84 32" stroke="#fff7e7" stroke-width="3.5" fill="none" opacity=".15" stroke-linecap="round"/>'):"",
  '</g>',
