@@ -6,10 +6,10 @@ import {halloweenHead,halloweenFace,halloweenOutfit,halloweenBack} from "../js/a
 const file=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 
 test("Fitted headwear hides fringe and full masks hide original face and ears",()=>{
- const matrix={head_cap:"hide_front",head_beanie:"hide_all",head_helmet:"hide_all",
+ const matrix={head_cap:"hide_all",head_beanie:"hide_all",head_helmet:"hide_all",
   head_chef:"hide_all",head_fish:"hide_all",
   head_pumpkin:"replace",head_hockey:"replace",head_ghost:"replace",
-  head_witch:"show",head_party:"show",head_champion:"show"};
+  head_witch:"hide_all",head_party:"hide_all",head_champion:"integrated"};
  for(const [code,mode] of Object.entries(matrix)){
   assert.equal(headHairMode(code),mode);
   const markup=avatarMarkup({head:code,hair:11});
