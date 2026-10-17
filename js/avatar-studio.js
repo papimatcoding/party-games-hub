@@ -150,7 +150,7 @@ export class AvatarStudio{
  emote(){
   const node=$("avatar-preview-figure");
   node.classList.remove("ph-anim-wave","ph-anim-laugh","ph-anim-cry",
-    "ph-anim-flex","ph-anim-dance","ph-anim-confetti");
+    "ph-anim-flex","ph-anim-dance","ph-anim-confetti","ph-anim-spook");
   void node.offsetWidth;
   const selected=this.appearance.emote||"emote_wave";
   node.classList.add("ph-anim-"+selected.slice(6));
