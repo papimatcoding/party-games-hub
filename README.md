@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.13.0
+# PARTY HUB 🎉 — Alpha 0.14.0
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de cinco minijuegos seleccionados entre siete, con medallas).
 
@@ -107,7 +107,7 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - PUERTA O NADA usa CSS para animaciones y actualiza el reloj cada 100ms; las transiciones pueden anticiparse por eventos Realtime de la sala manteniendo polling como respaldo.
 - **Limitación:** los FPS visuales no equivalen a un servidor de simulación de 120Hz. El estado físico se actualiza mediante PostgreSQL y RPC periódicas. Un servidor dedicado con reloj de física fijo y transporte de baja latencia sería necesario para eliminar las últimas correcciones de posición en partidas de acción.
 
-## Alpha 0.13.0 — Avatar Studio, Tickets y progresión
+## Alpha 0.14.0 — Avatar Studio, Tickets y progresión
 - **Estilo chibi original vectorial.** Los avatares se dibujan en SVG por capas, en alta resolución y con la misma silueta y hitbox para todos. Incluye 8 pieles, 12 peinados, 8 ojos, 8 expresiones, 10 colores de pelo y 10 colores de outfit. Se pueden randomizar y guardar.
 - **42 cosméticos:** 10 outfits completos, 12 artículos de cabeza, 8 accesorios faciales, 6 complementos de espalda y 6 emotes. Editor, armario y tienda integrados en un estudio accesible desde «MI AVATAR», tanto en el menú como en el lobby.
 - **Progresión fiable:** cada partida realmente finalizada concede 70 XP y 12 Tickets por participante; quien gane recibe 35 XP y 8 Tickets adicionales. Las medallas de Fiesta conceden bonificaciones adicionales de XP y Tickets. Los logros por partidas completadas, victorias y medallas entregan recompensas una única vez.
@@ -116,3 +116,11 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - **Historial:** la migración 76 recupera idempotentemente partidas terminadas y medallas aún almacenadas antes del lanzamiento del sistema de perfiles.
 - **Persistencia:** el progreso está ligado al ID de usuario autenticado anónimo de Supabase; se conserva si ese navegador mantiene su sesión. **No existe aún vinculación entre distintos dispositivos o recuperación de cuenta si se eliminan datos del navegador**. Añadir inicio de sesión opcional será una fase posterior.
 - **Limitaciones visuales:** se ha implementado una colección original de personajes vectoriales y animaciones cortas, pero la calidad y ergonomía finales deben revisarse con capturas reales de PC y móvil antes de considerarlas definitivas.
+
+## Alpha 0.14.0 — avatar art pass
+- Rig nuevo con anclajes anatómicos compartidos: orejas detrás de la cara, pelo posterior y flequillo separados y sombreros alineados.
+- Rehechos los cascos, coronas, orejas de gato, gorros, pez y accesorios de espalda para que realmente se vean. Trajes con más detalle y siluetas diferentes.
+- Miniaturas enfocadas en la parte que se vende, no un cuerpo completo diminuto. Mejores animaciones de emote con brazos independientes y efectos de lágrimas/confeti.
+- Premio gratuito por logro (Corona del caos) desbloqueado automáticamente; se elimina el checkout de coste cero. Conserva los desbloqueos y compras anteriores.
+- Emotes visibles al marcarse listo y en el podio del Modo Fiesta. Evita redibujar continuamente el podio idéntico para no reiniciar animaciones.
+- Pruebas de seguridad del checkout, orden de capas, variantes visuales únicas y regresiones de juegos. Pendiente repaso estético con capturas de PC/móvil.
