@@ -1,4 +1,4 @@
-import {makeAvatar} from "./avatar-art.js?v=0.12.0";
+import {makeAvatar} from "./avatar-art.js?v=0.13.0";
 // Secret-placement Lásers: only own move is visible until server reveal.
 export const HEX_SIZE=700;
 const CENTER=350,SCALE=290,TAU=2*Math.PI;
