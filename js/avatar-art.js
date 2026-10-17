@@ -1,5 +1,7 @@
 // Authored vector avatars. Every possible path, accessory and color is curated.
 // Player names or arbitrary strings are never interpolated into SVG.
+import {halloweenHead,halloweenFace,halloweenOutfit,halloweenBack,headHairMode} from "./avatar-halloween.js?v=0.14.0";
+export {headHairMode} from "./avatar-halloween.js?v=0.14.0";
 export const SKINS=["#f7c9a1","#e9b58e","#d99b72","#c88a60","#b77955","#9a644b","#78513d","#583a33"];
 export const HAIR_COLORS=["#302639","#51372e","#8a5434","#dca55c","#f4d89b","#181e35","#77566f","#b84d6a","#f0eced","#42758f"];
 export const CLOTH_COLORS=["#8978ee","#f2a04b","#e77a99","#4dafa7","#7590ea","#e9d38b","#db7271","#a9c56b","#aa7ac1","#4e5d87"];
@@ -31,7 +33,7 @@ const eyeStyles=[
 ];
 const mouthStyles=[
 '<path d="M80 114Q90 123 100 114" fill="none" stroke-width="3.8" stroke-linecap="round"/>',
-'<path d="M79 112Q90 132 101 112Z" fill="#9c395a" stroke-width="2.5"/><path d="M82 117H98" stroke="#fff3e8" stroke-width="3"/>',
+'<path d="M79 111Q90 108 101 111Q100 124 90 124Q80 124 79 111Z" fill="#9c395a" stroke-width="2.5"/><path d="M82 114Q90 117 98 114" fill="none" stroke="#fff3e8" stroke-width="3.4" stroke-linecap="round"/>',
 '<path d="M83 115H98" fill="none" stroke-width="3.7" stroke-linecap="round"/>',
 '<ellipse cx="91" cy="116" rx="6" ry="8" fill="#73344f"/>',
 '<path d="M80 122Q90 108 101 122" fill="none" stroke-width="3.5" stroke-linecap="round"/>',
@@ -40,6 +42,7 @@ const mouthStyles=[
 '<path d="M81 110Q90 117 101 110L98 119Q90 126 84 118Z" fill="#c85872" stroke-width="2"/>'
 ];
 function backArt(s){
+ const seasonal=halloweenBack(s);if(seasonal)return seasonal;
  switch(s){
  case "back_pack":return '<path d="M58 128Q35 111 28 140L26 162Q29 178 53 175L59 146M123 128Q146 111 152 140L154 162Q151 178 127 175L120 146" fill="#b98567" stroke="#30243d" stroke-width="4"/><rect x="27" y="144" width="25" height="22" rx="6" fill="#dba582" stroke="#30243d" stroke-width="3"/><rect x="129" y="144" width="25" height="22" rx="6" fill="#dba582" stroke="#30243d" stroke-width="3"/>';
  case "back_cape":return '<path d="M59 121Q43 128 36 158L25 186Q90 201 155 186L142 157Q135 129 120 121Z" fill="#e27496" stroke="#30243d" stroke-width="5"/><path d="M34 180Q89 192 146 180" fill="none" stroke="#ffd8ab" stroke-width="5"/>';
@@ -57,6 +60,7 @@ function frontBackArt(s){
 }
 function outfitArt(s,col){
  let fill=col,details="";
+ const halloween=halloweenOutfit(s);if(halloween){fill=halloween.fill;details=halloween.details;}
  const outline="#30243d";
  switch(s){
  case "outfit_hoodie":
@@ -96,6 +100,8 @@ function outfitArt(s,col){
  '<path d="M65 125Q91 138 115 125" fill="none" stroke="#ffffff" opacity=".16" stroke-width="6"/>'+details;
 }
 function headArt(s){
+ const seasonal=halloweenHead(s);if(seasonal)return seasonal;
+ if(s==="head_party")return '<path d="M69 65L90 7L111 65Z" fill="#f3a766" stroke="#30243d" stroke-width="4.5" stroke-linejoin="round"/><path d="M77 47H104M84 32H97" stroke="#fff0b3" stroke-width="7"/><circle cx="90" cy="7" r="6" fill="#f87fa5" stroke="#30243d" stroke-width="2"/><path d="M68 64Q90 67 112 64" stroke="#d47b80" stroke-width="5" fill="none"/>';
  switch(s){
  case "head_cap":
   return '<path d="M45 60Q41 27 70 20Q92 14 115 25Q136 36 136 60L130 67H48Z" fill="#6079cb" stroke="#30243d" stroke-width="4"/><path d="M89 61Q119 57 151 70Q127 82 91 71Z" fill="#374c86" stroke="#30243d" stroke-width="3"/><path d="M72 28Q92 21 114 33" fill="none" stroke="#b5c3f6" stroke-width="4" opacity=".6"/><path d="M63 59H116" stroke="#2d467e" stroke-width="3"/>';
@@ -123,6 +129,7 @@ function headArt(s){
  }
 }
 function faceArt(s){
+ const seasonal=halloweenFace(s);if(seasonal)return seasonal;
  switch(s){
  case "face_round":return '<circle cx="69" cy="91" r="14" fill="none" stroke="#484266" stroke-width="3.5"/><circle cx="111" cy="91" r="14" fill="none" stroke="#484266" stroke-width="3.5"/><path d="M83 90H97" stroke="#484266" stroke-width="3"/>';
  case "face_sun":return '<path d="M53 82H84L80 100Q68 111 55 99ZM96 82H128L126 99Q114 111 99 100Z" fill="#302a53" stroke="#30243d" stroke-width="3"/><path d="M84 88H96" stroke="#30243d" stroke-width="4"/>';
@@ -159,12 +166,13 @@ export function avatarMarkup(p={}){
  const hair=num(p?.hair,12,0),eyes=num(p?.eyes,8,0),mouth=num(p?.mouth,8,0);
  const outfit=p?.outfit||"outfit_hoodie",head=p?.head||"head_none",
  face=p?.face||"face_none",back=p?.back||"back_none";
- const bodyColor=outfit==="outfit_suit"?"#46506f":
+ const bodyColor=halloweenOutfit(outfit)?.fill|| (outfit==="outfit_suit"?"#46506f":
   outfit==="outfit_space"?"#eef1f3":outfit==="outfit_chef"?"#f4eadd":
   outfit==="outfit_ninja"?"#40405c":outfit==="outfit_royal"?"#7952a6":
   outfit==="outfit_banana"?"#f9cd52":outfit==="outfit_galaxy"?"#514090":
-  outfit==="outfit_denim"?"#428fc5":cloth;
- const isHat=head!=="head_none"&&head!=="head_cat"&&head!=="head_party";
+  outfit==="outfit_denim"?"#428fc5":cloth);
+ const coverage=headHairMode(head);
+ const isHat=coverage!=="show";
  const hasOpenEyes=[0,2,5].includes(eyes);
  const backBanana=outfit==="outfit_banana"?
  '<path d="M47 72Q28 25 75 16Q111 8 131 46L143 24Q139 84 129 110L54 105Z" fill="#f3ca55" stroke="#30243d" stroke-width="5"/><path d="M53 48Q81 16 117 45" fill="none" stroke="#fff2aa" stroke-width="7" opacity=".8"/>':"";
@@ -185,30 +193,30 @@ export function avatarMarkup(p={}){
  '<path d="M70 175Q90 180 111 175" stroke="#ffffff" opacity=".15" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
  '<g data-layer="front-back">',frontBackArt(back),'</g>',
  '<g data-layer="neck"><path d="M81 113V128Q90 138 101 128V113" fill="'+skin+'" stroke="#30243d" stroke-width="4"/></g>',
- '<g data-layer="rear-hair">',rearHair(hair,hairColor),'</g>',
- '<g data-layer="ears">',
+ '<g data-layer="rear-hair">',["show","hide_front"].includes(coverage)?rearHair(hair,hairColor):"","</g>",
+ '<g data-layer="ears" style="display:',coverage==="replace"?"none":"inline",'">',
  '<ellipse cx="43" cy="96" rx="10" ry="14" fill="'+skin+'" stroke="#30243d" stroke-width="4"/>',
  '<ellipse cx="137" cy="96" rx="10" ry="14" fill="'+skin+'" stroke="#30243d" stroke-width="4"/>',
  '<path d="M42 92Q37 97 43 102M138 92Q143 97 137 102" fill="none" stroke="#8e5b56" opacity=".55" stroke-width="2.1" stroke-linecap="round"/>',
  '</g>',
- '<g data-layer="face">',
+ '<g data-layer="face" style="display:',coverage==="replace"?"none":"inline",'">',
  '<path d="M51 67Q55 43 89 40Q124 40 129 67L131 91Q131 115 111 129Q91 141 70 128Q49 114 49 91Z" fill="'+skin+'" stroke="#30243d" stroke-width="4.1" stroke-linejoin="round"/>',
  '<path d="M54 76Q59 51 79 49" fill="none" stroke="#fff3e2" stroke-width="5" opacity=".3" stroke-linecap="round"/>',
  '<ellipse cx="64" cy="106" rx="10" ry="5.5" fill="#f17e90" opacity=".19"/>',
  '<ellipse cx="116" cy="106" rx="10" ry="5.5" fill="#f17e90" opacity=".19"/>',
  '</g>',
- '<g data-layer="features" fill="#30243d" stroke="#30243d">',
+ '<g data-layer="features" style="display:',coverage==="replace"?"none":"inline",'" fill="#30243d" stroke="#30243d">',
  '<path d="M61 78Q69 75 76 78M104 78Q112 75 119 78" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
  eyeStyles[eyes],
  hasOpenEyes?'<ellipse cx="67.5" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/><ellipse cx="109" cy="88" rx="1.8" ry="2.5" fill="#fff7f0" stroke="none"/>':"",
  '<path d="M87 101Q90 103 93 101" stroke="#956154" stroke-width="2" fill="none" stroke-linecap="round"/>',
  mouthStyles[mouth],'</g>',
  '<g data-layer="front-hair">',
- '<path d="'+hairShapes[hair]+'" fill="'+hairColor+'" stroke="#30243d" stroke-width="3.5" stroke-linejoin="round"/>',
- isHat?'':('<path d="M55 49Q68 32 84 32" stroke="#fff7e7" stroke-width="3.5" fill="none" opacity=".15" stroke-linecap="round"/>'),
+ coverage==="show"?'<path d="'+hairShapes[hair]+'" fill="'+hairColor+'" stroke="#30243d" stroke-width="3.5" stroke-linejoin="round"/>':"",
+ coverage==="show"?('<path d="M55 49Q68 32 84 32" stroke="#fff7e7" stroke-width="3.5" fill="none" opacity=".15" stroke-linecap="round"/>'):"",
  '</g>',
  '<g data-layer="headwear">',headArt(head),'</g>',
- '<g data-layer="facial-accessory">',faceArt(face),'</g>',
+ '<g data-layer="facial-accessory" style="display:',coverage==="replace"?"none":"inline",'">',faceArt(face),'</g>',
  '<g data-expression-effect="tears" opacity="0"><path d="M60 99L56 114Q59 120 63 114Z" fill="#85e4f5" stroke="#3a829c" stroke-width="2"/><path d="M116 99L119 114Q115 120 112 114Z" fill="#85e4f5" stroke="#3a829c" stroke-width="2"/></g>',
  '<g data-expression-effect="confetti" opacity="0"><path d="M28 53L35 42L41 52Z" fill="#ffd478"/><path d="M146 95L155 79L164 90Z" fill="#f19dbc"/><circle cx="150" cy="26" r="5" fill="#90d6c4"/><rect x="17" y="111" width="8" height="8" rx="1" fill="#b2a9fa" transform="rotate(20 17 111)"/></g>',
  '</svg>'
