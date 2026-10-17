@@ -1,4 +1,4 @@
-import {makeAvatar} from "./avatar-art.js?v=0.12.0";
+import {makeAvatar} from "./avatar-art.js?v=0.13.0";
 // LAVALABRAS — server-validated vocabulary survival above rising lava.
 // Submitted answers/validity stay hidden until the server resolves a round.
 const $=id=>document.getElementById(id);
