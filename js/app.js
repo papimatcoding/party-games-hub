@@ -742,7 +742,7 @@ function renderRoom() {
   } else if(room.status==="playing"&&["freeplay","party"].includes(room.mode)&&["ya","aguanta"].includes(room.game_id)){
     $("lobby-screen").hidden=true;
     lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();
-    lavalabras?.exit();finDeLinea?.exit();puertaONada?.exit();timingGame?.exit();
+    lavalabras?.exit();finDeLinea?.exit();puertaONada?.exit();
     timingGame?.enter(state.roomId,state.user.id,room.code,room.host_user_id,room.game_id);
   } else {
     lasers?.exit();
