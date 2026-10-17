@@ -6,6 +6,8 @@ import { PongagonoGame } from "./pongagono.js?v=0.12.0";
 import { LavalabrasGame } from "./lavalabras.js?v=0.12.0";
 import { FinDeLineaGame } from "./fin-de-linea.js?v=0.12.0";
 import { PuertaONadaGame } from "./puerta-o-nada.js?v=0.12.0";
+import { AvatarStudio } from "./avatar-studio.js?v=0.12.0";
+import { makeAvatar } from "./avatar-art.js?v=0.12.0";
 
 import { APP_BUILD } from "./release.js?v=0.12.0";
 const $ = (id) => document.getElementById(id);
@@ -27,6 +29,26 @@ let pongagono = null;
 let lavalabras = null;
 let finDeLinea = null;
 let puertaONada = null;
+let avatarStudio = null;
+let avatarStyles = new Map();
+let avatarsLoading = false, avatarsFetchedAt = 0, avatarRosterSignature = "";
+function avatarFor(id) { return avatarStyles.get(id) || {}; }
+async function refreshRoomAvatars(force=false){
+  const id=state.roomId;
+  if(!id||avatarsLoading||!state.user)return;
+  const signature=id+":"+state.members.map(m=>m.user_id).join(",");
+  if(!force&&signature===avatarRosterSignature&&Date.now()-avatarsFetchedAt<15000)return;
+  avatarsLoading=true;
+  try{
+    const result=await rpc("avatar_room_styles",{p_room_id:id});
+    if(state.roomId!==id||!Array.isArray(result))return;
+    avatarStyles=new Map(result.map(style=>[style.user_id,style]));
+    avatarsFetchedAt=Date.now();avatarRosterSignature=signature;
+    if(state.room){renderPlayers();if(partyData?.phase==="intermission"||partyData?.phase==="finished")renderPartyPresentation();}
+  }catch(e){console.warn("Avatar sync:",e.message);}
+  finally{avatarsLoading=false;}
+}
+
 let partyCache = { signature: null, loading: false, data: null };
 let partyData = null;
 let partyPoll = null;
@@ -181,6 +203,7 @@ function renderPartyPresentation() {
     for(const entry of slot.podium){
       const line=element("div","party-live-medal-row");
       line.append(element("span","party-live-medal-icon",medals[entry.rank]||"🏅"),
+        makeAvatar(avatarFor(entry.user_id),"ph-podium-avatar"),
         element("strong","",entry.name),
         element("span","",entry.rank===1?"ORO · +3":entry.rank===2?"PLATA · +2":"BRONCE · +1"));
       podium.append(line);
@@ -190,6 +213,7 @@ function renderPartyPresentation() {
   for(const player of scores){
     const line=element("div","party-live-rank");
     line.append(element("span","",String(player.place||"–")+"º"),
+      makeAvatar(avatarFor(player.user_id),"ph-rank-avatar"),
       element("strong","",player.name+(player.user_id===state.user?.id?" (tú)":"")),
       element("span","","🥇"+player.gold+" 🥈"+player.silver+" 🥉"+player.bronze),
       element("span","party-live-points",player.score+" pts"));
@@ -426,6 +450,8 @@ function showHome(message) {
   state.room = null;
   state.members = [];
   state.messages = [];
+  avatarStyles.clear();avatarsFetchedAt=0;avatarRosterSignature="";
+  $("avatar-open").disabled=false;
   nrTopicsCache = { signature: null, items: [], loading: false };
   partyCache = { signature: null, loading: false, data: null };
   $("lobby-screen").hidden = true;
@@ -498,6 +524,7 @@ async function syncRoom() {
     }
     setRoute(state.room.code);
     renderRoom();
+    void refreshRoomAvatars();
   } catch (error) { console.error(error); notify("No se pudo sincronizar: " + friendlyError(error)); }
   finally { state.syncing = false; }
 }
@@ -514,11 +541,12 @@ function renderPlayers() {
   const isHost = hostId === state.user.id;
   state.members.forEach((player) => {
     const row = element("div", "player");
-    row.appendChild(element("div", "avatar", player.display_name.slice(0, 1).toUpperCase()));
+    row.appendChild(makeAvatar(avatarFor(player.user_id),"ph-roster-avatar"));
     const meta = element("div", "player-meta");
     const displayName = player.display_name + (player.user_id === state.user.id ? " (tú)" : "");
     meta.appendChild(element("span", "player-name", displayName));
-    meta.appendChild(element("span", "player-role", player.user_id === hostId ? "👑 Anfitrión" : "Invitado"));
+    const level=avatarFor(player.user_id)?.level;
+    meta.appendChild(element("span", "player-role", (player.user_id === hostId ? "👑 Anfitrión" : "Invitado")+(level ? " · Nv. "+level : "")));
     row.appendChild(meta);
     const ready = element("span", "ready-status" + (player.is_ready ? "" : " waiting"), player.is_ready ? "✓ Listo" : "● Esperando");
     row.appendChild(ready);
@@ -592,6 +620,8 @@ function renderChat() {
 }
 function renderRoom() {
   const room = state.room;
+  $("avatar-open").disabled=room.status==="playing";
+  $("avatar-open").title=room.status==="playing"?"Personaliza tu avatar antes de empezar":"Abrir editor de avatares";
   if(room.status==="lobby")gameGateData=null;
   const isHost = room.host_user_id === state.user.id;
   const self = state.members.find((m) => m.user_id === state.user.id);
@@ -795,6 +825,15 @@ function registerEvents() {
   });
 }
 async function init() {
+  avatarStudio = new AvatarStudio({
+    rpc,notify,ensureUser:ensureGuest,
+    nameProvider:()=>state.members.find(m=>m.user_id===state.user?.id)?.display_name||
+      $("player-name").value.trim()||"Party Player",
+    onSaved:appearance=>{
+      if(state.user)avatarStyles.set(state.user.id,{...appearance,user_id:state.user.id});
+      if(state.room){renderPlayers();renderPartyPresentation();void refreshRoomAvatars(true);}
+    }
+  });
   puertaONada = new PuertaONadaGame({
     rpc,notify,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de PUERTA O NADA.");}),
