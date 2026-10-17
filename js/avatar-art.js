@@ -236,3 +236,21 @@ export function makeAvatar(appearance={},extraClass=""){
  wrap.append(art.cloneNode(true));
  return wrap;
 }
+
+
+// Larger, cropped thumbnails show the ACTUAL unlock being sold. Facial items no
+// longer look identical on microscopic full-body cards; back items stay visible.
+export function makeCosmeticThumbnail(appearance,slot){
+ const figure=makeAvatar(appearance,"avatar-item-figure");
+ const svg=figure.firstElementChild;
+ const crops={
+  outfit:"30 112 120 82",
+  head:"23 0 134 95",
+  face:"42 65 96 70",
+  back:"8 80 164 115",
+  emote:"28 16 124 175"
+ };
+ if(svg)svg.setAttribute("viewBox",crops[slot]||"0 0 180 205");
+ figure.dataset.cosmeticSlot=slot;
+ return figure;
+}
