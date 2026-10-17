@@ -294,10 +294,96 @@ export class AvatarStudio{
  }
  renderShop(pane){
   pane.append(el("h3","avatar-pane-title","La tienda del caos"),
-    el("p","avatar-pane-sub","Consigue Tickets jugando. Sin pagos reales ni ventajas competitivas."));
-  this.slotButtons(pane,"shopSlot","shopSlot",[["all","Todos"],...SLOTS]);
-  const list=el("div","avatar-items-grid");
-  const items=this.items.filter(i=>!i.is_starter&&(this.shopSlot==="all"||i.slot===this.shopSlot));
+   el("p","avatar-pane-sub","Aquí solo aparecen cosméticos. Filtra por lo que puedes comprar, los bloqueados o los que ya tienes. Todo se consigue jugando."));
+  const link=el("button","avatar-season-link","🎃 COLECCIÓN HALLOWEEN · PACK Y PIEZAS  →");
+  link.type="button";link.addEventListener("click",()=>{this.tab="seasons";this.render();});
+  pane.append(link);
+  const toolbar=el("div","avatar-shop-toolbar");
+  const search=el("input","avatar-shop-search");
+  search.type="search";search.placeholder="Buscar por nombre...";search.setAttribute("aria-label","Buscar cosméticos");
+  search.value=this.shopSearch;toolbar.append(search);
+  const filters=el("div","avatar-shop-selects");
+  function choose(label,options,value,onChange){
+   const wrap=el("label","avatar-shop-filter");
+   wrap.append(el("span","",label));
+   const selector=el("select","avatar-shop-select");
+   for(const [v,name] of options){const opt=el("option","",name);opt.value=v;selector.append(opt);}
+   selector.value=value;selector.addEventListener("change",e=>onChange(e.target.value));
+   wrap.append(selector);return wrap;
+  }
+  filters.append(
+   choose("Tipo",[["all","Todos los tipos"],...SLOTS],this.shopSlot,v=>{this.shopSlot=v;this.render();}),
+   choose("Temática",THEMES,this.shopTheme,v=>{this.shopTheme=v;this.render();}),
+   choose("Orden",[["price","Más baratos primero"],["featured","Destacados"],["name","A–Z"]],
+    this.shopSort,v=>{this.shopSort=v;this.render();})
+  );
+  toolbar.append(filters);pane.append(toolbar);
+  const tabs=el("div","avatar-shop-statuses");
+  for(const [k,label] of [["ready","🎟 Puedes comprar"],["locked","🔒 Bloqueados"],["owned","✓ Ya tienes"]]){
+   const btn=el("button","avatar-shop-status"+(this.shopStatus===k?" active":""),label);
+   btn.type="button";btn.setAttribute("aria-pressed",String(this.shopStatus===k));
+   btn.addEventListener("click",()=>{this.shopStatus=k;this.render();});
+   tabs.append(btn);
+  }
+  pane.append(tabs);
+  const heading=el("div","avatar-shop-heading"),list=el("div","avatar-items-grid avatar-shop-results");
+  pane.append(heading,list);
+  search.addEventListener("input",()=>{this.shopSearch=search.value;this.renderShopResults(heading,list);});
+  this.renderShopResults(heading,list);
+ }
+ renderShopResults(heading,list){
+  const query=this.shopSearch.trim().toLocaleLowerCase("es");
+  const items=this.items.filter(i=>!i.is_starter&&this.statusOf(i)===this.shopStatus&&
+    (this.shopSlot==="all"||i.slot===this.shopSlot)&&
+    (this.shopTheme==="all"||i.theme===this.shopTheme)&&
+    (!query||(i.title+" "+(THEME_LABELS[i.theme]||"")).toLocaleLowerCase("es").includes(query)))
+  .sort((a,b)=>this.shopSort==="name"?a.title.localeCompare(b.title,"es"):
+    this.shopSort==="featured"?Number(b.featured)-Number(a.featured)||a.price-b.price:
+    a.price-b.price||a.title.localeCompare(b.title,"es"));
+  const titles={ready:"Puedes comprar ahora",locked:"Para desbloquear más adelante",owned:"Ya forman parte de tu colección"};
+  heading.replaceChildren(el("strong","",titles[this.shopStatus]),el("span","",items.length+" resultados"));
+  list.replaceChildren();
+  if(!items.length){
+   list.append(el("p","avatar-shop-empty","Aquí no hay artículos con estos filtros. Prueba otra temática o estado."));
+   return;
+  }
+  for(const item of items)list.append(this.itemCard(item,true));
+ }
+ renderSeasons(pane){
+  const bundle=this.bundles.find(b=>b.code==="bundle_halloween26");
+  if(!bundle){pane.append(el("p","avatar-shop-empty","Próximamente nuevas colecciones."));return;}
+  const active=Date.now()>=Date.parse(bundle.active_from)&&Date.now()<Date.parse(bundle.active_until);
+  const items=this.items.filter(i=>i.season===bundle.season),owned=items.filter(i=>this.isOwned(i));
+  const original=items.reduce((sum,i)=>sum+i.price,0),pending=items.length-owned.length;
+  const hero=el("section","avatar-season-hero");
+  hero.append(el("span","avatar-season-kicker","EVENTO HALLOWEEN · 2026"),
+   el("h3","","🎃 LA NOCHE MÁS LARGA"),
+   el("p","","Terror caricaturesco, cero ventajas: reúne once cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
+  const figures=el("div","avatar-season-characters");
+  figures.append(
+   makeAvatar({...this.preview,outfit:"outfit_skeleton",head:"head_pumpkin"},"avatar-season-character"),
+   makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_hockey"},"avatar-season-character"),
+   makeAvatar({...this.preview,outfit:"outfit_witch",head:"head_witch",back:"back_bats"},"avatar-season-character"));
+  hero.append(figures,el("p","avatar-season-time",active?
+   "Disponible hasta el 8 de noviembre · Los cosméticos adquiridos son tuyos para siempre.":
+   "Evento finalizado. Los cosméticos que conseguiste siguen en tu armario."));
+  const offer=el("div","avatar-bundle-purchase"),detail=el("div","avatar-bundle-offer");
+  detail.append(el("span","avatar-bundle-tag","EL PACK COMPLETO · DESCUENTO POR COLECCIÓN"));
+  const prices=el("div","avatar-bundle-prices");
+  prices.append(el("strong","",pending===0?"✓ Completo":bundle.due+" 🎟"),
+   el("s","",original+" 🎟 sueltos"));
+  detail.append(prices);
+  detail.append(el("span","avatar-bundle-detail",pending+" de "+items.length+" piezas pendientes · Precio del pack sin compras previas: "+bundle.base_price+" Tickets. Las piezas que ya tienes no se vuelven a cobrar."));
+  offer.append(detail);
+  const btn=el("button","avatar-bundle-button",!active?"EVENTO TERMINADO":!pending?"✓ PACK COMPLETO":
+   bundle.due>this.profile.tickets?"TE FALTAN "+(bundle.due-this.profile.tickets)+" TICKETS":
+   "COMPRAR PACK · "+bundle.due+" 🎟");
+  btn.type="button";btn.disabled=this.busy||!active||!pending||bundle.due>this.profile.tickets;
+  btn.addEventListener("click",()=>void this.buyBundle(bundle.code));
+  offer.append(btn);hero.append(offer);pane.append(hero);
+  pane.append(el("h3","avatar-pane-title avatar-collection-title","O cómpralos por separado"),
+    el("p","avatar-pane-sub","Prueba cada pieza antes de comprarla. El descuento del conjunto se actualiza automáticamente."));
+  const list=el("div","avatar-items-grid avatar-season-results");
   for(const item of items)list.append(this.itemCard(item,true));
   pane.append(list);
  }
