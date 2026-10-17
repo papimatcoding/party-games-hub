@@ -1,0 +1,57 @@
+/* Party Hub viewport pass: keep arenas + controls visible without sacrificing touch targets.
+   No forced canvas physical resolution changes; object-fit preserves input coordinates. */
+:root{--ph-top:82px;--ph-gutter:14px;--ph-play-height:calc(100dvh - var(--ph-top) - 50px)}
+@media(min-width:1000px) and (min-height:620px){
+ .laser-screen,.nr-screen,.ice-screen,.pong-screen,.lava-screen,.rail-screen,.door-screen{
+  padding-top:10px!important;padding-bottom:20px!important
+ }
+ .laser-head,.nr-top,.ice-head,.pong-head,.lava-top,.rail-head,.door-top{
+  margin-bottom:10px!important
+ }
+ .laser-badges,.nr-badges,.ice-badges,.pong-badges,.lava-badges,.rail-badges,.door-metadata{
+  margin-bottom:10px!important
+ }
+ .laser-columns,.nr-columns,.ice-columns,.pong-columns,.lava-columns,.rail-layout,.door-layout{
+  gap:12px!important
+ }
+ #rail-canvas{max-height:calc(100dvh - 265px);max-width:100%;width:auto!important;margin:auto;aspect-ratio:5/4}
+ #pong-canvas,#laser-canvas,#ice-canvas{max-height:calc(100dvh - 290px);width:auto!important;max-width:100%;margin:auto}
+ #lava-canvas{max-height:calc(100dvh - 305px);width:auto!important;max-width:100%;margin:auto}
+}
+@media(max-width:999px){
+ .laser-screen,.nr-screen,.ice-screen,.pong-screen,.lava-screen,.rail-screen,.door-screen{
+   padding:10px 0 35px!important
+ }
+ .laser-head,.nr-top,.ice-head,.pong-head,.lava-top,.rail-head,.door-top{margin-bottom:9px!important}
+ .laser-badges,.nr-badges,.ice-badges,.pong-badges,.lava-badges,.rail-badges,.door-metadata{
+  margin-bottom:10px!important;gap:5px!important
+ }
+ .laser-badges span,.nr-badges span,.ice-badges span,.pong-badges span,.lava-badges span,.rail-badges span,.door-metadata>span{
+  padding:5px 7px!important;font-size:10px!important
+ }
+ .rail-layout,.pong-columns,.lava-columns,.door-layout{grid-template-columns:minmax(0,1fr)!important}
+ .rail-arena,.pong-court-wrap,.laser-arena,.ice-canvas-wrap,.lava-arena{padding:5px!important}
+ #rail-canvas{max-height:min(60dvh,650px);max-width:100%;width:auto!important;margin:auto;aspect-ratio:5/4}
+ #pong-canvas,#laser-canvas,#ice-canvas{max-height:min(57dvh,650px);width:auto!important;max-width:100%;margin:auto}
+ #lava-canvas{max-height:min(48dvh,500px);width:auto!important;max-width:100%;margin:auto}
+ .rail-controls,.pong-controls{padding:9px!important;margin-top:9px!important}
+}
+@media(max-width:600px){
+ :root{--ph-top:72px}
+ #rail-canvas{width:100%!important;max-height:50dvh}
+ #pong-canvas,#laser-canvas,#ice-canvas{width:100%!important;max-height:46dvh}
+ .rail-screen .ph-game-avatar,.pong-screen .ph-game-avatar{width:25px;height:29px;min-width:25px}
+ .door-art{height:clamp(120px,30vw,165px)!important}
+ .door-doors{row-gap:10px!important}
+ .nr-hero{padding:16px!important}.nr-topic{font-size:clamp(23px,7vw,34px)!important}
+}
+@media(max-height:700px) and (min-width:850px){
+ #rail-canvas{max-height:calc(100dvh - 210px)}
+ #pong-canvas,#laser-canvas,#ice-canvas{max-height:calc(100dvh - 220px)}
+ .rail-screen,.pong-screen,.laser-screen{padding:6px 0 16px!important}
+}
+/* An important button must remain accessible even if the onscreen keyboard occupies
+   significant visual space; nothing should need horizontal scrolling. */
+.rail-screen,.rail-layout,.rail-arena,.pong-screen,.pong-court-wrap,
+.lava-screen,.nr-screen,.door-screen{min-width:0}
+button,input,select{max-width:100%}
