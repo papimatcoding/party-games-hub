@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.14.0
+# PARTY HUB 🎉 — Alpha 0.15.0
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de cinco minijuegos seleccionados entre siete, con medallas).
 
@@ -124,3 +124,13 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - Premio gratuito por logro (Corona del caos) desbloqueado automáticamente; se elimina el checkout de coste cero. Conserva los desbloqueos y compras anteriores.
 - Emotes visibles al marcarse listo y en el podio del Modo Fiesta. Evita redibujar continuamente el podio idéntico para no reiniciar animaciones.
 - Pruebas de seguridad del checkout, orden de capas, variantes visuales únicas y regresiones de juegos. Pendiente repaso estético con capturas de PC/móvil.
+
+## Alpha 0.15.0 — Halloween, precios y tienda renovada
+- **11 cosméticos nuevos** de terror caricaturesco original: cuatro cabezas (calabaza, máscara de hockey, bruja, fantasma), tres conjuntos (esqueleto, hechicería, vampiro), dos cosméticos faciales (mirada maldita, sonrisa cosida), murciélagos y emote «¡Buuu!».
+- **Cabezas completas**: sombreros y cascos poseen modos de cobertura del pelo (mostrar, ocultar flequillo, ocultar todo, sustituir la cabeza). Las máscaras integrales ocultan la cara anterior y las orejas; no se superponen capas incompatibles. Boca abierta suavizada.
+- **Tienda intuitiva**: separar «Puedes comprar», «Bloqueados» y «Ya tienes», con búsqueda, filtros de tipo, temática y ordenación. Pestaña de temporada propia y tarjetas de cada cosmético con previsualización. Nada de comprar objetos bloqueados sin saber por qué.
+- **Halloween 2026**: evento desde el 17 de octubre al 8 de noviembre de 2026 incluidos. Pack «La noche más larga»: 11 artículos por **1.080 Tickets**, en lugar de **1.580 Tickets** individuales (500 Tickets de ahorro al empezar de cero). Si ya posees artículos del lote, el pack reduce el precio de manera proporcional, sin volver a cobrar por ellos; la transacción es atómica y solo autorizada por Supabase. Los cosméticos adquiridos se conservan para siempre tras el evento. Ningún pago real ni ventajas competitivas.
+- **Economía revisada**: precios anteriores rebajados por nivel de rareza y **compensación automática de la diferencia** a quienes habían comprado artículos ahora más baratos. Los precios del cliente son informativos y el servidor determina los saldos y cobros finales.
+- **Emotes**: animaciones más legibles, con efectos especiales para Halloween. La cosmética permanece puramente visual y no cambia las hitboxes.
+- **Pase de temporada**: no implementado; análisis disponible en `docs/pase_temporada_propuesta.md`. Se recomienda comenzar con un pase corto gratuito de 20 niveles, tras probar el sistema de economía y diversidad de partidas.
+- **Verificación**: tests automáticos de cobertura del pelo, arte Halloween, filtros UI, integridad del catálogo y paquete con descuento, más pruebas transaccionales de Supabase. Pendiente evaluación visual manual PC/móvil.
