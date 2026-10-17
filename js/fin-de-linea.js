@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // ¡FIN DE LÍNEA! — PC + touch client. No hit detection or movement authority here.
 import {NetworkClock,makeAdaptivePoller,FrameMeter} from "./netcode.js?v=0.12.0";
 const $=id=>document.getElementById(id);
@@ -42,8 +43,8 @@ function elem(tag,cls,content){
  return out;
 }
 export class FinDeLineaGame{
- constructor({rpc,notify,leave,reset}){
-  Object.assign(this,{rpc,notify,leave,reset});
+ constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+  Object.assign(this,{rpc,notify,leave,reset,avatarFor});
   this.canvas=$("rail-canvas");
   this.c=this.canvas.getContext("2d");
   this.active=false;this.roomId=null;this.snapshot=null;
@@ -163,7 +164,7 @@ export class FinDeLineaGame{
   s.players.forEach((p,i)=>{
    const item=elem("div","rail-player"+(p.alive?"":" rail-out"));
    const dot=elem("span","rail-dot","●");dot.style.color=COLOR[i%COLOR.length];
-   item.append(dot,elem("strong","",p.name+(p.user_id===this.userId?" (tú)":"")),
+   item.append(dot,makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"),elem("strong","",p.name+(p.user_id===this.userId?" (tú)":"")),
      elem("span","",p.alive?"❤️".repeat(p.hp)+" · 🎯"+p.hits:"💀"));
    board.append(item);
   });
