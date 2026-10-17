@@ -150,7 +150,7 @@ export class AvatarStudio{
  emote(){
   const node=$("avatar-preview-figure");
   node.classList.remove("ph-anim-wave","ph-anim-laugh","ph-anim-cry",
-    "ph-anim-flex","ph-anim-dance","ph-anim-confetti","ph-anim-spook");
+    "ph-anim-flex","ph-anim-dance","ph-anim-confetti","ph-anim-spook","ph-anim-evil");
   void node.offsetWidth;
   const selected=this.appearance.emote||"emote_wave";
   node.classList.add("ph-anim-"+selected.slice(6));
@@ -250,7 +250,7 @@ export class AvatarStudio{
   const mini=makeCosmeticThumbnail({...this.preview,[item.slot]:item.code},item.slot);
   if(item.slot==="emote"){
    badge.classList.add("avatar-emote-card");
-   const symbol={emote_wave:"✋",emote_laugh:"✦",emote_cry:"◕",emote_flex:"★",emote_dance:"♫",emote_confetti:"✺",emote_spook:"☠"}[item.code]||"✦";
+   const symbol={emote_wave:"✋",emote_laugh:"✦",emote_cry:"◕",emote_flex:"★",emote_dance:"♫",emote_confetti:"✺",emote_spook:"☠",emote_evil:"◈"}[item.code]||"✦";
    badge.append(el("span","avatar-emote-symbol",symbol));
    badge.title="Emote animado: haz clic en Ver para reproducirlo";
   }
@@ -358,12 +358,13 @@ export class AvatarStudio{
   const hero=el("section","avatar-season-hero");
   hero.append(el("span","avatar-season-kicker","EVENTO HALLOWEEN · 2026"),
    el("h3","","🎃 LA NOCHE MÁS LARGA"),
-   el("p","","Terror caricaturesco, cero ventajas: reúne once cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
+   el("p","","Terror caricaturesco, cero ventajas: reúne catorce cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
   const figures=el("div","avatar-season-characters");
   figures.append(
    makeAvatar({...this.preview,outfit:"outfit_skeleton",head:"head_pumpkin"},"avatar-season-character"),
    makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_hockey"},"avatar-season-character"),
-   makeAvatar({...this.preview,outfit:"outfit_witch",head:"head_witch",back:"back_bats"},"avatar-season-character"));
+   makeAvatar({...this.preview,outfit:"outfit_witch",head:"head_witch",back:"back_bats"},"avatar-season-character"),
+   makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_spectral",back:"back_smoke"},"avatar-season-character"));
   hero.append(figures,el("p","avatar-season-time",active?
    "Disponible hasta el 8 de noviembre · Los cosméticos adquiridos son tuyos para siempre.":
    "Evento finalizado. Los cosméticos que conseguiste siguen en tu armario."));
