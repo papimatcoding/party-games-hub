@@ -107,7 +107,8 @@ export class TimingGame{
   if(button.textContent!==label)button.textContent=label;
   if(d.game==="ya"){
    const visible=time>=0&&time<d.hide_ms&&d.phase!=="finished"&&!done;
-   const display=d.phase==="waiting"?"0.000 s":time<0?"0.000 s":
+   const display=d.phase==="finished"?formatMs(d.target_ms):
+     d.phase==="waiting"?"0.000 s":time<0?"0.000 s":
        visible?formatMs(time):"?.??? s";
    if(this.lastText!==display){clock.textContent=display;this.lastText=display;}
    $("timing-watch").classList.toggle("concealed",!visible&&time>=0);
