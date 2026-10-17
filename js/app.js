@@ -835,37 +835,37 @@ async function init() {
     }
   });
   puertaONada = new PuertaONadaGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de PUERTA O NADA.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
   finDeLinea = new FinDeLineaGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de ¡FIN DE LÍNEA!.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
   lavalabras = new LavalabrasGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de LAVALABRAS.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
   pongagono = new PongagonoGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de PONGÁGONO.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
   patinazo = new PatinazoGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de ¡PATINAZO!.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
   noRepitas = new NoRepitasGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de ¡NO REPITAS!.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
   lasers = new LaserGame({
-    rpc,notify,
+    rpc,notify,avatarFor,
     leave:()=>void action(async()=>{await rpc("leave_room",{p_room_id:state.roomId});showHome("Has salido de Lásers.");}),
     reset:()=>void action(async()=>{await rpc("reset_room",{p_room_id:state.roomId});await syncRoom();})
   });
