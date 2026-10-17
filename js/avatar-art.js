@@ -255,7 +255,7 @@ export function makeCosmeticThumbnail(appearance,slot){
  const svg=figure.firstElementChild;
  const crops={
   outfit:"30 112 120 82",
-  head:"23 0 134 95",
+  head:"23 0 134 145",
   face:"42 65 96 70",
   back:"8 80 164 115",
   emote:"28 16 124 175"
