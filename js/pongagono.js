@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // PONGÁGONO: responsive Pong on a regular polygon.
 // The database alone decides paddle catches, wall collisions, acceleration and KOs.
 // This canvas only presents the latest authoritative state with short prediction.
@@ -77,8 +78,8 @@ function el(tag,cls,content){
  return x;
 }
 export class PongagonoGame {
- constructor({rpc,notify,leave,reset}){
-  Object.assign(this,{rpc,notify,leave,reset});
+ constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+  Object.assign(this,{rpc,notify,leave,reset,avatarFor});
   this.canvas=$("pong-canvas");this.ctx=this.canvas.getContext("2d");
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
   this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
@@ -250,7 +251,7 @@ export class PongagonoGame {
   d.players.forEach((p,i)=>{
    const row=el("div","pong-member"+(p.alive?"":" pong-member-out"));
    const dot=el("span","pong-dot","●");dot.style.color=COLORS[i%COLORS.length];
-   row.append(dot,el("strong","",p.name+(p.user_id===this.userId?" (tú)":"")),
+   row.append(dot,makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"),el("strong","",p.name+(p.user_id===this.userId?" (tú)":"")),
     el("span","pong-member-state",p.alive?"PALA":"PARED"));
    list.append(row);
   });
