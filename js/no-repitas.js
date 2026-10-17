@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // NO REPITAS! — server-authoritative hidden-answer survival game.
 // Submitted texts are never checked in the browser against the private catalog.
 const $=id=>document.getElementById(id);
@@ -15,8 +16,8 @@ function node(tag,klass,value){
  return n;
 }
 export class NoRepitasGame{
- constructor({rpc,notify,leave,reset}){
-   Object.assign(this,{rpc,notify,leave,reset});
+ constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+   Object.assign(this,{rpc,notify,leave,reset,avatarFor});
    this.live=false;this.inFlight=false;this.busy=false;this.timer=null;this.round=null;
    this.data=null;this.id=null;
    $("nr-answer-form").addEventListener("submit",event=>{event.preventDefault();void this.submit();});
@@ -105,7 +106,7 @@ export class NoRepitasGame{
      const dot=node("span","nr-player-dot",p.alive?"●":"✕");
      const name=node("span","nr-player-name",p.name+(p.user_id===this.userId?" (tú)":""));
      const stat=node("span","nr-player-status",!p.alive?"ELIMINADO":d.phase==="writing"?(p.submitted?"✓ ENVIADO":"ESCRIBIENDO"):"VIVO");
-     row.append(dot,name,stat);list.append(row);
+     row.append(dot,makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"),name,stat);list.append(row);
    }
    const results=$("nr-results"), entries=$("nr-result-list");
    results.hidden=d.phase==="writing";
