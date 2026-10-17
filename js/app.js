@@ -33,6 +33,11 @@ let avatarStudio = null;
 let avatarStyles = new Map();
 let avatarsLoading = false, avatarsFetchedAt = 0, avatarRosterSignature = "";
 function avatarFor(id) { return avatarStyles.get(id) || {}; }
+function avatarCelebration(id){
+ const emote=avatarFor(id).emote||"emote_wave";
+ return ["emote_wave","emote_laugh","emote_cry","emote_flex",
+         "emote_dance","emote_confetti"].includes(emote)?"ph-anim-"+emote.slice(6):"ph-anim-wave";
+}
 async function refreshRoomAvatars(force=false){
   const id=state.roomId;
   if(!id||avatarsLoading||!state.user)return;
@@ -198,17 +203,23 @@ function renderPartyPresentation() {
   $("party-live-clock").textContent=isFinal?"🎉 CIRCUITO TERMINADO":
     remaining>0?"🏅 Podio · al menos "+remaining+"s más":"🏅 Podio · esperaremos a todos";
   $("party-podium-title").textContent=isFinal?"🏅 Podio de la quinta prueba":"🏅 Medallas de la prueba "+d.current_slot;
-  const podium=$("party-podium");podium.replaceChildren();
-  if(slot?.podium?.length){
+  const podium=$("party-podium");
+  const podiumSignature=JSON.stringify([state.roomId,d.current_slot,d.phase,slot?.podium,
+    (slot?.podium||[]).map(p=>avatarFor(p.user_id))]);
+  if(podium.dataset.signature!==podiumSignature){
+   podium.dataset.signature=podiumSignature;
+   podium.replaceChildren();
+   if(slot?.podium?.length){
     for(const entry of slot.podium){
-      const line=element("div","party-live-medal-row");
+      const line=element("div","party-live-medal-row "+avatarCelebration(entry.user_id));
       line.append(element("span","party-live-medal-icon",medals[entry.rank]||"🏅"),
         makeAvatar(avatarFor(entry.user_id),"ph-podium-avatar"),
         element("strong","",entry.name),
         element("span","",entry.rank===1?"ORO · +3":entry.rank===2?"PLATA · +2":"BRONCE · +1"));
       podium.append(line);
     }
-  }else podium.append(element("p","muted","Nadie ha conseguido medalla en esta prueba."));
+   }else podium.append(element("p","muted","Nadie ha conseguido medalla en esta prueba."));
+  }
   const standings=$("party-live-standings");standings.replaceChildren();
   for(const player of scores){
     const line=element("div","party-live-rank");
@@ -540,7 +551,7 @@ function renderPlayers() {
   const hostId = state.room.host_user_id;
   const isHost = hostId === state.user.id;
   state.members.forEach((player) => {
-    const row = element("div", "player");
+    const row = element("div", "player"+(player.is_ready?" "+avatarCelebration(player.user_id):""));
     row.appendChild(makeAvatar(avatarFor(player.user_id),"ph-roster-avatar"));
     const meta = element("div", "player-meta");
     const displayName = player.display_name + (player.user_id === state.user.id ? " (tú)" : "");
