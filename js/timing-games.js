@@ -1,5 +1,5 @@
-import {NetworkClock} from "./netcode.js?v=0.15.0";
-import {makeAvatar} from "./avatar-art.js?v=0.15.0";
+import {NetworkClock} from "./netcode.js?v=0.16.0";
+import {makeAvatar} from "./avatar-art.js?v=0.16.0";
 const $=id=>document.getElementById(id);
 const elem=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
 export const fallProgress=(elapsed,total)=>Math.max(0,Math.min(1,(elapsed/Math.max(1,total))**2));
