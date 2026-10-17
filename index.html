@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./css/party.css?v=0.12.0">
   <link rel="stylesheet" href="./css/fin-de-linea.css?v=0.12.0">
   <link rel="stylesheet" href="./css/puerta-o-nada.css?v=0.12.0">
+  <link rel="stylesheet" href="./css/avatar-studio.css?v=0.12.0">
   <script type="module" src="./js/app.js?v=0.12.0"></script>
 </head>
 <body>
@@ -25,7 +26,9 @@
       <a class="logo" href="./" aria-label="Inicio Party Hub">
         <span class="logo-mark">★</span><span>PARTY<span class="logo-accent">HUB</span></span>
       </a>
-      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span><span class="top-tag">ALPHA / 0.12.0</span></div>
+      <div class="top-right"><span class="online-dot"></span><span id="connection-label">Listo para la fiesta</span>
+        <button type="button" class="avatar-top-launch" id="avatar-open" aria-haspopup="dialog">✦ MI AVATAR</button>
+        <span class="top-tag">ALPHA / 0.12.0</span></div>
     </header>
 
     <main>
@@ -492,6 +495,52 @@
       <h2 id="version-heading">Actualización necesaria</h2>
       <p id="version-message">Todos debemos jugar con una versión compatible de Party Hub.</p>
       <button id="version-reload" class="button button-primary" type="button">Actualizar Party Hub ↻</button>
+    </div>
+  </div>
+  <div id="avatar-overlay" class="avatar-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="avatar-modal-title">
+    <div class="avatar-modal">
+      <div class="avatar-header">
+        <div><small>✦ PARTY HUB ORIGINALS</small><h2 id="avatar-modal-title">TU PERSONAJE. TU FIESTA.</h2></div>
+        <button id="avatar-close" type="button" class="avatar-close">✕ Cerrar</button>
+      </div>
+      <div class="avatar-tabs" role="tablist" aria-label="Secciones del estudio de avatares">
+        <button type="button" id="avatar-tab-look" class="avatar-tab is-current" role="tab" aria-selected="true">🎨 Apariencia</button>
+        <button type="button" id="avatar-tab-closet" class="avatar-tab" role="tab" aria-selected="false">🧥 Armario</button>
+        <button type="button" id="avatar-tab-shop" class="avatar-tab" role="tab" aria-selected="false">🎟 Tienda</button>
+        <button type="button" id="avatar-tab-achievements" class="avatar-tab" role="tab" aria-selected="false">🏆 Logros</button>
+      </div>
+      <div class="avatar-grid">
+        <aside class="avatar-profile-panel">
+          <h3 id="avatar-title-name">Party Player</h3>
+          <span class="avatar-profile-level" id="avatar-level">NIVEL 1</span>
+          <div class="avatar-xp-caption"><span id="avatar-xp-number">0 XP</span><span id="avatar-xp-next">Siguiente nivel: 125 XP</span></div>
+          <div class="avatar-progress-track"><span id="avatar-xp-bar"></span></div>
+          <strong class="avatar-ticket-pill" id="avatar-tickets">120 Tickets</strong>
+          <div class="avatar-stats">
+            <div class="avatar-stat"><strong id="avatar-stat-games">0</strong><small>PARTIDAS</small></div>
+            <div class="avatar-stat"><strong id="avatar-stat-wins">0</strong><small>VICTORIAS</small></div>
+            <div class="avatar-stat"><strong id="avatar-stat-medals">0</strong><small>MEDALLAS</small></div>
+          </div>
+          <p class="avatar-collection" id="avatar-collection-count">Tu colección</p>
+        </aside>
+        <div class="avatar-preview-panel">
+          <div class="avatar-preview-halo" aria-hidden="true"></div>
+          <span class="avatar-preview-label">ASÍ TE VERÁN TUS AMIGOS</span>
+          <div class="avatar-preview-figure" id="avatar-preview-figure"></div>
+          <div class="avatar-preview-actions">
+            <button id="avatar-emote-demo" type="button">✦ Probar emote</button>
+          </div>
+          <span id="avatar-dirty" class="avatar-unsaved" hidden>● Cambios sin guardar</span>
+        </div>
+        <section class="avatar-editor-panel" id="avatar-main-content" aria-live="polite">
+          <p class="avatar-empty">Preparando tu personaje...</p>
+        </section>
+      </div>
+      <div class="avatar-bottom">
+        <button type="button" id="avatar-random">🎲 Sorpréndeme</button>
+        <button type="button" id="avatar-go-shop" hidden>Explorar tienda →</button>
+        <button type="button" id="avatar-save" disabled>Guardar apariencia</button>
+      </div>
     </div>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
