@@ -1,4 +1,4 @@
-import {makeAvatar,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.13.0";
+import {makeAvatar,makeCosmeticThumbnail,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.13.0";
 
 const $=id=>document.getElementById(id);
 const el=(tag,cls,content)=>{
@@ -67,6 +67,12 @@ export class AvatarStudio{
  get items(){return this.profile?.items||[];}
  get owned(){return new Set(this.profile?.owned||[]);}
  get level(){return this.profile?.level||1;}
+ isOwned(item){
+  // Achievement rewards are granted when earned, not via a zero-ticket checkout.
+  return item.is_starter||this.owned.has(item.code)||
+   (item.price===0&&Boolean(item.achievement)&&
+    this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked));
+ }
  get appearance(){
   const out={...this.preview};
   const item=this.items.find(i=>i.code===this.selectedItem);
@@ -76,8 +82,11 @@ export class AvatarStudio{
  async exec(job){
   if(this.busy)return;
   this.busy=true;this.render();
-  try{await job();await this.load();}
-  catch(e){this.notify(e.message||String(e));}
+  const unsaved=this.dirty?{...this.preview}:null;
+  try{
+   await job();await this.load();
+   if(unsaved){Object.assign(this.preview,unsaved);this.dirty=true;}
+  }catch(e){this.notify(e.message||String(e));}
   finally{this.busy=false;this.render();}
  }
  async save(){
@@ -131,6 +140,8 @@ export class AvatarStudio{
  selectItem(code){
   this.selectedItem=code;
   this.render();
+  const item=this.items.find(i=>i.code===code);
+  if(item?.slot==="emote")this.emote();
  }
  render(){
   if(!this.opened||!this.profile)return;
@@ -152,7 +163,7 @@ export class AvatarStudio{
   $("avatar-dirty").hidden=!this.dirty;
   $("avatar-save").disabled=this.busy||!this.dirty;
   $("avatar-save").textContent=this.busy?"Guardando...":"Guardar apariencia";
-  const count=this.items.filter(i=>i.is_starter||this.owned.has(i.code)).length;
+  const count=this.items.filter(i=>this.isOwned(i)).length;
   $("avatar-collection-count").textContent=count+" / "+this.items.length+" cosméticos";
   for(const tab of ["look","closet","shop","achievements"]){
    const button=$("avatar-tab-"+tab);
@@ -206,13 +217,19 @@ export class AvatarStudio{
   pane.append(tabs);
  }
  itemCard(item,isShop){
-  const owned=item.is_starter||this.owned.has(item.code);
+  const owned=this.isOwned(item);
   const equipped=this.profile.appearance[item.slot]===item.code;
   const achieved=!item.achievement||this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked);
   const levelReady=this.level>=item.min_level,afford=this.profile.tickets>=item.price;
   const card=el("article","avatar-item-card"+(this.selectedItem===item.code?" previewing":""));
   const badge=el("div","avatar-item-icon avatar-rarity-"+item.rarity);
-  const mini=makeAvatar({...this.preview,[item.slot]:item.code},"avatar-item-figure");
+  const mini=makeCosmeticThumbnail({...this.preview,[item.slot]:item.code},item.slot);
+  if(item.slot==="emote"){
+   badge.classList.add("avatar-emote-card");
+   const symbol={emote_wave:"✋",emote_laugh:"✦",emote_cry:"◕",emote_flex:"★",emote_dance:"♫",emote_confetti:"✺"}[item.code]||"✦";
+   badge.append(el("span","avatar-emote-symbol",symbol));
+   badge.title="Emote animado: haz clic en Ver para reproducirlo";
+  }
   badge.append(mini);
   const meta=el("div","avatar-item-meta");
   meta.append(el("strong","",item.title),
@@ -221,7 +238,7 @@ export class AvatarStudio{
   const priceLabel=equipped?"EQUIPADO":owned?"EN TU ARMARIO":
     !achieved?"LOGRO REQUERIDO":
     !levelReady?"NIVEL "+item.min_level:
-    item.price===0?"DESBLOQUEAR":"🎟 "+item.price;
+    item.price===0&&item.achievement?"RECOMPENSA DE LOGRO":"🎟 "+item.price;
   card.append(el("span","avatar-item-price",priceLabel));
   const controls=el("div","avatar-item-actions");
   const look=el("button","avatar-preview-btn","Ver");
@@ -232,7 +249,7 @@ export class AvatarStudio{
    use.type="button";use.disabled=this.busy;use.addEventListener("click",()=>void this.equip(item.code));
    controls.append(use);
   }else if(!owned&&levelReady&&achieved){
-   const buy=el("button","avatar-action-btn",item.price===0?"Reclamar":"Comprar");
+   const buy=el("button","avatar-action-btn","Comprar");
    buy.type="button";buy.disabled=this.busy||!afford;
    buy.addEventListener("click",()=>void this.buy(item.code));
    controls.append(buy);
@@ -245,7 +262,7 @@ export class AvatarStudio{
     el("p","avatar-pane-sub","Prueba prendas y accesorios. Todos los cambios son puramente estéticos."));
   this.slotButtons(pane,"slot","slot",SLOTS);
   const list=el("div","avatar-items-grid");
-  const mine=this.items.filter(i=>i.slot===this.slot&&(i.is_starter||this.owned.has(i.code)));
+  const mine=this.items.filter(i=>i.slot===this.slot&&this.isOwned(i));
   for(const item of mine)list.append(this.itemCard(item,false));
   pane.append(list);
  }
