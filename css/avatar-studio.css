@@ -132,3 +132,17 @@
  .avatar-items-grid{grid-template-columns:1fr}
  .avatar-overlay{padding:0}.avatar-modal{border:0;border-radius:0;min-height:100vh}}
 @media(prefers-reduced-motion:reduce){.ph-avatar-large,.ph-anim-wave svg,.ph-anim-laugh svg,.ph-anim-dance svg{animation:none!important}}
+
+/* Compact figures in in-game roster cards, keeping color markers and status. */
+.ph-game-avatar{width:31px;height:37px;min-width:31px}
+.ph-game-avatar svg{filter:drop-shadow(0 3px 3px #150c2099)}
+.door-player>strong,.rail-player>strong,.pong-member>strong,
+.nr-player-name,.ice-player-name,.laser-member>span:nth-last-child(2){
+ min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:690px){
+ .avatar-top-launch{font-size:10px;padding:9px 10px}
+ .top-right{gap:3px}
+ .ph-game-avatar{width:27px;height:33px;min-width:27px}
+ .ph-roster-avatar{width:45px;height:51px}
+ .ph-podium-avatar{width:43px;height:48px}
+}
