@@ -10,6 +10,8 @@ const GROUPS=[["skin","Piel"],["hair","Peinado"],["hair_color","Color de pelo"],
  ["eyes","Ojos"],["mouth","Expresión"],["outfit_color","Color principal"]];
 const SLOTS=[["outfit","Ropa"],["head","Cabeza"],["face","Cara"],
  ["back","Espalda"],["emote","Emotes"]];
+const THEMES=[["all","Todas las temáticas"],["urban","Urbano"],["sport","Deportivo"],["fantasy","Fantasía"],["space","Espacial"],["chaos","Caos"],["halloween","Halloween"]];
+const THEME_LABELS=Object.fromEntries(THEMES);
 const RARITY={common:"COMÚN",rare:"RARO",epic:"ÉPICO",legendary:"LEGENDARIO"};
 const fallback={skin:3,hair:0,eyes:0,mouth:0,hair_color:1,outfit_color:0,
  outfit:"outfit_hoodie",head:"head_none",face:"face_none",back:"back_none",emote:"emote_wave"};
@@ -19,7 +21,7 @@ export class AvatarStudio{
  constructor({rpc,notify,ensureUser,onSaved,nameProvider}){
   Object.assign(this,{rpc,notify,ensureUser,onSaved,nameProvider});
   this.profile=null;this.preview={...fallback};this.tab="look";
-  this.slot="outfit";this.shopSlot="all";this.selectedItem=null;
+  this.slot="outfit";this.shopSlot="all";this.shopTheme="all";this.shopStatus="ready";this.shopSort="price";this.shopSearch="";this.selectedItem=null;
   this.loading=false;this.busy=false;this.opened=false;this.dirty=false;
   $("avatar-open").addEventListener("click",()=>void this.open());
   $("avatar-close").addEventListener("click",()=>this.close());
@@ -29,7 +31,7 @@ export class AvatarStudio{
   document.addEventListener("keydown",e=>{
    if(this.opened&&e.key==="Escape"){e.stopPropagation();this.close();}
   });
-  for(const tab of ["look","closet","shop","achievements"]){
+  for(const tab of ["look","closet","shop","seasons","achievements"]){
    $("avatar-tab-"+tab).addEventListener("click",()=>{this.tab=tab;this.selectedItem=null;this.render();});
   }
   $("avatar-save").addEventListener("click",()=>void this.save());
@@ -67,6 +69,18 @@ export class AvatarStudio{
  get items(){return this.profile?.items||[];}
  get owned(){return new Set(this.profile?.owned||[]);}
  get level(){return this.profile?.level||1;}
+ get bundles(){return this.profile?.bundles||[];}
+ isSeasonActive(item){
+  const b=this.bundles.find(x=>x.season===item.season);
+  return !item.season||Boolean(b&&Date.now()>=Date.parse(b.active_from)&&Date.now()<Date.parse(b.active_until));
+ }
+ statusOf(item){
+  if(this.isOwned(item))return "owned";
+  const unlocked=!item.achievement||this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked);
+  if(!unlocked||this.level<item.min_level||!this.isSeasonActive(item)||item.price===0)return "locked";
+  return item.price<=this.profile.tickets?"ready":"locked";
+ }
+
  isOwned(item){
   // Achievement rewards are granted when earned, not via a zero-ticket checkout.
   return item.is_starter||this.owned.has(item.code)||
@@ -114,6 +128,14 @@ export class AvatarStudio{
    await this.rpc("avatar_buy",{p_code:code});
    await this.rpc("avatar_equip",{p_slot:item.slot,p_code:item.code});
    this.notify("¡"+item.title+" añadido a tu armario!");
+  });
+ }
+ async buyBundle(code){
+  const bundle=this.bundles.find(b=>b.code===code);
+  if(!bundle||bundle.due<=0||this.busy)return;
+  await this.exec(async()=>{
+   const result=await this.rpc("avatar_buy_bundle",{p_code:code});
+   this.notify("¡Pack desbloqueado! "+result.items_added+" cosméticos nuevos por "+result.paid+" Tickets.");
   });
  }
  async equip(code){
@@ -165,7 +187,7 @@ export class AvatarStudio{
   $("avatar-save").textContent=this.busy?"Guardando...":"Guardar apariencia";
   const count=this.items.filter(i=>this.isOwned(i)).length;
   $("avatar-collection-count").textContent=count+" / "+this.items.length+" cosméticos";
-  for(const tab of ["look","closet","shop","achievements"]){
+  for(const tab of ["look","closet","shop","seasons","achievements"]){
    const button=$("avatar-tab-"+tab);
    button.classList.toggle("is-current",tab===this.tab);
    button.setAttribute("aria-selected",String(tab===this.tab));
@@ -177,6 +199,7 @@ export class AvatarStudio{
   if(this.tab==="look")this.renderLook(pane);
   if(this.tab==="closet")this.renderCloset(pane);
   if(this.tab==="shop")this.renderShop(pane);
+  if(this.tab==="seasons")this.renderSeasons(pane);
   if(this.tab==="achievements")this.renderAchievements(pane);
  }
  renderLook(pane){
@@ -221,12 +244,13 @@ export class AvatarStudio{
   const equipped=this.profile.appearance[item.slot]===item.code;
   const achieved=!item.achievement||this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked);
   const levelReady=this.level>=item.min_level,afford=this.profile.tickets>=item.price;
+  const active=this.isSeasonActive(item);
   const card=el("article","avatar-item-card"+(this.selectedItem===item.code?" previewing":""));
   const badge=el("div","avatar-item-icon avatar-rarity-"+item.rarity);
   const mini=makeCosmeticThumbnail({...this.preview,[item.slot]:item.code},item.slot);
   if(item.slot==="emote"){
    badge.classList.add("avatar-emote-card");
-   const symbol={emote_wave:"✋",emote_laugh:"✦",emote_cry:"◕",emote_flex:"★",emote_dance:"♫",emote_confetti:"✺"}[item.code]||"✦";
+   const symbol={emote_wave:"✋",emote_laugh:"✦",emote_cry:"◕",emote_flex:"★",emote_dance:"♫",emote_confetti:"✺",emote_spook:"☠"}[item.code]||"✦";
    badge.append(el("span","avatar-emote-symbol",symbol));
    badge.title="Emote animado: haz clic en Ver para reproducirlo";
   }
@@ -234,11 +258,13 @@ export class AvatarStudio{
   const meta=el("div","avatar-item-meta");
   meta.append(el("strong","",item.title),
     el("span","avatar-item-rarity",RARITY[item.rarity]||"COMÚN"));
+  meta.append(el("span","avatar-item-season",item.season?"🎃 HALLOWEEN":THEME_LABELS[item.theme]||"Urbano"));
   card.append(badge,meta);
-  const priceLabel=equipped?"EQUIPADO":owned?"EN TU ARMARIO":
-    !achieved?"LOGRO REQUERIDO":
-    !levelReady?"NIVEL "+item.min_level:
-    item.price===0&&item.achievement?"RECOMPENSA DE LOGRO":"🎟 "+item.price;
+  const priceLabel=equipped?"✓ EQUIPADO":owned?"✓ TUYO":
+    !active?"TEMPORADA TERMINADA":
+    !achieved?"🔒 POR LOGRO":!levelReady?"🔒 NIVEL "+item.min_level:
+    !afford?"FALTAN "+(item.price-this.profile.tickets)+" 🎟":
+    item.price===0&&item.achievement?"POR LOGRO":"🎟 "+item.price;
   card.append(el("span","avatar-item-price",priceLabel));
   const controls=el("div","avatar-item-actions");
   const look=el("button","avatar-preview-btn","Ver");
@@ -248,7 +274,7 @@ export class AvatarStudio{
    const use=el("button","avatar-action-btn","Equipar");
    use.type="button";use.disabled=this.busy;use.addEventListener("click",()=>void this.equip(item.code));
    controls.append(use);
-  }else if(!owned&&levelReady&&achieved){
+  }else if(!owned&&levelReady&&achieved&&active&&item.price>0){
    const buy=el("button","avatar-action-btn","Comprar");
    buy.type="button";buy.disabled=this.busy||!afford;
    buy.addEventListener("click",()=>void this.buy(item.code));
