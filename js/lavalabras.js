@@ -1,3 +1,4 @@
+import {makeAvatar} from "./avatar-art.js?v=0.12.0";
 // LAVALABRAS — server-validated vocabulary survival above rising lava.
 // Submitted answers/validity stay hidden until the server resolves a round.
 const $=id=>document.getElementById(id);
@@ -10,8 +11,8 @@ export function countedLetters(term){
  return [...String(term).normalize("NFD").replace(/[\u0300-\u036f]/g,"")].filter(x=>/\p{L}/u.test(x)).length;
 }
 export class LavalabrasGame{
- constructor({rpc,notify,leave,reset}){
-  Object.assign(this,{rpc,notify,leave,reset});
+ constructor({rpc,notify,leave,reset,avatarFor=()=>({})}){
+  Object.assign(this,{rpc,notify,leave,reset,avatarFor});
   this.canvas=$("lava-canvas");this.ctx=this.canvas.getContext("2d");
   this.live=false;this.roomId=null;this.data=null;this.timer=null;this.frame=null;
   this.loading=false;this.busy=false;this.round=null;this.visualLava=0;this.visualHeights=new Map();
@@ -104,7 +105,7 @@ export class LavalabrasGame{
    const name=document.createElement("strong");name.textContent=p.name+(p.user_id===this.userId?" (tú)":"");
    const height=document.createElement("span");
    height.textContent=p.height+" 🧱"+(p.alive?"":" 💀");
-   item.append(col,name,height);roster.append(item);
+   item.append(col,makeAvatar(this.avatarFor(p.user_id),"ph-game-avatar"),name,height);roster.append(item);
   });
   const results=$("lava-results"),list=$("lava-results-list");
   results.hidden=d.phase==="writing";list.replaceChildren();
