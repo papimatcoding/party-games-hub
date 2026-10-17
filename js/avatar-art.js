@@ -97,16 +97,28 @@ function outfitArt(s,col){
 }
 function headArt(s){
  switch(s){
- case "head_cap":return '<path d="M47 56Q44 18 89 20Q135 19 136 57L129 65H47Z" fill="#5e74cc" stroke="#30243d" stroke-width="4"/><path d="M84 60Q119 55 150 72Q121 85 86 68Z" fill="#394d89" stroke="#30243d" stroke-width="3"/>';
- case "head_beanie":return '<path d="M42 59Q38 19 88 19Q139 19 138 61Z" fill="#f2a585" stroke="#30243d" stroke-width="4"/><rect x="38" y="55" width="103" height="15" rx="7" fill="#f2c2a0" stroke="#30243d" stroke-width="3"/><circle cx="89" cy="18" r="10" fill="#f1ca91"/>';
- case "head_crown":case "head_champion":return '<path d="M49 58L40 14L64 30L90 5L114 30L139 14L131 58Z" fill="#f3cc68" stroke="#30243d" stroke-width="4"/><rect x="49" y="49" width="82" height="13" rx="5" fill="#efb95b" stroke="#30243d" stroke-width="3"/><circle cx="90" cy="43" r="6" fill="#ee789f"/>';
- case "head_frog":return '<path d="M40 65Q43 24 90 27Q136 24 139 65Z" fill="#84c681" stroke="#30243d" stroke-width="4"/><circle cx="64" cy="30" r="12" fill="#92cf87" stroke="#30243d" stroke-width="4"/><circle cx="116" cy="30" r="12" fill="#92cf87" stroke="#30243d" stroke-width="4"/><circle cx="64" cy="30" r="4.5" fill="#2a3436"/><circle cx="116" cy="30" r="4.5" fill="#2a3436"/>';
- case "head_cat":return '<path d="M46 64L42 20L73 41Q89 33 106 41L137 20L133 64Z" fill="#d8b392" stroke="#30243d" stroke-width="4"/><path d="M53 30L63 47M128 30L117 47" stroke="#e794a0" stroke-width="8"/>';
- case "head_party":return '<path d="M73 63L90 5L109 63Z" fill="#eb9c68" stroke="#30243d" stroke-width="4"/><path d="M78 48H104M84 29H98" stroke="#ffe9ad" stroke-width="6"/><circle cx="90" cy="7" r="7" fill="#f887a6"/>';
- case "head_chef":return '<path d="M48 63L45 34Q35 9 57 15Q69 -2 90 15Q109 -2 122 17Q145 7 134 43L129 63Z" fill="#fcf4e3" stroke="#30243d" stroke-width="4"/><rect x="48" y="51" width="82" height="16" rx="5" fill="#ebebed" stroke="#30243d" stroke-width="3"/>';
- case "head_helmet":return '<path d="M40 77Q28 19 88 15Q145 19 140 77L126 89L53 89Z" fill="#89a3c5" stroke="#30243d" stroke-width="5"/><path d="M49 57H132L125 78H56Z" fill="#8be3d9" stroke="#30243d" stroke-width="3"/>';
- case "head_pirate":return '<path d="M27 67Q54 54 56 29Q89 5 123 30Q129 56 153 67Q100 77 27 67Z" fill="#414159" stroke="#30243d" stroke-width="4"/><path d="M78 42L91 28L102 42L91 55Z" fill="#f8dfb9"/>';
- case "head_fish":return '<path d="M41 58Q52 16 113 30L141 17L136 44L141 69L111 57Q64 81 41 58Z" fill="#8ed0e2" stroke="#30243d" stroke-width="4"/><circle cx="64" cy="48" r="5" fill="#253a4d"/>';
+ case "head_cap":
+  return '<path d="M45 60Q41 27 70 20Q92 14 115 25Q136 36 136 60L130 67H48Z" fill="#6079cb" stroke="#30243d" stroke-width="4"/><path d="M89 61Q119 57 151 70Q127 82 91 71Z" fill="#374c86" stroke="#30243d" stroke-width="3"/><path d="M72 28Q92 21 114 33" fill="none" stroke="#b5c3f6" stroke-width="4" opacity=".6"/><path d="M63 59H116" stroke="#2d467e" stroke-width="3"/>';
+ case "head_beanie":
+  return '<path d="M42 58Q40 18 91 18Q136 20 138 60H42Z" fill="#e8a18d" stroke="#30243d" stroke-width="4"/><rect x="40" y="53" width="99" height="18" rx="8" fill="#f3c4a5" stroke="#30243d" stroke-width="4"/><circle cx="90" cy="17" r="10" fill="#f1d4a4" stroke="#30243d" stroke-width="3"/><path d="M54 59H125" stroke="#d68e7b" stroke-width="2.5" opacity=".8"/>';
+ case "head_crown":
+  return '<path d="M48 60L43 20L65 35L90 11L114 35L136 20L131 60Z" fill="#f0c35f" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/><rect x="48" y="52" width="83" height="13" rx="5" fill="#e1a64f" stroke="#30243d" stroke-width="3"/><path d="M90 38L96 45L90 51L84 45Z" fill="#e56f86"/>';
+ case "head_champion":
+  return '<path d="M39 59L33 9L58 30L89 3L122 30L146 9L139 59Z" fill="#ffe092" stroke="#30243d" stroke-width="4.5" stroke-linejoin="round"/><path d="M50 53L45 24L64 42L89 15L115 42L135 24L130 53Z" fill="#fac65a"/><rect x="39" y="53" width="101" height="16" rx="7" fill="#bd784f" stroke="#30243d" stroke-width="3"/><rect x="46" y="55" width="88" height="10" rx="4" fill="#ffd779"/><path d="M89 27L98 42L89 51L80 42Z" fill="#75dadd" stroke="#293f5c" stroke-width="2.5"/><circle cx="59" cy="44" r="4" fill="#eb7b97"/><circle cx="119" cy="44" r="4" fill="#eb7b97"/><path d="M45 67L47 83L57 70M133 67L132 83L122 70" fill="#f8cc6c" stroke="#30243d" stroke-width="2.5"/>';
+ case "head_frog":
+  return '<path d="M42 63Q44 25 90 27Q136 25 138 63Z" fill="#89ce7e" stroke="#30243d" stroke-width="4"/><circle cx="62" cy="30" r="13" fill="#a0d78d" stroke="#30243d" stroke-width="4"/><circle cx="117" cy="30" r="13" fill="#a0d78d" stroke="#30243d" stroke-width="4"/><circle cx="62" cy="30" r="5" fill="#28383b"/><circle cx="117" cy="30" r="5" fill="#28383b"/><path d="M78 54Q91 59 103 54" fill="none" stroke="#467f53" stroke-width="3"/>';
+ case "head_cat":
+  return '<path d="M44 56L38 13L69 32Q89 24 111 32L141 13L136 56Q91 69 44 56Z" fill="#d5b08d" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/><path d="M48 23L55 43L64 35Z M130 23L115 35L124 43Z" fill="#f19bab"/><path d="M68 57Q90 62 111 57" fill="none" stroke="#efcaad" stroke-width="4"/>';
+ case "head_party":
+  return '<path d="M73 65L89 5L109 65Z" fill="#f9aa6b" stroke="#30243d" stroke-width="4"/><path d="M79 49H104M85 30H98" stroke="#fff0ab" stroke-width="6"/><circle cx="90" cy="7" r="7" fill="#f87fa5" stroke="#30243d" stroke-width="2"/><path d="M75 64H107" stroke="#d77984" stroke-width="5"/>';
+ case "head_chef":
+  return '<path d="M49 62L47 39Q32 31 43 18Q57 7 68 16Q88 -5 106 16Q122 8 138 20Q149 35 134 44L132 63Z" fill="#fff8ec" stroke="#30243d" stroke-width="4"/><rect x="46" y="50" width="88" height="18" rx="5" fill="#eae6e5" stroke="#30243d" stroke-width="3"/><path d="M58 55H123" stroke="#ffffff" stroke-width="4" opacity=".8"/>';
+ case "head_helmet":
+  return '<path d="M40 86Q27 25 67 17Q91 9 118 20Q144 30 141 86L126 112L54 112Z" fill="#93a9ca" stroke="#30243d" stroke-width="5"/><path d="M53 68Q90 54 128 68L124 99Q90 112 55 99Z" fill="#76bec9" stroke="#30243d" stroke-width="4" opacity=".95"/><path d="M59 72Q87 63 118 74" stroke="#e4ffff" stroke-width="6" opacity=".7" fill="none" stroke-linecap="round"/><rect x="40" y="78" width="15" height="20" rx="6" fill="#6d759e" stroke="#30243d" stroke-width="3"/><rect x="126" y="78" width="15" height="20" rx="6" fill="#6d759e" stroke="#30243d" stroke-width="3"/>';
+ case "head_pirate":
+  return '<path d="M28 65Q52 53 58 31Q88 3 121 32Q128 56 152 65Q90 79 28 65Z" fill="#434159" stroke="#30243d" stroke-width="4"/><path d="M89 28L100 40L89 53L78 40Z" fill="#f8e6c6"/><circle cx="90" cy="40" r="4" fill="#434159"/><path d="M67 67Q90 73 116 67" stroke="#d6ab75" stroke-width="4" fill="none"/>';
+ case "head_fish":
+  return '<path d="M42 55Q54 16 111 28L140 12L136 42L142 70L110 58Q65 81 42 55Z" fill="#8dd1e1" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/><path d="M79 31L101 15L106 36" fill="#66b0ca" stroke="#30243d" stroke-width="3"/><circle cx="63" cy="50" r="6" fill="#fffaf2" stroke="#30243d" stroke-width="2"/><circle cx="65" cy="50" r="3" fill="#233449"/><path d="M89 44Q99 50 88 58M109 43Q119 49 108 57" stroke="#6babc2" fill="none" stroke-width="3"/>';
  default:return "";
  }
 }
