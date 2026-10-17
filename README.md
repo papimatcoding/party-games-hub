@@ -1,4 +1,4 @@
-# PARTY HUB 🎉 — Alpha 0.15.0
+# PARTY HUB 🎉 — Alpha 0.16.0
 
 Arcade multijugador original para navegador con salas compartidas y dos modos jugables: **Juego libre** (partidas independientes) y **Modo Fiesta** (circuito de cinco minijuegos seleccionados entre siete, con medallas).
 
@@ -134,3 +134,17 @@ Ampliar catálogos, revisar reglas de respuestas ambiguas, añadir CAPTCHA y lí
 - **Emotes**: animaciones más legibles, con efectos especiales para Halloween. La cosmética permanece puramente visual y no cambia las hitboxes.
 - **Pase de temporada**: no implementado; análisis disponible en `docs/pase_temporada_propuesta.md`. Se recomienda comenzar con un pase corto gratuito de 20 niveles, tras probar el sistema de economía y diversidad de partidas.
 - **Verificación**: tests automáticos de cobertura del pelo, arte Halloween, filtros UI, integridad del catálogo y paquete con descuento, más pruebas transaccionales de Supabase. Pendiente evaluación visual manual PC/móvil.
+
+
+## Alpha 0.16.0 — Visual overhaul + 9 juegos
+- **¿YA?**: objetivo entre 8–16 s, contador oculto hacia los 3 s. Cada jugador pulsa una vez. Clasificación por error absoluto en milisegundos y resultados conjuntos al terminar.
+- **¡AGUANTA!**: peso y avatar chibi, caída cuadrática única para todos los jugadores y control de parada manual. Hay que pararlo antes del impacto; si todos quedan aplastados, no se conceden medallas.
+- Ambos modos usan inicio sincronizado de 3 s desde la misma puerta de salida, latencia compensada con reloj de servidor y verificación de pulsación contra su hora de recepción; las diferencias demasiado grandes se rechazan. **La precisión contra manipulación sigue limitada por la latencia HTTP; no es un antitrampas infalible.**
+- Ambos disponibles en Juego libre y Modo Fiesta: cada circuito selecciona cinco juegos distintos de nueve. La cuenta muestra XP y las medallas auténticas se asignan en el servidor.
+- **Una única confirmación de Listo**: en lobby o antes de la siguiente prueba. Tras cargar, la puerta de inicio se confirma automáticamente y conserva la cuenta atrás común. Los resultados del juego recién terminado permanecen visibles 6,5 s antes de pasar al podio.
+- **PONGÁGONO**: cadencia de lecturas ajustada, seguimiento visual con pequeñas correcciones suavizadas sin falsear los rebotes oficiales, medidor de FPS/latencia. Aún utiliza física RPC/Pg, por lo que no equivale a tener un servidor competitivo dedicado.
+- **Palabras**: ¡NO REPITAS! acepta hasta dos pequeñas erratas en palabras suficientemente largas y LAVALABRAS una errata para palabras largas; siempre exige una coincidencia única del catálogo validado. Los términos ambiguos o ajenos al diccionario siguen rechazados.
+- **Pantallas**: nueva capa CSS responsive que prioriza espacio de juego y controles visibles para todos, especialmente ¡FIN DE LÍNEA! en PC de poca altura y móvil. El editor de avatar aprovecha el alto de pantalla en escritorio y mantiene scroll accesible en móvil.
+- **Avatares**: doce peinados más centrados, cabezas grandes que sustituyen al peinado base y coronas con pelo integrado específico. Las capas faciales dejan de dibujar ojos/bocas incompatibles debajo de ciertos accesorios.
+- **Halloween ampliado**: 14 cosméticos disponibles individualmente o en pack «La noche más larga». Nuevos rostro espectral original, niebla fantasmal y risa siniestra. Precios: **2.020 Tickets** comprando los 14 por separado frente a **1.320 Tickets** por el pack (antes de descuentos por artículos ya poseídos). Compras existentes preservadas.
+- **Validación**: regresión automática JS/SQL y partidas simuladas de 2 jugadores en ¿YA? y ¡AGUANTA!, y una prueba Fiesta con premios. Queda pendiente un QA presencial PC+móvil sobre tamaños de pantalla, sensación de respuesta y arte.
