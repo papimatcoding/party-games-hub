@@ -115,3 +115,14 @@ test("Shop has no meaningless free-claim CTA and every unlock is functional",()=
  assert.match(migration,/ea.achievement_code=item.achievement/);
  assert.match(file("css/avatar-studio.css"),/ph-wave-arm/);
 });
+
+test("Equipped emotes animate on Party podium without being reset each network poll",()=>{
+ const app=file("js/app.js");
+ const sql=file("supabase/79_avatar_emote_room_styles.sql");
+ assert.match(sql,/'emote',coalesce\(p\.emote,'emote_wave'\)/);
+ assert.match(app,/function avatarCelebration\(id\)/);
+ assert.match(app,/player\.is_ready\?" "\+avatarCelebration/);
+ assert.match(app,/podium\.dataset\.signature!==podiumSignature/);
+ assert.match(app,/party-live-medal-row "\+avatarCelebration/);
+ assert.match(file("css/avatar-studio.css"),/\[data-arm="right"\]/);
+});
