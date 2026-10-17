@@ -84,7 +84,7 @@ export class PongagonoGame {
   this.live=false;this.roomId=null;this.data=null;this.tickHandle=null;this.frame=null;
   this.loading=false;this.sending=false;this.pending=false;this.lastSend=0;this.lastRender=0;
   this.target=.5;this.visualU=null;this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.courtBg=null;this.remoteU=new Map();this.meter=new FrameMeter();this.lastClockText="";this.lastEliminations=null;
+  this.receivedAt=0;this.clockOffset=0;this.hasClock=false;this.net=new NetworkClock();this.poller=null;this.courtBg=null;this.remoteU=new Map();this.ballVisual=null;this.lastBallPhase=null;this.meter=new FrameMeter();this.lastClockText="";this.lastEliminations=null;
   this.canvas.addEventListener("pointerdown",e=>this.point(e,true));
   this.canvas.addEventListener("pointermove",e=>this.point(e,false));
   this.canvas.addEventListener("pointerup",e=>this.end(e));
@@ -108,7 +108,7 @@ export class PongagonoGame {
   // Adaptive server snapshots; screen painting is native-refresh-rate RAF.
   this.poller=makeAdaptivePoller(()=>this.refresh(),{
     active:()=>this.live,visible:()=>!document.hidden,
-    fast:190,slow:600,hidden:1700
+    fast:155,slow:500,hidden:1700
   });
   this.poller.start();
   this.lastRender=performance.now();
@@ -127,7 +127,7 @@ export class PongagonoGame {
   this.live=false;clearInterval(this.tickHandle);this.poller?.stop();this.poller=null;cancelAnimationFrame(this.frame);
   this.tickHandle=null;this.frame=null;this.roomId=null;this.data=null;
   this.dragging=false;this.holdLeft=false;this.holdRight=false;
-  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.lastClockText="";this.remoteU.clear();
+  this.target=.5;this.visualU=null;this.lastEliminations=null;this.pending=false;this.net=new NetworkClock();this.meter=new FrameMeter();this.lastClockText="";this.remoteU.clear();this.ballVisual=null;this.lastBallPhase=null;
   $("pong-screen").hidden=true;
  }
  get self(){return this.data?.players?.find(p=>p.user_id===this.userId);}
@@ -185,7 +185,7 @@ export class PongagonoGame {
  }
  async send(){
   const now=Date.now();
-  if(!this.canMove||this.sending||now-this.lastSend<125)return;
+  if(!this.canMove||this.sending||now-this.lastSend<100)return;
   this.sending=true;this.pending=false;this.lastSend=now;const id=this.roomId;
   try{
    await this.rpc("pongagono_move",{p_room_id:id,p_position:Number(this.target.toFixed(4))});
@@ -336,7 +336,18 @@ export class PongagonoGame {
   const b=d.ball;
   const age=this.net.age(d.server_time,.85);
   const pos=d.phase==="live"?predictPongBall(b,sides,age):{x:Number(b.x),y:Number(b.y)};
-  const {x,y}=pos;
+  // Visual correction: stabilize tiny snapshot discrepancies without delaying
+  // large authoritative changes like wall bounces and eliminations.
+  if(!this.ballVisual||this.lastBallPhase!==d.phase||
+     Math.hypot(this.ballVisual.x-pos.x,this.ballVisual.y-pos.y)>.22){
+    this.ballVisual={...pos};
+  }else{
+    const weight=1-Math.exp(-24*Math.max(0,dt));
+    this.ballVisual.x+=(pos.x-this.ballVisual.x)*weight;
+    this.ballVisual.y+=(pos.y-this.ballVisual.y)*weight;
+  }
+  this.lastBallPhase=d.phase;
+  const {x,y}=this.ballVisual;
   c.beginPath();c.arc(x,y,Number(b.r)*2.25,0,TAU);
   c.fillStyle="#e5f8ff37";c.fill();
   c.beginPath();c.arc(x,y,Number(b.r),0,TAU);
