@@ -1,4 +1,4 @@
-import {makeAvatar,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.12.0";
+import {makeAvatar,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.13.0";
 
 const $=id=>document.getElementById(id);
 const el=(tag,cls,content)=>{
