@@ -178,8 +178,8 @@ export function avatarMarkup(p={}){
  '<path d="M57 187H84M98 187H126" stroke="#b2acbd" stroke-width="2" opacity=".8"/>',
  '</g>',
  '<g data-layer="arms">',
- '<path d="M61 129Q49 122 42 135L37 158Q33 174 46 177Q58 177 62 160L71 143M118 129Q132 122 139 135L143 158Q147 174 133 177Q121 177 118 160L109 143" fill="'+skin+'" stroke="#30243d" stroke-width="5" stroke-linejoin="round"/>',
- '<path d="M63 128Q51 124 45 135L41 151Q52 159 64 151L72 139M117 128Q129 124 135 135L139 151Q128 159 116 151L108 139" fill="'+bodyColor+'" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/>',
+ '<g data-arm="left"><path d="M61 129Q49 122 42 135L37 158Q33 174 46 177Q58 177 62 160L71 143" fill="'+skin+'" stroke="#30243d" stroke-width="5" stroke-linecap="round"/><path d="M63 128Q51 124 45 135L41 151Q52 159 64 151L72 139" fill="'+bodyColor+'" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/></g>',
+ '<g data-arm="right"><path d="M118 129Q132 122 139 135L143 158Q147 174 133 177Q121 177 118 160L109 143" fill="'+skin+'" stroke="#30243d" stroke-width="5" stroke-linecap="round"/><path d="M117 128Q129 124 135 135L139 151Q128 159 116 151L108 139" fill="'+bodyColor+'" stroke="#30243d" stroke-width="4" stroke-linejoin="round"/></g>',
  '</g>',
  '<g data-layer="outfit">',outfitArt(outfit,cloth),
  '<path d="M70 175Q90 180 111 175" stroke="#ffffff" opacity=".15" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
@@ -209,6 +209,8 @@ export function avatarMarkup(p={}){
  '</g>',
  '<g data-layer="headwear">',headArt(head),'</g>',
  '<g data-layer="facial-accessory">',faceArt(face),'</g>',
+ '<g data-expression-effect="tears" opacity="0"><path d="M60 99L56 114Q59 120 63 114Z" fill="#85e4f5" stroke="#3a829c" stroke-width="2"/><path d="M116 99L119 114Q115 120 112 114Z" fill="#85e4f5" stroke="#3a829c" stroke-width="2"/></g>',
+ '<g data-expression-effect="confetti" opacity="0"><path d="M28 53L35 42L41 52Z" fill="#ffd478"/><path d="M146 95L155 79L164 90Z" fill="#f19dbc"/><circle cx="150" cy="26" r="5" fill="#90d6c4"/><rect x="17" y="111" width="8" height="8" rx="1" fill="#b2a9fa" transform="rotate(20 17 111)"/></g>',
  '</svg>'
  ].join("");
 }
