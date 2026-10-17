@@ -58,6 +58,7 @@ let partyCache = { signature: null, loading: false, data: null };
 let partyData = null;
 let partyPoll = null;
 let partyBusy = false;
+let resultHoldUntil=0,resultHoldSlot=null;
 let gameGateData=null;
 let gameGatePoll=null;
 let releasePoll=null;
@@ -171,8 +172,10 @@ function partyGameLabel(gameId) {
 function renderPartyPresentation() {
   const r=state.room, d=partyData;
   const enabled=r?.mode==="party"&&r.status==="playing";
-  const between=enabled&&d&&d.current_game===r.game_id&&
+  const isResult=enabled&&d&&d.current_game===r.game_id&&
     (d.phase==="intermission"||d.phase==="finished");
+  const holding=isResult&&Date.now()<resultHoldUntil&&resultHoldSlot===d.current_slot;
+  const between=isResult&&!holding;
   document.body.classList.toggle("party-active",Boolean(enabled));
   $("party-live-screen").hidden=!between;
   $("party-hud").hidden=!enabled||Boolean(between);
@@ -262,6 +265,11 @@ async function syncParty() {
     if(roomId!==state.roomId||state.room?.mode!=="party")return;
     const old=partyData;
     partyData=next;
+    if((next.phase==="intermission"||next.phase==="finished")&&
+       (old?.current_slot!==next.current_slot||old?.phase!==next.phase)){
+      resultHoldSlot=next.current_slot;
+      resultHoldUntil=Date.now()+6500;
+    }
     renderPartyPresentation();
     // A server tick may finish a minigame or start the next game.
     if(state.room.game_id!==next.current_game||
@@ -336,8 +344,10 @@ function renderGameGate() {
     $("game-ready-heading").textContent="¿Listos para "+(GAMES.find(x=>x.id===r.game_id)?.name||"jugar")+"?";
     $("game-ready-description").textContent="Tu juego ya está cargado. La cuenta atrás no arrancará hasta que todos pulséis Listo.";
     $("game-ready-counter").textContent=d.ready_count+" / "+d.ready_total+" jugadores listos";
-    button.hidden=false;button.disabled=Boolean(d.my_ready);
-    button.textContent=d.my_ready?"✓ Ya estás listo":"✓ Estoy listo, empezar";
+    button.hidden=true;
+    $("game-ready-heading").textContent="Preparando partida...";
+    $("game-ready-description").textContent="Solo tienes que marcar Listo en el lobby o entre pruebas. La sincronización aquí es automática.";
+    $("game-ready-counter").textContent=d.ready_count+" / "+d.ready_total+" conectados";
   }
 }
 async function syncGameGate() {
@@ -352,6 +362,14 @@ async function syncGameGate() {
     const data=await rpc("game_gate_state",{p_room_id:roomId});
     if(roomId!==state.roomId||state.room?.status!=="playing")return;
     gameGateData=data;
+    // Single ready gesture: lobby Ready or Party's next-game Ready.
+    // The in-game gate automatically acknowledges this loaded client.
+    if(data?.active&&!data.my_ready&&!data.live_at&&data.game_id===state.room?.game_id){
+      try{
+        await rpc("game_gate_ready",{p_room_id:roomId,p_ready:true});
+        if(roomId===state.roomId)gameGateData=await rpc("game_gate_state",{p_room_id:roomId});
+      }catch(err){console.warn("Auto-ready:",err.message);}
+    }
     renderGameGate();
   }catch(e){console.error("Preparación:",e);}
   finally{gateBusy=false;}
@@ -447,7 +465,7 @@ function showHome(message) {
   lavalabras?.exit();
   finDeLinea?.exit();
   puertaONada?.exit();
-  clearInterval(partyPoll);partyPoll=null;partyData=null;
+  clearInterval(partyPoll);partyPoll=null;partyData=null;resultHoldUntil=0;resultHoldSlot=null;
   clearInterval(gameGatePoll);gameGatePoll=null;gameGateData=null;
   clearInterval(releasePoll);releasePoll=null;
   $("game-ready-overlay").hidden=true;
@@ -658,7 +676,8 @@ function renderRoom() {
   renderPartyPreview();
   renderChat();
   const showPartyBoard=room.mode==="party"&&room.status==="playing"&&partyData&&
-    partyData.current_game===room.game_id&&["intermission","finished"].includes(partyData.phase);
+    partyData.current_game===room.game_id&&["intermission","finished"].includes(partyData.phase)&&
+    !(resultHoldSlot===partyData.current_slot&&Date.now()<resultHoldUntil);
   if(showPartyBoard){
     lasers?.exit();noRepitas?.exit();patinazo?.exit();pongagono?.exit();lavalabras?.exit();finDeLinea?.exit();puertaONada?.exit();
     $("lobby-screen").hidden=true;
