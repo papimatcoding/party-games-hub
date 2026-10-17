@@ -9,7 +9,7 @@ export class TimingGame{
   Object.assign(this,{rpc,notify,leave,reset,avatarFor});
   this.live=false;this.roomId=null;this.mode=null;this.data=null;this.net=new NetworkClock();
   this.loading=false;this.frame=0;this.timer=null;this.pressed=false;this.busy=false;
-  this.lastText="";this.lastPhase="";this.lastRoster="";
+  this.lastText="";this.lastPhase="";this.lastRoster="";this.localStopped=null;
   $("timing-stop").addEventListener("click",()=>void this.stop());
   $("timing-exit").addEventListener("click",()=>void this.leave());
   $("timing-reset").addEventListener("click",()=>void this.reset());
@@ -23,7 +23,7 @@ export class TimingGame{
   if(this.live&&this.roomId===roomId&&this.mode===mode){this.hostId=hostId;return;}
   this.exit();this.live=true;this.roomId=roomId;this.userId=userId;
   this.code=code;this.hostId=hostId;this.mode=mode;
-  this.net=new NetworkClock();this.pressed=false;this.lastText="";this.lastPhase="";this.lastRoster="";
+  this.net=new NetworkClock();this.pressed=false;this.localStopped=null;this.lastText="";this.lastPhase="";this.lastRoster="";
   $("timing-screen").hidden=false;
   $("timing-screen").dataset.game=mode;
   $("timing-name").textContent=mode==="ya"?"¿YA?":"¡AGUANTA!";
@@ -42,7 +42,7 @@ export class TimingGame{
  exit(){
   this.live=false;clearInterval(this.timer);this.timer=null;
   cancelAnimationFrame(this.frame);this.frame=0;this.roomId=null;this.data=null;
-  this.loading=false;this.busy=false;this.pressed=false;
+  this.loading=false;this.busy=false;this.pressed=false;this.localStopped=null;
   $("timing-screen").hidden=true;
  }
  get me(){return this.data?.players?.find(p=>p.user_id===this.userId);}
@@ -73,7 +73,7 @@ export class TimingGame{
   const d=this.data,elapsed=this.elapsed();
   if(!this.live||!d||d.phase!=="running"||this.pressed||this.busy||elapsed<0)return;
   this.pressed=true;this.busy=true;
-  const clicked=Math.max(0,Math.round(elapsed));
+  const clicked=Math.max(0,Math.round(elapsed));this.localStopped=clicked;
   $("timing-stop").disabled=true;
   $("timing-result-message").textContent="✓ ¡Registrado! Esperando al grupo...";
   try{
@@ -85,7 +85,7 @@ export class TimingGame{
     // fake submission; refresh the authoritative record first.
     await this.refresh();
     if(!this.me?.submitted){
-     this.pressed=false;
+     this.pressed=false;this.localStopped=null;
      this.notify("No se registró la pulsación: "+(e.message||e));
     }
    }
@@ -113,8 +113,13 @@ export class TimingGame{
    $("timing-watch").classList.toggle("concealed",!visible&&time>=0);
   }else{
    clock.textContent=d.phase==="finished"?"FINAL":time<0?"PREPARADOS":over?"¡IMPACTO!":"¡CAÍDA!";
-   const progress=fallProgress(Math.max(0,time),d.fall_ms);
-   $("timing-weight").style.transform="translate3d(0,"+(progress*210).toFixed(2)+"px,0)";
+   const stopAt=this.me?.stopped_ms??this.localStopped;
+   const progress=fallProgress(Math.max(0,stopAt??time),d.fall_ms);
+   const stage=$("timing-stage"),weight=$("timing-weight"),character=$("timing-character");
+   // The collision plane is relative to the real responsive stage, not a
+   // hard-coded desktop position that misses the head on mobile.
+   const travel=Math.max(10,stage.clientHeight-14-character.offsetHeight-4-weight.offsetHeight);
+   weight.style.transform="translate3d(0,"+(progress*travel).toFixed(2)+"px,0)";
    $("timing-stage").classList.toggle("timing-crushed",over&&!done);
    $("timing-stage").classList.toggle("timing-saved",done);
   }
