@@ -117,10 +117,27 @@ export function avatarMarkup(p={}){
  '</svg>'
  ].join("");
 }
+// Cache parsed SVG templates so roster refreshes only clone vectors instead of
+// reparsing hundreds of path nodes on every Supabase snapshot.
+const ART_CACHE=new Map();
 export function makeAvatar(appearance={},extraClass=""){
  const wrap=document.createElement("span");
  wrap.className="ph-avatar "+extraClass;
- // All SVG content is authored markup; user strings only index curated switch cases.
- wrap.innerHTML=avatarMarkup(appearance);
+ const key=JSON.stringify([
+  num(appearance?.skin,8,3),num(appearance?.hair,12),num(appearance?.eyes,8),
+  num(appearance?.mouth,8),num(appearance?.hair_color,10,1),
+  num(appearance?.outfit_color,10),appearance?.outfit||"outfit_hoodie",
+  appearance?.head||"head_none",appearance?.face||"face_none",
+  appearance?.back||"back_none"
+ ]);
+ let art=ART_CACHE.get(key);
+ if(!art){
+  const template=document.createElement("template");
+  template.innerHTML=avatarMarkup(appearance);
+  art=template.content.firstElementChild;
+  if(ART_CACHE.size>=256)ART_CACHE.delete(ART_CACHE.keys().next().value);
+  ART_CACHE.set(key,art);
+ }
+ wrap.append(art.cloneNode(true));
  return wrap;
 }
