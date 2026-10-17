@@ -41,13 +41,19 @@ const mouthStyles=[
 ];
 function backArt(s){
  switch(s){
- case "back_pack":return '<rect x="43" y="119" width="94" height="48" rx="18" fill="#b7806a" stroke="#342740" stroke-width="5"/><rect x="64" y="135" width="52" height="27" rx="8" fill="#e4ae86"/>';
- case "back_cape":return '<path d="M55 119L26 187Q90 199 153 187L125 119Z" fill="#db688d" stroke="#342740" stroke-width="5"/><path d="M40 173Q90 189 140 173" stroke="#ffe0ac" stroke-width="4" fill="none"/>';
- case "back_wings":return '<path d="M64 125Q13 76 20 140Q0 164 29 171Q44 188 74 151M116 125Q167 76 161 140Q180 164 151 171Q137 188 106 151" fill="#a7dbdf" stroke="#342740" stroke-width="5"/>';
- case "back_balloon":return '<path d="M125 131Q161 84 163 54" fill="none" stroke="#f2e4d3" stroke-width="2"/><ellipse cx="163" cy="32" rx="15" ry="22" fill="#ef7898" stroke="#342740" stroke-width="4"/>';
- case "back_jetpack":return '<rect x="48" y="120" width="84" height="50" rx="13" fill="#7c82ad" stroke="#342740" stroke-width="5"/><rect x="64" y="132" width="21" height="42" rx="7" fill="#8de7e1"/><rect x="96" y="132" width="21" height="42" rx="7" fill="#8de7e1"/>';
+ case "back_pack":return '<path d="M58 128Q35 111 28 140L26 162Q29 178 53 175L59 146M123 128Q146 111 152 140L154 162Q151 178 127 175L120 146" fill="#b98567" stroke="#30243d" stroke-width="4"/><rect x="27" y="144" width="25" height="22" rx="6" fill="#dba582" stroke="#30243d" stroke-width="3"/><rect x="129" y="144" width="25" height="22" rx="6" fill="#dba582" stroke="#30243d" stroke-width="3"/>';
+ case "back_cape":return '<path d="M59 121Q43 128 36 158L25 186Q90 201 155 186L142 157Q135 129 120 121Z" fill="#e27496" stroke="#30243d" stroke-width="5"/><path d="M34 180Q89 192 146 180" fill="none" stroke="#ffd8ab" stroke-width="5"/>';
+ case "back_wings":return '<path d="M59 126Q15 74 21 134Q3 150 15 165Q33 180 61 150M121 126Q165 74 159 134Q177 150 165 165Q147 180 119 150" fill="#91d6da" stroke="#30243d" stroke-width="5"/><path d="M23 136Q33 143 50 148M157 136Q147 143 130 148" fill="none" stroke="#f9fdf6" stroke-width="5" stroke-linecap="round"/>';
+ case "back_balloon":return '<path d="M129 130Q157 89 159 51" fill="none" stroke="#f2e4d3" stroke-width="2.5"/><ellipse cx="159" cy="28" rx="17" ry="23" fill="#ed7399" stroke="#30243d" stroke-width="4"/><path d="M152 13Q144 25 151 37" fill="none" stroke="#ffe6ea" stroke-width="5" opacity=".8"/><path d="M155 49L159 57L163 49" fill="#f3d1a1"/>';
+ case "back_jetpack":return '<rect x="29" y="119" width="28" height="56" rx="11" fill="#7b86ad" stroke="#30243d" stroke-width="4"/><rect x="123" y="119" width="28" height="56" rx="11" fill="#7b86ad" stroke="#30243d" stroke-width="4"/><rect x="36" y="132" width="13" height="25" rx="5" fill="#87e0e0"/><rect x="131" y="132" width="13" height="25" rx="5" fill="#87e0e0"/><path d="M37 176L41 190L47 177M133 177L139 190L145 176" fill="#efa968" stroke="#30243d" stroke-width="2"/>';
  default:return "";
  }
+}
+function frontBackArt(s){
+ if(s==="back_pack")return '<path d="M68 123L72 175M112 123L108 175" stroke="#966c56" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M69 143H111" stroke="#d6a484" stroke-width="3"/>';
+ if(s==="back_jetpack")return '<path d="M61 137L67 147M119 137L113 147" stroke="#8996b8" stroke-width="5"/>';
+ if(s==="back_cape")return '<path d="M74 124Q91 134 105 124" stroke="#f5d18a" stroke-width="5" fill="none"/>';
+ return "";
 }
 function outfitArt(s,col){
  let fill=col,details="";
@@ -138,6 +144,7 @@ export function avatarMarkup(p={}){
  '</g>',
  '<g data-layer="outfit">',outfitArt(outfit,cloth),
  '<path d="M70 175Q90 180 111 175" stroke="#ffffff" opacity=".15" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
+ '<g data-layer="front-back">',frontBackArt(back),'</g>',
  '<g data-layer="neck"><path d="M81 113V128Q90 138 101 128V113" fill="'+skin+'" stroke="#30243d" stroke-width="4"/></g>',
  '<g data-layer="rear-hair">',rearHair(hair,hairColor),'</g>',
  '<g data-layer="ears">',
