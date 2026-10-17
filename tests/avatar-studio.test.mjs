@@ -66,3 +66,52 @@ test("Editor, preview, wardrobe, Tickets, shop and achievements are wired in UI"
  assert.match(studio,/makeAvatar\(this\.appearance/);
  assert.match(file("css/avatar-studio.css"),/prefers-reduced-motion/);
 });
+
+test("Anatomical SVG rig places ears behind the face and headwear above fringe",()=>{
+ const art=avatarMarkup({head:"head_cat",hair:11,skin:3});
+ const marks=["rear-hair","ears","face","features","front-hair","headwear","facial-accessory"];
+ let previous=-1;
+ for(const layer of marks){
+  const at=art.indexOf('data-layer="'+layer+'"');
+  assert.ok(at>previous,"Anatomy must render "+layer+" after "+marks[marks.indexOf(layer)-1]);
+  previous=at;
+ }
+ assert.match(art,/cx="43" cy="96"/);
+ assert.match(art,/cx="137" cy="96"/);
+ assert.match(art,/data-arm="left"/);
+ assert.match(art,/data-arm="right"/);
+ assert.match(art,/data-expression-effect="tears"/);
+ assert.match(art,/data-expression-effect="confetti"/);
+});
+
+test("Every advertised accessory and outfit creates visibly distinct authored SVG art",()=>{
+ const choices={
+  outfit:["outfit_hoodie","outfit_sport","outfit_denim","outfit_suit","outfit_chef",
+    "outfit_space","outfit_ninja","outfit_royal","outfit_banana","outfit_galaxy"],
+  head:["head_none","head_cap","head_beanie","head_crown","head_frog","head_cat",
+    "head_party","head_chef","head_helmet","head_pirate","head_fish","head_champion"],
+  face:["face_none","face_round","face_sun","face_star","face_patch",
+    "face_mustache","face_mask","face_heart"],
+  back:["back_none","back_pack","back_cape","back_wings","back_balloon","back_jetpack"]
+ };
+ for(const [slot,items] of Object.entries(choices)){
+  const signatures=items.map(code=>avatarMarkup({[slot]:code}));
+  assert.equal(new Set(signatures).size,items.length,slot+" should never sell identical cosmetic SVGs");
+ }
+ assert.notEqual(avatarMarkup({head:"head_crown"}),avatarMarkup({head:"head_champion"}));
+ assert.match(avatarMarkup({back:"back_pack"}),/data-layer="front-back"/);
+ assert.match(avatarMarkup({back:"back_pack"}),/x="27" y="144"/);
+});
+
+test("Shop has no meaningless free-claim CTA and every unlock is functional",()=>{
+ const studio=file("js/avatar-studio.js");
+ const migration=file("supabase/78_avatar_reward_unlocks.sql");
+ assert.doesNotMatch(studio,/Reclamar/);
+ assert.match(studio,/isOwned\(item\)/);
+ assert.match(studio,/item.price===0&&Boolean\(item.achievement\)/);
+ assert.match(studio,/makeCosmeticThumbnail\(/);
+ assert.match(studio,/if\(item\?\.slot==="emote"\)this.emote\(\)/);
+ assert.match(migration,/FREE_REWARD_IS_AUTOMATIC/);
+ assert.match(migration,/ea.achievement_code=item.achievement/);
+ assert.match(file("css/avatar-studio.css"),/ph-wave-arm/);
+});
