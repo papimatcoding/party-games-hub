@@ -1,7 +1,7 @@
 // Authored vector avatars. Every possible path, accessory and color is curated.
 // Player names or arbitrary strings are never interpolated into SVG.
-import {halloweenHead,halloweenFace,halloweenOutfit,halloweenBack,headHairMode} from "./avatar-halloween.js?v=0.14.0";
-export {headHairMode} from "./avatar-halloween.js?v=0.14.0";
+import {halloweenHead,halloweenFace,halloweenOutfit,halloweenBack,headHairMode} from "./avatar-halloween.js?v=0.15.0";
+export {headHairMode} from "./avatar-halloween.js?v=0.15.0";
 export const SKINS=["#f7c9a1","#e9b58e","#d99b72","#c88a60","#b77955","#9a644b","#78513d","#583a33"];
 export const HAIR_COLORS=["#302639","#51372e","#8a5434","#dca55c","#f4d89b","#181e35","#77566f","#b84d6a","#f0eced","#42758f"];
 export const CLOTH_COLORS=["#8978ee","#f2a04b","#e77a99","#4dafa7","#7590ea","#e9d38b","#db7271","#a9c56b","#aa7ac1","#4e5d87"];
