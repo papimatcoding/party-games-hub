@@ -51,8 +51,8 @@ test("Halloween bundle has authorized item catalog, server-price quote, and atom
 test("Shop separates buyable from locked and owned and supports search plus theme",()=>{
  const studio=file("js/avatar-studio.js");
  const html=file("index.html");
- assert.match(studio,/this\.shopStatus="ready"/);
- assert.match(studio,/this\.statusOf\(i\)===this\.shopStatus/);
+ assert.match(studio,/this\.shopStatus="all"/);
+ assert.match(studio,/this\.statusOf\(item\)===this\.shopStatus/);
  assert.match(studio,/shopSearch\.trim\(\)/);
  assert.match(studio,/THEMES/);
  assert.match(studio,/avatar_buy_bundle/);

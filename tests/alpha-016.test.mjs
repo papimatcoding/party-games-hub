@@ -82,8 +82,8 @@ test("Halloween's 14-item bundle expands safely without removing past purchases"
  assert.match(sql,/on conflict do nothing/);
  assert.match(sql,/base_price=1320/);
  const client=file("js/avatar-studio.js");
- assert.match(client,/head:"head_spectral"/);
- assert.match(client,/reúne catorce/);
+ assert.match(client,/head:items\.some\(i=>i\.code==="head_spectral"\)/);
+ assert.match(client,/reúne "\+items\.length\+" cosméticos exclusivos/);
  assert.match(client,/emote_evil/);
  assert.match(file("css/visual-overhaul.css"),/max-height:calc\(100dvh - 18px\)/);
 });

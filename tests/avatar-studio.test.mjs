@@ -110,7 +110,7 @@ test("Shop has no meaningless free-claim CTA and every unlock is functional",()=
  assert.match(studio,/isOwned\(item\)/);
  assert.match(studio,/item.price===0&&Boolean\(item.achievement\)/);
  assert.match(studio,/makeCosmeticThumbnail\(/);
- assert.match(studio,/if\(item\?\.slot==="emote"\)this.emote\(\)/);
+ assert.match(studio,/if\(item\?\.slot==="emote"&&this\.selectedItem===code\)this\.emote\(\)/);
  assert.match(migration,/FREE_REWARD_IS_AUTOMATIC/);
  assert.match(migration,/ea.achievement_code=item.achievement/);
  assert.match(file("css/avatar-studio.css"),/ph-wave-arm/);

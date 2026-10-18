@@ -7,8 +7,8 @@ import { LavalabrasGame } from "./lavalabras.js?v=0.16.0";
 import { FinDeLineaGame } from "./fin-de-linea.js?v=0.16.0";
 import { PuertaONadaGame } from "./puerta-o-nada.js?v=0.16.0";
 import { TimingGame } from "./timing-games.js?v=0.16.0";
-import { AvatarStudio } from "./avatar-studio.js?v=0.16.0";
-import { makeAvatar } from "./avatar-art.js?v=0.16.0";
+import { AvatarStudio } from "./avatar-studio.js?v=0.16.0-cosmetics1";
+import { makeAvatar } from "./avatar-art.js?v=0.16.0-cosmetics1";
 
 import { APP_BUILD } from "./release.js?v=0.16.0";
 const $ = (id) => document.getElementById(id);

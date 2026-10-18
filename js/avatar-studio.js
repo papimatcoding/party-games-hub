@@ -1,4 +1,5 @@
-import {makeAvatar,makeCosmeticThumbnail,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.16.0";
+import {makeAvatar,makeCosmeticThumbnail,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.16.0-cosmetics1";
+import {DEFAULT_COSMETIC,isStarterItem,isCuratedForShop,getShopRotation} from "./avatar-shop.js?v=0.16.0-cosmetics1";
 
 const $=id=>document.getElementById(id);
 const el=(tag,cls,content)=>{
@@ -21,7 +22,7 @@ export class AvatarStudio{
  constructor({rpc,notify,ensureUser,onSaved,nameProvider}){
   Object.assign(this,{rpc,notify,ensureUser,onSaved,nameProvider});
   this.profile=null;this.preview={...fallback};this.tab="look";
-  this.slot="outfit";this.shopSlot="all";this.shopTheme="all";this.shopStatus="ready";this.shopSort="price";this.shopSearch="";this.selectedItem=null;
+  this.slot="outfit";this.shopSlot="all";this.shopTheme="all";this.shopStatus="all";this.shopSort="featured";this.shopSearch="";this.selectedItem=null;
   this.loading=false;this.busy=false;this.opened=false;this.dirty=false;
   $("avatar-open").addEventListener("click",()=>void this.open());
   $("avatar-close").addEventListener("click",()=>this.close());
@@ -83,7 +84,7 @@ export class AvatarStudio{
 
  isOwned(item){
   // Achievement rewards are granted when earned, not via a zero-ticket checkout.
-  return item.is_starter||this.owned.has(item.code)||
+  return isStarterItem(item)||this.owned.has(item.code)||
    (item.price===0&&Boolean(item.achievement)&&
     this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked));
  }
@@ -93,10 +94,10 @@ export class AvatarStudio{
   if(item)out[item.slot]=item.code;
   return out;
  }
- async exec(job){
+ async exec(job,{preserveDraft=true}={}){
   if(this.busy)return;
   this.busy=true;this.render();
-  const unsaved=this.dirty?{...this.preview}:null;
+  const unsaved=preserveDraft&&this.dirty?{...this.preview}:null;
   try{
    await job();await this.load();
    if(unsaved){Object.assign(this.preview,unsaved);this.dirty=true;}
@@ -112,7 +113,7 @@ export class AvatarStudio{
     p_hair_color:p.hair_color,p_outfit_color:p.outfit_color
    });
    this.notify("¡Tu nuevo look está guardado!");
-  });
+  },{preserveDraft:false});
  }
  randomize(){
   for(const key of Object.keys(STYLE_OPTIONS)){
@@ -138,6 +139,15 @@ export class AvatarStudio{
    this.notify("¡Pack desbloqueado! "+result.items_added+" cosméticos nuevos por "+result.paid+" Tickets.");
   });
  }
+ async clearSlot(slot){
+  const defaultCode=DEFAULT_COSMETIC[slot];
+  if(!defaultCode||this.busy||!this.profile)return;
+  if(this.profile.appearance[slot]===defaultCode){this.selectedItem=null;this.render();return;}
+  await this.exec(async()=>{
+   await this.rpc("avatar_equip",{p_slot:slot,p_code:defaultCode});
+   this.notify(slot==="head"?"Sombrero quitado. Vuelve a verse tu pelo.":"Has vuelto a tu accesorio básico.");
+  });
+ }
  async equip(code){
   if(this.busy)return;
   const item=this.items.find(i=>i.code===code);
@@ -160,10 +170,10 @@ export class AvatarStudio{
   this.preview[key]=index;this.dirty=true;this.render();
  }
  selectItem(code){
-  this.selectedItem=code;
+  this.selectedItem=this.selectedItem===code?null:code;
   this.render();
   const item=this.items.find(i=>i.code===code);
-  if(item?.slot==="emote")this.emote();
+  if(item?.slot==="emote"&&this.selectedItem===code)this.emote();
  }
  render(){
   if(!this.opened||!this.profile)return;
@@ -182,6 +192,12 @@ export class AvatarStudio{
   $("avatar-stat-medals").textContent=String(p.gold+p.silver+p.bronze);
   $("avatar-preview-figure").replaceChildren(makeAvatar(this.appearance,"ph-avatar-large"));
   $("avatar-preview-figure").className="avatar-preview-figure";
+  const selected=this.items.find(i=>i.code===this.selectedItem);
+  const state=$("avatar-preview-state");
+  state.textContent=selected?
+   (this.profile.appearance[selected.slot]===selected.code?"✓ Equipado: ":"◌ Solo vista previa: ")+selected.title:
+   "✓ Vista de tu equipamiento actual";
+  state.classList.toggle("is-tryon",Boolean(selected&&this.profile.appearance[selected.slot]!==selected.code));
   $("avatar-dirty").hidden=!this.dirty;
   $("avatar-save").disabled=this.busy||!this.dirty;
   $("avatar-save").textContent=this.busy?"Guardando...":"Guardar apariencia";
@@ -195,12 +211,19 @@ export class AvatarStudio{
   $("avatar-save").hidden=this.tab!=="look";
   $("avatar-random").hidden=this.tab!=="look";
   $("avatar-go-shop").hidden=this.tab!=="closet";
-  const pane=$("avatar-main-content");pane.replaceChildren();
+  const pane=$("avatar-main-content");
+  // Card previews should never throw players back to the top of a long inventory.
+  const scroller=window.matchMedia("(max-width:850px)").matches?
+   pane.closest(".avatar-grid"):pane;
+  const position=this.lastRenderedTab===this.tab?(scroller?.scrollTop||0):0;
+  pane.replaceChildren();
+  this.lastRenderedTab=this.tab;
   if(this.tab==="look")this.renderLook(pane);
   if(this.tab==="closet")this.renderCloset(pane);
   if(this.tab==="shop")this.renderShop(pane);
   if(this.tab==="seasons")this.renderSeasons(pane);
   if(this.tab==="achievements")this.renderAchievements(pane);
+  if(scroller)scroller.scrollTop=position;
  }
  renderLook(pane){
   pane.append(el("h3","avatar-pane-title","Tu personaje, tus reglas"),
@@ -245,7 +268,7 @@ export class AvatarStudio{
   const achieved=!item.achievement||this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked);
   const levelReady=this.level>=item.min_level,afford=this.profile.tickets>=item.price;
   const active=this.isSeasonActive(item);
-  const card=el("article","avatar-item-card"+(this.selectedItem===item.code?" previewing":""));
+  const card=el("article","avatar-item-card"+(this.selectedItem===item.code?" previewing":"")+(equipped?" is-equipped":"")+(isShop?" is-shop-card":""));
   const badge=el("div","avatar-item-icon avatar-rarity-"+item.rarity);
   const mini=makeCosmeticThumbnail({...this.preview,[item.slot]:item.code},item.slot);
   if(item.slot==="emote"){
@@ -267,10 +290,15 @@ export class AvatarStudio{
     item.price===0&&item.achievement?"POR LOGRO":"🎟 "+item.price;
   card.append(el("span","avatar-item-price",priceLabel));
   const controls=el("div","avatar-item-actions");
-  const look=el("button","avatar-preview-btn","Ver");
+  const look=el("button","avatar-preview-btn",this.selectedItem===item.code?"Cerrar vista":"Probar");
   look.type="button";look.addEventListener("click",()=>this.selectItem(item.code));
   controls.append(look);
-  if(owned&&!equipped){
+  if(owned&&equipped&&item.code!==DEFAULT_COSMETIC[item.slot]){
+   const clear=el("button","avatar-clear-btn",item.slot==="outfit"?"Poner básico":item.slot==="emote"?"Saludo básico":"Quitar");
+   clear.type="button";clear.disabled=this.busy;
+   clear.addEventListener("click",()=>void this.clearSlot(item.slot));
+   controls.append(clear);
+  }else if(owned&&!equipped){
    const use=el("button","avatar-action-btn","Equipar");
    use.type="button";use.disabled=this.busy;use.addEventListener("click",()=>void this.equip(item.code));
    controls.append(use);
@@ -284,23 +312,62 @@ export class AvatarStudio{
   return card;
  }
  renderCloset(pane){
-  pane.append(el("h3","avatar-pane-title","Tu armario"),
-    el("p","avatar-pane-sub","Prueba prendas y accesorios. Todos los cambios son puramente estéticos."));
+  pane.append(el("h3","avatar-pane-title","Tu colección"),
+   el("p","avatar-pane-sub","Prueba cada pieza sin comprometer tu look. Puedes equiparla, cambiarla o quitarla cuando quieras."));
   this.slotButtons(pane,"slot","slot",SLOTS);
+  const selected=this.items.find(item=>item.code===this.profile.appearance[this.slot]);
+  const rack=el("div","avatar-closet-current");
+  const description=el("div","avatar-closet-current-copy");
+  description.append(el("small","","EQUIPADO AHORA"),el("strong","",selected?.title||"Look básico"));
+  rack.append(description);
+  if(this.profile.appearance[this.slot]!==DEFAULT_COSMETIC[this.slot]){
+   const reset=el("button","avatar-closet-remove","✕ Quitar "+(Object.fromEntries(SLOTS)[this.slot]||"accesorio").toLowerCase());
+   reset.type="button";reset.disabled=this.busy;
+   reset.addEventListener("click",()=>void this.clearSlot(this.slot));
+   rack.append(reset);
+  }else{
+   rack.append(el("span","avatar-closet-base","✓ Versión básica"));
+  }
+  pane.append(rack);
   const list=el("div","avatar-items-grid");
-  const mine=this.items.filter(i=>i.slot===this.slot&&this.isOwned(i));
+  const mine=this.items.filter(item=>item.slot===this.slot&&this.isOwned(item))
+   .sort((a,b)=>Number(this.profile.appearance[b.slot]===b.code)-
+      Number(this.profile.appearance[a.slot]===a.code)||a.price-b.price);
   for(const item of mine)list.append(this.itemCard(item,false));
+  if(!mine.length)list.append(el("p","avatar-shop-empty","Todavía no tienes diseños de este tipo."));
   pane.append(list);
  }
  renderShop(pane){
-  pane.append(el("h3","avatar-pane-title","La tienda del caos"),
-   el("p","avatar-pane-sub","Aquí solo aparecen cosméticos. Filtra por lo que puedes comprar, los bloqueados o los que ya tienes. Todo se consigue jugando."));
-  const link=el("button","avatar-season-link","🎃 COLECCIÓN HALLOWEEN · PACK Y PIEZAS  →");
-  link.type="button";link.addEventListener("click",()=>{this.tab="seasons";this.render();});
-  pane.append(link);
+  const intro=el("section","avatar-shop-intro");
+  intro.append(el("span","avatar-shop-kicker","✦ THE PARTY EDIT / COSMÉTICOS SELECCIONADOS"),
+   el("h3","","Piezas con personalidad."),
+   el("p","","Selección diaria y semanal, precios transparentes y diseños terminados. Las piezas anteriores que ya tienes siguen en tu armario."));
+  pane.append(intro);
+  const banner=el("button","avatar-season-link","🎃 HALLOWEEN 2026 · VER COLECCIÓN Y PACK →");
+  banner.type="button";banner.addEventListener("click",()=>{this.tab="seasons";this.render();});
+  pane.append(banner);
+  const rotation=getShopRotation(this.items,new Date());
+  const shelf=(title,subtitle,items,kind)=>{
+   if(!items.length)return;
+   const section=el("section","avatar-rotation-section avatar-rotation-"+kind);
+   const heading=el("div","avatar-rotation-heading");
+   const copy=el("div");
+   copy.append(el("small","",kind==="daily"?"DROP / 24 HORAS":"DROP / 7 DÍAS"),
+    el("h4","",title),el("p","",subtitle));
+   heading.append(copy,el("span","avatar-rotation-dot",kind==="daily"?"◷ HOY":"✦ ESTA SEMANA"));
+   const rack=el("div","avatar-items-grid avatar-rotation-grid");
+   for(const item of items)rack.append(this.itemCard(item,true));
+   section.append(heading,rack);pane.append(section);
+  };
+  shelf("Selección diaria","Cambia cada día a las 00:00 · hora de Madrid",rotation.daily,"daily");
+  shelf("Selección semanal","Nueva selección cada lunes · hora de Madrid",rotation.weekly,"weekly");
+  const collection=el("section","avatar-catalog-section");
+  collection.append(el("h3","avatar-pane-title","Catálogo seleccionado"),
+   el("p","avatar-pane-sub","Solo los cosméticos de nuestra selección visual. Busca por tipo o filtra por disponibilidad."));
   const toolbar=el("div","avatar-shop-toolbar");
   const search=el("input","avatar-shop-search");
-  search.type="search";search.placeholder="Buscar por nombre...";search.setAttribute("aria-label","Buscar cosméticos");
+  search.type="search";search.placeholder="Buscar un diseño...";
+  search.setAttribute("aria-label","Buscar cosméticos");
   search.value=this.shopSearch;toolbar.append(search);
   const filters=el("div","avatar-shop-selects");
   function choose(label,options,value,onChange){
@@ -313,38 +380,39 @@ export class AvatarStudio{
   }
   filters.append(
    choose("Tipo",[["all","Todos los tipos"],...SLOTS],this.shopSlot,v=>{this.shopSlot=v;this.render();}),
-   choose("Temática",THEMES,this.shopTheme,v=>{this.shopTheme=v;this.render();}),
-   choose("Orden",[["price","Más baratos primero"],["featured","Destacados"],["name","A–Z"]],
+   choose("Estilo",THEMES,this.shopTheme,v=>{this.shopTheme=v;this.render();}),
+   choose("Orden",[["featured","Destacados"],["price","Precio ascendente"],["name","Nombre A–Z"]],
     this.shopSort,v=>{this.shopSort=v;this.render();})
   );
-  toolbar.append(filters);pane.append(toolbar);
+  toolbar.append(filters);collection.append(toolbar);
   const tabs=el("div","avatar-shop-statuses");
-  for(const [k,label] of [["ready","🎟 Puedes comprar"],["locked","🔒 Bloqueados"],["owned","✓ Ya tienes"]]){
+  for(const [k,label] of [["all","Todos"],["ready","Puedo comprar"],["locked","Bloqueados"],["owned","Los míos"]]){
    const btn=el("button","avatar-shop-status"+(this.shopStatus===k?" active":""),label);
    btn.type="button";btn.setAttribute("aria-pressed",String(this.shopStatus===k));
    btn.addEventListener("click",()=>{this.shopStatus=k;this.render();});
    tabs.append(btn);
   }
-  pane.append(tabs);
+  collection.append(tabs);
   const heading=el("div","avatar-shop-heading"),list=el("div","avatar-items-grid avatar-shop-results");
-  pane.append(heading,list);
+  collection.append(heading,list);pane.append(collection);
   search.addEventListener("input",()=>{this.shopSearch=search.value;this.renderShopResults(heading,list);});
   this.renderShopResults(heading,list);
  }
  renderShopResults(heading,list){
   const query=this.shopSearch.trim().toLocaleLowerCase("es");
-  const items=this.items.filter(i=>!i.is_starter&&this.statusOf(i)===this.shopStatus&&
-    (this.shopSlot==="all"||i.slot===this.shopSlot)&&
-    (this.shopTheme==="all"||i.theme===this.shopTheme)&&
-    (!query||(i.title+" "+(THEME_LABELS[i.theme]||"")).toLocaleLowerCase("es").includes(query)))
-  .sort((a,b)=>this.shopSort==="name"?a.title.localeCompare(b.title,"es"):
-    this.shopSort==="featured"?Number(b.featured)-Number(a.featured)||a.price-b.price:
-    a.price-b.price||a.title.localeCompare(b.title,"es"));
-  const titles={ready:"Puedes comprar ahora",locked:"Para desbloquear más adelante",owned:"Ya forman parte de tu colección"};
-  heading.replaceChildren(el("strong","",titles[this.shopStatus]),el("span","",items.length+" resultados"));
+  const items=this.items.filter(item=>isCuratedForShop(item)&&
+    (this.shopStatus==="all"||this.statusOf(item)===this.shopStatus)&&
+    (this.shopSlot==="all"||item.slot===this.shopSlot)&&
+    (this.shopTheme==="all"||item.theme===this.shopTheme)&&
+    (!query||(item.title+" "+(THEME_LABELS[item.theme]||"")).toLocaleLowerCase("es").includes(query)))
+   .sort((a,b)=>this.shopSort==="name"?a.title.localeCompare(b.title,"es"):
+     this.shopSort==="featured"?Number(b.featured)-Number(a.featured)||a.price-b.price:
+     a.price-b.price||a.title.localeCompare(b.title,"es"));
+  const titles={all:"Diseños a la venta",ready:"Listos para comprar",locked:"Para desbloquear",owned:"En tu colección"};
+  heading.replaceChildren(el("strong","",titles[this.shopStatus]),el("span","",items.length+" diseños"));
   list.replaceChildren();
   if(!items.length){
-   list.append(el("p","avatar-shop-empty","Aquí no hay artículos con estos filtros. Prueba otra temática o estado."));
+   list.append(el("p","avatar-shop-empty","No hay diseños con esos filtros. Prueba otra categoría o estado."));
    return;
   }
   for(const item of items)list.append(this.itemCard(item,true));
@@ -358,13 +426,13 @@ export class AvatarStudio{
   const hero=el("section","avatar-season-hero");
   hero.append(el("span","avatar-season-kicker","EVENTO HALLOWEEN · 2026"),
    el("h3","","🎃 LA NOCHE MÁS LARGA"),
-   el("p","","Terror caricaturesco, cero ventajas: reúne catorce cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
+   el("p","","Terror caricaturesco, cero ventajas: reúne "+items.length+" cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
   const figures=el("div","avatar-season-characters");
   figures.append(
    makeAvatar({...this.preview,outfit:"outfit_skeleton",head:"head_pumpkin"},"avatar-season-character"),
    makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_hockey"},"avatar-season-character"),
    makeAvatar({...this.preview,outfit:"outfit_witch",head:"head_witch",back:"back_bats"},"avatar-season-character"),
-   makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_spectral",back:"back_smoke"},"avatar-season-character"));
+   makeAvatar({...this.preview,outfit:"outfit_vampire",head:items.some(i=>i.code==="head_spectral")?"head_spectral":"head_ghost",back:"back_bats"},"avatar-season-character"));
   hero.append(figures,el("p","avatar-season-time",active?
    "Disponible hasta el 8 de noviembre · Los cosméticos adquiridos son tuyos para siempre.":
    "Evento finalizado. Los cosméticos que conseguiste siguen en tu armario."));
