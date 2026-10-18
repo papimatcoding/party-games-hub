@@ -305,23 +305,62 @@ export class AvatarStudio{
   return card;
  }
  renderCloset(pane){
-  pane.append(el("h3","avatar-pane-title","Tu armario"),
-    el("p","avatar-pane-sub","Prueba prendas y accesorios. Todos los cambios son puramente estéticos."));
+  pane.append(el("h3","avatar-pane-title","Tu colección"),
+   el("p","avatar-pane-sub","Prueba cada pieza sin comprometer tu look. Puedes equiparla, cambiarla o quitarla cuando quieras."));
   this.slotButtons(pane,"slot","slot",SLOTS);
+  const selected=this.items.find(item=>item.code===this.profile.appearance[this.slot]);
+  const rack=el("div","avatar-closet-current");
+  const description=el("div","avatar-closet-current-copy");
+  description.append(el("small","","EQUIPADO AHORA"),el("strong","",selected?.title||"Look básico"));
+  rack.append(description);
+  if(this.profile.appearance[this.slot]!==DEFAULT_COSMETIC[this.slot]){
+   const reset=el("button","avatar-closet-remove","✕ Quitar "+(Object.fromEntries(SLOTS)[this.slot]||"accesorio").toLowerCase());
+   reset.type="button";reset.disabled=this.busy;
+   reset.addEventListener("click",()=>void this.clearSlot(this.slot));
+   rack.append(reset);
+  }else{
+   rack.append(el("span","avatar-closet-base","✓ Versión básica"));
+  }
+  pane.append(rack);
   const list=el("div","avatar-items-grid");
-  const mine=this.items.filter(i=>i.slot===this.slot&&this.isOwned(i));
+  const mine=this.items.filter(item=>item.slot===this.slot&&this.isOwned(item))
+   .sort((a,b)=>Number(this.profile.appearance[b.slot]===b.code)-
+      Number(this.profile.appearance[a.slot]===a.code)||a.price-b.price);
   for(const item of mine)list.append(this.itemCard(item,false));
+  if(!mine.length)list.append(el("p","avatar-shop-empty","Todavía no tienes diseños de este tipo."));
   pane.append(list);
  }
  renderShop(pane){
-  pane.append(el("h3","avatar-pane-title","La tienda del caos"),
-   el("p","avatar-pane-sub","Aquí solo aparecen cosméticos. Filtra por lo que puedes comprar, los bloqueados o los que ya tienes. Todo se consigue jugando."));
-  const link=el("button","avatar-season-link","🎃 COLECCIÓN HALLOWEEN · PACK Y PIEZAS  →");
-  link.type="button";link.addEventListener("click",()=>{this.tab="seasons";this.render();});
-  pane.append(link);
+  const intro=el("section","avatar-shop-intro");
+  intro.append(el("span","avatar-shop-kicker","✦ THE PARTY EDIT / COSMÉTICOS SELECCIONADOS"),
+   el("h3","","Piezas con personalidad."),
+   el("p","","Selección diaria y semanal, precios transparentes y diseños terminados. Las piezas anteriores que ya tienes siguen en tu armario."));
+  pane.append(intro);
+  const banner=el("button","avatar-season-link","🎃 HALLOWEEN 2026 · VER COLECCIÓN Y PACK →");
+  banner.type="button";banner.addEventListener("click",()=>{this.tab="seasons";this.render();});
+  pane.append(banner);
+  const rotation=getShopRotation(this.items,new Date());
+  const shelf=(title,subtitle,items,kind)=>{
+   if(!items.length)return;
+   const section=el("section","avatar-rotation-section avatar-rotation-"+kind);
+   const heading=el("div","avatar-rotation-heading");
+   const copy=el("div");
+   copy.append(el("small","",kind==="daily"?"DROP / 24 HORAS":"DROP / 7 DÍAS"),
+    el("h4","",title),el("p","",subtitle));
+   heading.append(copy,el("span","avatar-rotation-dot",kind==="daily"?"◷ HOY":"✦ ESTA SEMANA"));
+   const rack=el("div","avatar-items-grid avatar-rotation-grid");
+   for(const item of items)rack.append(this.itemCard(item,true));
+   section.append(heading,rack);pane.append(section);
+  };
+  shelf("Selección diaria","Cambia cada día a las 00:00 · hora de Madrid",rotation.daily,"daily");
+  shelf("Selección semanal","Nueva selección cada lunes · hora de Madrid",rotation.weekly,"weekly");
+  const collection=el("section","avatar-catalog-section");
+  collection.append(el("h3","avatar-pane-title","Catálogo seleccionado"),
+   el("p","avatar-pane-sub","Solo los cosméticos de nuestra selección visual. Busca por tipo o filtra por disponibilidad."));
   const toolbar=el("div","avatar-shop-toolbar");
   const search=el("input","avatar-shop-search");
-  search.type="search";search.placeholder="Buscar por nombre...";search.setAttribute("aria-label","Buscar cosméticos");
+  search.type="search";search.placeholder="Buscar un diseño...";
+  search.setAttribute("aria-label","Buscar cosméticos");
   search.value=this.shopSearch;toolbar.append(search);
   const filters=el("div","avatar-shop-selects");
   function choose(label,options,value,onChange){
@@ -334,38 +373,39 @@ export class AvatarStudio{
   }
   filters.append(
    choose("Tipo",[["all","Todos los tipos"],...SLOTS],this.shopSlot,v=>{this.shopSlot=v;this.render();}),
-   choose("Temática",THEMES,this.shopTheme,v=>{this.shopTheme=v;this.render();}),
-   choose("Orden",[["price","Más baratos primero"],["featured","Destacados"],["name","A–Z"]],
+   choose("Estilo",THEMES,this.shopTheme,v=>{this.shopTheme=v;this.render();}),
+   choose("Orden",[["featured","Destacados"],["price","Precio ascendente"],["name","Nombre A–Z"]],
     this.shopSort,v=>{this.shopSort=v;this.render();})
   );
-  toolbar.append(filters);pane.append(toolbar);
+  toolbar.append(filters);collection.append(toolbar);
   const tabs=el("div","avatar-shop-statuses");
-  for(const [k,label] of [["ready","🎟 Puedes comprar"],["locked","🔒 Bloqueados"],["owned","✓ Ya tienes"]]){
+  for(const [k,label] of [["all","Todos"],["ready","Puedo comprar"],["locked","Bloqueados"],["owned","Los míos"]]){
    const btn=el("button","avatar-shop-status"+(this.shopStatus===k?" active":""),label);
    btn.type="button";btn.setAttribute("aria-pressed",String(this.shopStatus===k));
    btn.addEventListener("click",()=>{this.shopStatus=k;this.render();});
    tabs.append(btn);
   }
-  pane.append(tabs);
+  collection.append(tabs);
   const heading=el("div","avatar-shop-heading"),list=el("div","avatar-items-grid avatar-shop-results");
-  pane.append(heading,list);
+  collection.append(heading,list);pane.append(collection);
   search.addEventListener("input",()=>{this.shopSearch=search.value;this.renderShopResults(heading,list);});
   this.renderShopResults(heading,list);
  }
  renderShopResults(heading,list){
   const query=this.shopSearch.trim().toLocaleLowerCase("es");
-  const items=this.items.filter(i=>!i.is_starter&&this.statusOf(i)===this.shopStatus&&
-    (this.shopSlot==="all"||i.slot===this.shopSlot)&&
-    (this.shopTheme==="all"||i.theme===this.shopTheme)&&
-    (!query||(i.title+" "+(THEME_LABELS[i.theme]||"")).toLocaleLowerCase("es").includes(query)))
-  .sort((a,b)=>this.shopSort==="name"?a.title.localeCompare(b.title,"es"):
-    this.shopSort==="featured"?Number(b.featured)-Number(a.featured)||a.price-b.price:
-    a.price-b.price||a.title.localeCompare(b.title,"es"));
-  const titles={ready:"Puedes comprar ahora",locked:"Para desbloquear más adelante",owned:"Ya forman parte de tu colección"};
-  heading.replaceChildren(el("strong","",titles[this.shopStatus]),el("span","",items.length+" resultados"));
+  const items=this.items.filter(item=>isCuratedForShop(item)&&
+    (this.shopStatus==="all"||this.statusOf(item)===this.shopStatus)&&
+    (this.shopSlot==="all"||item.slot===this.shopSlot)&&
+    (this.shopTheme==="all"||item.theme===this.shopTheme)&&
+    (!query||(item.title+" "+(THEME_LABELS[item.theme]||"")).toLocaleLowerCase("es").includes(query)))
+   .sort((a,b)=>this.shopSort==="name"?a.title.localeCompare(b.title,"es"):
+     this.shopSort==="featured"?Number(b.featured)-Number(a.featured)||a.price-b.price:
+     a.price-b.price||a.title.localeCompare(b.title,"es"));
+  const titles={all:"Diseños a la venta",ready:"Listos para comprar",locked:"Para desbloquear",owned:"En tu colección"};
+  heading.replaceChildren(el("strong","",titles[this.shopStatus]),el("span","",items.length+" diseños"));
   list.replaceChildren();
   if(!items.length){
-   list.append(el("p","avatar-shop-empty","Aquí no hay artículos con estos filtros. Prueba otra temática o estado."));
+   list.append(el("p","avatar-shop-empty","No hay diseños con esos filtros. Prueba otra categoría o estado."));
    return;
   }
   for(const item of items)list.append(this.itemCard(item,true));
@@ -379,13 +419,13 @@ export class AvatarStudio{
   const hero=el("section","avatar-season-hero");
   hero.append(el("span","avatar-season-kicker","EVENTO HALLOWEEN · 2026"),
    el("h3","","🎃 LA NOCHE MÁS LARGA"),
-   el("p","","Terror caricaturesco, cero ventajas: reúne catorce cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
+   el("p","","Terror caricaturesco, cero ventajas: reúne "+items.length+" cosméticos exclusivos. Compra cada uno a tu ritmo o consigue todo el conjunto con descuento."));
   const figures=el("div","avatar-season-characters");
   figures.append(
    makeAvatar({...this.preview,outfit:"outfit_skeleton",head:"head_pumpkin"},"avatar-season-character"),
    makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_hockey"},"avatar-season-character"),
    makeAvatar({...this.preview,outfit:"outfit_witch",head:"head_witch",back:"back_bats"},"avatar-season-character"),
-   makeAvatar({...this.preview,outfit:"outfit_vampire",head:"head_spectral",back:"back_smoke"},"avatar-season-character"));
+   makeAvatar({...this.preview,outfit:"outfit_vampire",head:items.some(i=>i.code==="head_spectral")?"head_spectral":"head_ghost",back:"back_bats"},"avatar-season-character"));
   hero.append(figures,el("p","avatar-season-time",active?
    "Disponible hasta el 8 de noviembre · Los cosméticos adquiridos son tuyos para siempre.":
    "Evento finalizado. Los cosméticos que conseguiste siguen en tu armario."));
