@@ -1,0 +1,24 @@
+name: Validate Party Hub changes
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  quality:
+    name: Tests and JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run regression suite
+        run: npm test
+      - name: Validate modified modules
+        run: |
+          node --check js/avatar-shop.js
+          node --check js/avatar-studio.js
+          node --check js/avatar-art.js
+          node --check js/avatar-halloween.js
+          node --check js/app.js
