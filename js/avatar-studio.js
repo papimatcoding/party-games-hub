@@ -1,4 +1,5 @@
-import {makeAvatar,makeCosmeticThumbnail,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.16.0";
+import {makeAvatar,makeCosmeticThumbnail,SKINS,HAIR_COLORS,CLOTH_COLORS,STYLE_OPTIONS} from "./avatar-art.js?v=0.16.0-cosmetics1";
+import {DEFAULT_COSMETIC,isStarterItem,isCuratedForShop,getShopRotation} from "./avatar-shop.js?v=0.16.0-cosmetics1";
 
 const $=id=>document.getElementById(id);
 const el=(tag,cls,content)=>{
@@ -21,7 +22,7 @@ export class AvatarStudio{
  constructor({rpc,notify,ensureUser,onSaved,nameProvider}){
   Object.assign(this,{rpc,notify,ensureUser,onSaved,nameProvider});
   this.profile=null;this.preview={...fallback};this.tab="look";
-  this.slot="outfit";this.shopSlot="all";this.shopTheme="all";this.shopStatus="ready";this.shopSort="price";this.shopSearch="";this.selectedItem=null;
+  this.slot="outfit";this.shopSlot="all";this.shopTheme="all";this.shopStatus="all";this.shopSort="featured";this.shopSearch="";this.selectedItem=null;
   this.loading=false;this.busy=false;this.opened=false;this.dirty=false;
   $("avatar-open").addEventListener("click",()=>void this.open());
   $("avatar-close").addEventListener("click",()=>this.close());
@@ -83,7 +84,7 @@ export class AvatarStudio{
 
  isOwned(item){
   // Achievement rewards are granted when earned, not via a zero-ticket checkout.
-  return item.is_starter||this.owned.has(item.code)||
+  return isStarterItem(item)||this.owned.has(item.code)||
    (item.price===0&&Boolean(item.achievement)&&
     this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked));
  }
@@ -93,10 +94,10 @@ export class AvatarStudio{
   if(item)out[item.slot]=item.code;
   return out;
  }
- async exec(job){
+ async exec(job,{preserveDraft=true}={}){
   if(this.busy)return;
   this.busy=true;this.render();
-  const unsaved=this.dirty?{...this.preview}:null;
+  const unsaved=preserveDraft&&this.dirty?{...this.preview}:null;
   try{
    await job();await this.load();
    if(unsaved){Object.assign(this.preview,unsaved);this.dirty=true;}
@@ -112,7 +113,7 @@ export class AvatarStudio{
     p_hair_color:p.hair_color,p_outfit_color:p.outfit_color
    });
    this.notify("¡Tu nuevo look está guardado!");
-  });
+  },{preserveDraft:false});
  }
  randomize(){
   for(const key of Object.keys(STYLE_OPTIONS)){
@@ -138,6 +139,15 @@ export class AvatarStudio{
    this.notify("¡Pack desbloqueado! "+result.items_added+" cosméticos nuevos por "+result.paid+" Tickets.");
   });
  }
+ async clearSlot(slot){
+  const defaultCode=DEFAULT_COSMETIC[slot];
+  if(!defaultCode||this.busy||!this.profile)return;
+  if(this.profile.appearance[slot]===defaultCode){this.selectedItem=null;this.render();return;}
+  await this.exec(async()=>{
+   await this.rpc("avatar_equip",{p_slot:slot,p_code:defaultCode});
+   this.notify(slot==="head"?"Sombrero quitado. Vuelve a verse tu pelo.":"Has vuelto a tu accesorio básico.");
+  });
+ }
  async equip(code){
   if(this.busy)return;
   const item=this.items.find(i=>i.code===code);
@@ -160,10 +170,10 @@ export class AvatarStudio{
   this.preview[key]=index;this.dirty=true;this.render();
  }
  selectItem(code){
-  this.selectedItem=code;
+  this.selectedItem=this.selectedItem===code?null:code;
   this.render();
   const item=this.items.find(i=>i.code===code);
-  if(item?.slot==="emote")this.emote();
+  if(item?.slot==="emote"&&this.selectedItem===code)this.emote();
  }
  render(){
   if(!this.opened||!this.profile)return;
@@ -182,6 +192,12 @@ export class AvatarStudio{
   $("avatar-stat-medals").textContent=String(p.gold+p.silver+p.bronze);
   $("avatar-preview-figure").replaceChildren(makeAvatar(this.appearance,"ph-avatar-large"));
   $("avatar-preview-figure").className="avatar-preview-figure";
+  const selected=this.items.find(i=>i.code===this.selectedItem);
+  const state=$("avatar-preview-state");
+  state.textContent=selected?
+   (this.profile.appearance[selected.slot]===selected.code?"✓ Equipado: ":"◌ Solo vista previa: ")+selected.title:
+   "✓ Vista de tu equipamiento actual";
+  state.classList.toggle("is-tryon",Boolean(selected&&this.profile.appearance[selected.slot]!==selected.code));
   $("avatar-dirty").hidden=!this.dirty;
   $("avatar-save").disabled=this.busy||!this.dirty;
   $("avatar-save").textContent=this.busy?"Guardando...":"Guardar apariencia";
@@ -245,7 +261,7 @@ export class AvatarStudio{
   const achieved=!item.achievement||this.profile.achievements.some(a=>a.code===item.achievement&&a.unlocked);
   const levelReady=this.level>=item.min_level,afford=this.profile.tickets>=item.price;
   const active=this.isSeasonActive(item);
-  const card=el("article","avatar-item-card"+(this.selectedItem===item.code?" previewing":""));
+  const card=el("article","avatar-item-card"+(this.selectedItem===item.code?" previewing":"")+(equipped?" is-equipped":"")+(isShop?" is-shop-card":""));
   const badge=el("div","avatar-item-icon avatar-rarity-"+item.rarity);
   const mini=makeCosmeticThumbnail({...this.preview,[item.slot]:item.code},item.slot);
   if(item.slot==="emote"){
@@ -267,10 +283,15 @@ export class AvatarStudio{
     item.price===0&&item.achievement?"POR LOGRO":"🎟 "+item.price;
   card.append(el("span","avatar-item-price",priceLabel));
   const controls=el("div","avatar-item-actions");
-  const look=el("button","avatar-preview-btn","Ver");
+  const look=el("button","avatar-preview-btn",this.selectedItem===item.code?"Cerrar vista":"Probar");
   look.type="button";look.addEventListener("click",()=>this.selectItem(item.code));
   controls.append(look);
-  if(owned&&!equipped){
+  if(owned&&equipped&&item.code!==DEFAULT_COSMETIC[item.slot]){
+   const clear=el("button","avatar-clear-btn",item.slot==="outfit"?"Poner básico":item.slot==="emote"?"Saludo básico":"Quitar");
+   clear.type="button";clear.disabled=this.busy;
+   clear.addEventListener("click",()=>void this.clearSlot(item.slot));
+   controls.append(clear);
+  }else if(owned&&!equipped){
    const use=el("button","avatar-action-btn","Equipar");
    use.type="button";use.disabled=this.busy;use.addEventListener("click",()=>void this.equip(item.code));
    controls.append(use);
