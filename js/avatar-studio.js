@@ -211,12 +211,19 @@ export class AvatarStudio{
   $("avatar-save").hidden=this.tab!=="look";
   $("avatar-random").hidden=this.tab!=="look";
   $("avatar-go-shop").hidden=this.tab!=="closet";
-  const pane=$("avatar-main-content");pane.replaceChildren();
+  const pane=$("avatar-main-content");
+  // Card previews should never throw players back to the top of a long inventory.
+  const scroller=window.matchMedia("(max-width:850px)").matches?
+   pane.closest(".avatar-grid"):pane;
+  const position=this.lastRenderedTab===this.tab?(scroller?.scrollTop||0):0;
+  pane.replaceChildren();
+  this.lastRenderedTab=this.tab;
   if(this.tab==="look")this.renderLook(pane);
   if(this.tab==="closet")this.renderCloset(pane);
   if(this.tab==="shop")this.renderShop(pane);
   if(this.tab==="seasons")this.renderSeasons(pane);
   if(this.tab==="achievements")this.renderAchievements(pane);
+  if(scroller)scroller.scrollTop=position;
  }
  renderLook(pane){
   pane.append(el("h3","avatar-pane-title","Tu personaje, tus reglas"),
